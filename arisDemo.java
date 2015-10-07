@@ -240,7 +240,6 @@ public class arisDemo {
 		System.out.println(d.DISCONNECT());
 
 		System.out.println("Starting Sessions");
-		long startTime = System.currentTimeMillis(); //fetch starting time
 		System.out.println("Number of threads (sessions):  "+ SESSIONS);
 		System.out.println("Txns per Session :  " + trxnsPerSession);
 
@@ -260,6 +259,15 @@ public class arisDemo {
 			ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
 			List<Future<String>> list = new ArrayList<Future<String>>();
 
+            Collection<SimTest> collection = new ArrayList<>();
+            for(int i=0; i< SESSIONS; i++){
+                SimTest task = new SimTest(stats);
+                collection.add(task);
+            }
+            long startTime = System.currentTimeMillis(); //fetch starting time
+            List<Future<String>> listF = pool.invokeAll(collection, 1, TimeUnit.MINUTES);
+            //TODO: check if the above piece of code works
+            /*
 			Callable<String> callable = new  SimTest(stats);
 			for(int i=0; i< SESSIONS; i++)
 			{
@@ -268,10 +276,10 @@ public class arisDemo {
 				//add Future to the list, we can get return value using Future
 				list.add(future);
 			}
-			for(Future<String> fut : list) {
+			*/
+			for(Future<String> fut : listF) {
 				try {
-                    //run each thread for the time specified in TimeUnits
-					System.out.println("Time for Session "+fut.get(1, TimeUnit.MINUTES));
+					System.out.println("Time for Session "+fut.get());
 				}
 				catch(Exception e) {
 					e.printStackTrace();
@@ -1493,7 +1501,7 @@ public class arisDemo {
 		*/
 	}
 
-	private static class SimTest implements Callable {
+	private static class SimTest implements Callable<String> {
 		private Statistics s;
 
 		SimTest(Statistics stats){
@@ -1501,7 +1509,8 @@ public class arisDemo {
 		}
 
 		@Override
-		public Object call() throws Exception {
+        //Changed Object to String
+		public String call() throws Exception {
 			arisDemo d = new arisDemo();
 			String session_id = d.CONNECT();
 			System.out.println(d.setConsistency("set consistency level 1"));
