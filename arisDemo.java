@@ -241,10 +241,10 @@ public class arisDemo {
 
 		System.out.println("Starting Sessions");
 		System.out.println("Number of threads (sessions):  "+ SESSIONS);
-		System.out.println("Txns per Session :  " + trxnsPerSession);
+		//System.out.println("Txns per Session :  " + trxnsPerSession);
 
 		logWriter.printf("Number of threads (sessions):  " + SESSIONS + "\r\n");
-		logWriter.printf("Txns per Session :  " + trxnsPerSession+"\r\n");
+		//logWriter.printf("Txns per Session :  " + trxnsPerSession+"\r\n");
 
 		ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 		exec.scheduleAtFixedRate(new Runnable() {
@@ -255,7 +255,7 @@ public class arisDemo {
 			}
 		}, 0, 5, TimeUnit.SECONDS);
 
-		try {
+
 			ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
 			List<Future<String>> list = new ArrayList<Future<String>>();
 
@@ -265,7 +265,22 @@ public class arisDemo {
                 collection.add(task);
             }
             long startTime = System.currentTimeMillis(); //fetch starting time
+        try {
             List<Future<String>> listF = pool.invokeAll(collection, 1, TimeUnit.MINUTES);
+            for(Future<String> fut: listF){
+                System.out.println("Time for Session "+fut.get());
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            long endTime = System.currentTimeMillis(); //end time
+            long duration = endTime - startTime;
+            pool.shutdown();
+            System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
+            System.out.println(" which equals " + (duration / (1000 * 60.0)) + " minutes \n");
+        }
             //TODO: check if the above piece of code works
             /*
 			Callable<String> callable = new  SimTest(stats);
@@ -276,7 +291,7 @@ public class arisDemo {
 				//add Future to the list, we can get return value using Future
 				list.add(future);
 			}
-			*/
+
 			for(Future<String> fut : listF) {
 				try {
 					System.out.println("Time for Session "+fut.get());
@@ -293,13 +308,11 @@ public class arisDemo {
 			}
 			long endTime = System.currentTimeMillis(); //end time
 			long duration = endTime - startTime;
-
+            */
 			//Close the transaction Log File
 			logWriter.close();
-
 			exec.shutdownNow();
-			System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
-			System.out.println(" which equals " +(duration/(1000*60.0))+" minutes \n");
+
 			//PRINT STATS
 			System.out.println("*********************Test Run statistics********************");
 			System.out.println("************************************************************");
@@ -324,10 +337,7 @@ public class arisDemo {
 			System.out.println("Trade Result avg rime\t\t: " + ((double) stats.txnMix[10])/stats.txnMix[4]);
 			System.out.println("Trade Status avg rime\t\t: " + ((double) stats.txnMix[11])/stats.txnMix[5]);
 
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
+
 	}
 
 	private static void preInitRun(arisDemo dbConn){
