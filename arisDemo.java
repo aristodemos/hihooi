@@ -212,7 +212,7 @@ public class arisDemo {
 		//Create transaction Log File
 		//Remember to close it
 		try{
-			logWriter = new PrintWriter("tps_"+trxnsPerSession+".txt", "UTF-8");
+			logWriter = new PrintWriter("tps_mix_"+MIXSELECTOR+".txt", "UTF-8");
 
 		}catch (FileNotFoundException |UnsupportedEncodingException err){
 			System.out.println("FileNOTfound" + err.getMessage());
