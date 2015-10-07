@@ -268,6 +268,11 @@ public class HiHListenerClient
 			  input= input.replaceAll("<", "&lt;");
 			  input= input.replaceAll(">", "&gt;");
 			  //input= input.replaceAll("'", "&apos;");
+			  //from stack overflow
+			  //http://stackoverflow.com/questions/3030903/content-is-not-allowed-in-prolog-when-parsing-perfectly-valid-xml-on-gae
+			  //trying to avoid org.xml.sax.SAXParseException;
+			  //exception message says: "Content is not allowed in prolog."
+			  input= input.trim().replaceFirst("^([\\W]+)<","<");
 			  return input;
 		  }
 		 //####################################################################################################################################################
@@ -340,11 +345,6 @@ public class HiHListenerClient
 		{
    			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			InputSource data_source = new InputSource();
-			//from stack overflow
-			//http://stackoverflow.com/questions/3030903/content-is-not-allowed-in-prolog-when-parsing-perfectly-valid-xml-on-gae
-			//trying to avoid org.xml.sax.SAXParseException;
-			//exception message says: "Content is not allowed in prolog."
-			xml_data = xml_data.trim().replaceFirst("^([\\W]+)<","<");
 			data_source.setCharacterStream(new StringReader(xml_data));			
 			Document doc = db.parse(data_source);
 			NodeList nodeList = doc.getElementsByTagName(elementTag).item(0).getChildNodes();
