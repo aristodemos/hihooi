@@ -266,7 +266,7 @@ public class arisDemo {
             }
             long startTime = System.currentTimeMillis(); //fetch starting time
         try {
-            List<Future<String>> listF = pool.invokeAll(collection, 1, TimeUnit.MINUTES);
+            List<Future<String>> listF = pool.invokeAll(collection, 30, TimeUnit.MINUTES);
             for(Future<String> fut: listF){
                 System.out.println("Time for Session "+fut.get());
             }
