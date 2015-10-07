@@ -230,8 +230,8 @@ public class arisDemo {
 		System.out.println(d.CONNECT());
 		System.out.println("Connection Established");
 
-		//System.out.println("Cleaning Up database");
-		//preInitRun(d);
+		System.out.println("Cleaning Up database");
+		preInitRun(d);
 
 		//Gather necessary data from the initialized database;
 		System.out.println("Initializing Parameters");
@@ -342,7 +342,7 @@ public class arisDemo {
 
 	private static void preInitRun(arisDemo dbConn){
 		//RUNTRADE CLEANUP TRANSACTION TO BRING THE DATABASE TO A KNOWN STATE
-		dbConn.EXEC_QUERY("SELECT * FROM TradeCleanupFrame1('CNCL', 'SBMT', 'PNDG', 200000000058083)");
+		dbConn.EXEC_QUERY("SELECT * FROM TradeCleanupFrame1('CNCL', 'SBMT', 'PNDG', 200000000058176)");
 		System.out.println("Database Cleaned...");
 	}
 
