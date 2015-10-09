@@ -267,12 +267,12 @@ public class HiHListenerClient
 			  input= input.replaceAll("&", "&amp;");
 			  input= input.replaceAll("<", "&lt;");
 			  input= input.replaceAll(">", "&gt;");
-			  //input= input.replaceAll("'", "&apos;");
+			  input= input.replaceAll("'", "&apos;");
 			  //from stack overflow
 			  //http://stackoverflow.com/questions/3030903/content-is-not-allowed-in-prolog-when-parsing-perfectly-valid-xml-on-gae
 			  //trying to avoid org.xml.sax.SAXParseException;
 			  //exception message says: "Content is not allowed in prolog."
-			  input= input.trim().replaceFirst("^([\\W]+)<","<");
+			  input= input.trim().replaceFirst("(^([\\W]+)<)","<");
 			  return input;
 		  }
 		 //####################################################################################################################################################

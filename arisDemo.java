@@ -41,7 +41,7 @@ public class arisDemo {
 		}
 	}
 
-	private String LISTENER="52.89.16.235";
+	private String LISTENER="52.89.246.148";
 	//private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -80,9 +80,10 @@ public class arisDemo {
 
 	//public static Random globalRand = ThreadLocalRandom.current();
 	// added global random to improve the txnMix;   8 matches
-	public static int trxnsPerSession   = 10;
+	//public static int trxnsPerSession   = 10;
     public static int SESSIONS          = 8;
-	public static String MIXSELECTOR   = "c"; //default: all transactions
+	public static int TIMETORUN			= 20;
+	public static String MIXSELECTOR   	= "c"; //default: all transactions
     private static boolean DEBUG = false;
 
 	//The writer for the Log
@@ -230,8 +231,8 @@ public class arisDemo {
 		System.out.println(d.CONNECT());
 		System.out.println("Connection Established");
 
-		System.out.println("Cleaning Up database");
-		preInitRun(d);
+		//System.out.println("Cleaning Up database");
+		//preInitRun(d);
 
 		//Gather necessary data from the initialized database;
 		System.out.println("Initializing Parameters");
@@ -266,7 +267,7 @@ public class arisDemo {
             }
             long startTime = System.currentTimeMillis(); //fetch starting time
         try {
-            List<Future<String>> listF = pool.invokeAll(collection, 30, TimeUnit.MINUTES);
+            List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
             for(Future<String> fut: listF){
                 System.out.println("Time for Session "+fut.get());
             }
@@ -339,8 +340,9 @@ public class arisDemo {
 
 
 	}
-
-	private static void preInitRun(arisDemo dbConn){
+	// TODO: THIS METHOD MUST RUN ON ALL(!) DATABASE INSTANCES
+	// PRIMARY AND ALL EXTENSION DBs
+ 	private static void preInitRun(arisDemo dbConn){
 		//RUNTRADE CLEANUP TRANSACTION TO BRING THE DATABASE TO A KNOWN STATE
 		dbConn.EXEC_QUERY("SELECT * FROM TradeCleanupFrame1('CNCL', 'SBMT', 'PNDG', 200000000058176)");
 		System.out.println("Database Cleaned...");
@@ -558,7 +560,8 @@ public class arisDemo {
 
 		//Customer Position Frame 2 of 2
 
-		String c_ad_id = dbObject.QUERY2STR(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
+		//String c_ad_id = dbObject.QUERY2STR(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
+		String c_ad_id = dbObject.QUERY2MAP(String.format("select c_ad_id from customer where c_id = '%s'", cust_id)).get("c_ad_id").toString();
 		String query2 = String.format(
 				"SELECT T_ID, T_S_SYMB, T_QTY, ST_NAME, TH_DTS " +
 				"FROM (SELECT T_ID as ID " +
@@ -594,10 +597,11 @@ public class arisDemo {
 		for (int i=0; i<numberOfSymbols; i++){
 			String basePriceHigh = String.format("select AVG(dm_high) from daily_market where dm_s_symb = '%s'",
 					activeSymbolsSet.get(i));
-			double high = Double.parseDouble(dbObject.QUERY2STR(basePriceHigh));
+			//double high = Double.parseDouble(dbObject.QUERY2STR(basePriceHigh));
+			double high = Double.parseDouble(dbObject.QUERY2MAP(basePriceHigh).get("avg").toString());
 			String basePriceLow = String.format("select AVG(dm_low) from daily_market where dm_s_symb = '%s'",
 					activeSymbolsSet.get(i));
-			double low = Double.parseDouble(dbObject.QUERY2STR(basePriceLow));
+			double low = Double.parseDouble(dbObject.QUERY2MAP(basePriceLow).get("avg").toString());
 			priceQuote.add(i, ThreadLocalRandom.current().nextDouble(low, high));
 		}
 
@@ -606,7 +610,7 @@ public class arisDemo {
 		for (int i=0; i<numberOfSymbols; i++){
 			String tradeQtQuery = String.format("select tr_qty from trade_request where tr_s_symb = '%s'",
 					activeSymbolsSet.get(i));
-			tradeQuantity.add(dbObject.QUERY2STR(tradeQtQuery));
+			tradeQuantity.add(dbObject.QUERY2MAP(tradeQtQuery).get("tr_qty").toString());
 		}
 		for (int i=0; i<numberOfSymbols; i++) {
 			String query1 = String.format(
@@ -1105,7 +1109,7 @@ public class arisDemo {
                 String checkUpdate = String.format("Select count(*) from holding_summary where " +
                         "hs_s_symb =" +
                         " '%s' and hs_ca_id = %s", symbol, acct_id);
-                String count = dbObject.QUERY2STR(checkUpdate);
+                String count = dbObject.QUERY2MAP(checkUpdate).get("count").toString();
                 if (Integer.parseInt(count) < 1) {
                     String trFrame2_update = String.format("insert into holding_summary(hs_ca_id, hs_s_symb, hs_qty) " +
                             "VALUES (%s, '%s', %d)", acct_id, symbol, (-1) * needed_qty);
@@ -1210,7 +1214,7 @@ public class arisDemo {
                 String checkUpdate = String.format("Select count(*) from holding_summary where " +
                         "hs_s_symb =" +
                         " '%s' and hs_ca_id = %s", symbol, acct_id);
-                String count = dbObject.QUERY2STR(checkUpdate);
+                String count = dbObject.QUERY2MAP(checkUpdate).get("count").toString();
                 if (Integer.parseInt(count) < 1) {
                     String trFrame2_update = String.format("insert into holding_summary(hs_ca_id, hs_s_symb, hs_qty) " +
                             "VALUES (%s, '%s', %d)", acct_id, symbol, needed_qty);
@@ -1246,7 +1250,7 @@ public class arisDemo {
 						"WHERE tx_id IN (SELECT cx_tx_id " +
 						"                FROM customer_taxrate " +
 						"                WHERE cx_c_id = %s) ", cust_id);
-		double tax_rates = Double.parseDouble(dbObject.QUERY2STR(trFrame3_1));
+		double tax_rates = Double.parseDouble(dbObject.QUERY2MAP(trFrame3_1).get("sum").toString());
 		tax_amount = (sell_value - buy_value) * tax_rates;
 
 		String trFrame3_2 = String.format(
@@ -1285,7 +1289,7 @@ public class arisDemo {
 						"  AND cr_to_qty >= %s " +
 						"LIMIT 1", c_tier, type_id, s_ex_id, trade_qty, trade_qty);
 		//Map crrate = dbObject.QUERY2MAP(trFrame4_3);
-		String comm_rate = dbObject.QUERY2STR(trFrame4_3);
+		String comm_rate = dbObject.QUERY2MAP(trFrame4_3).get("cr_rate").toString();
 		//double comm_rate = (double) crrate.get("cr_rate");
 		double comm_amount = (Double.parseDouble(comm_rate)/ 100) * (Integer.parseInt(trade_qty )*  trade_price);
 
