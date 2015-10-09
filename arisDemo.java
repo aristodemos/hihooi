@@ -83,7 +83,7 @@ public class arisDemo {
 	//public static int trxnsPerSession   = 10;
     public static int SESSIONS          = 8;
 	public static int TIMETORUN			= 20;
-	public static String MIXSELECTOR   	= "c"; //default: all transactions
+	public static String MIXSELECTOR   	= "d"; //default: all transactions
     private static boolean DEBUG = false;
 
 	//The writer for the Log
@@ -1547,10 +1547,10 @@ public class arisDemo {
                     i = 0;
                 }
             }
-
 			long lEndTime = System.currentTimeMillis();
 			long dTime = lEndTime - lStartTime;
 			d.DISCONNECT();
+			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
 			return session_id+" completed in "+dTime+" msec.";
 		}
 	}
