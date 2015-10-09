@@ -1527,7 +1527,7 @@ public class arisDemo {
 		public String call() throws Exception {
 			arisDemo d = new arisDemo();
 			String session_id = d.CONNECT();
-			System.out.println(d.setConsistency("set consistency level 1"));
+			//System.out.println(d.setConsistency("set consistency level 1"));
 
 			long lStartTime = System.currentTimeMillis();
 			int i =0;
