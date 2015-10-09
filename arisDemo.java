@@ -1022,7 +1022,7 @@ public class arisDemo {
 				String trFrame2_2a = String.format(
 						"INSERT INTO holding_summary(hs_ca_id, hs_s_symb, hs_qty) " +
 								"VALUES(%s, '%s', %d)", acct_id, symbol, (-1)*Integer.parseInt(trade_qty));
-				dbObject.QUERY(trFrame2_2a);
+				dbObject.DML(trFrame2_2a);
 			}
 			else if (Integer.parseInt(hold_qty)!=Integer.parseInt(trade_qty)) {
 				String trFrame2_2b = String.format(
