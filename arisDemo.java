@@ -515,9 +515,9 @@ public class arisDemo {
 	}
 
 	private static void brokerVolumeFrame(arisDemo dbObject, Statistics s) {
-		int number_of_brokers = ThreadLocalRandom.current().nextInt(all_brokers.size());
+		int number_of_brokers = ThreadLocalRandom.current().nextInt(1, all_brokers.size());
 		List active_brokers = randomSample(all_brokers, number_of_brokers);
-		String sector_name = all_sectors.get(ThreadLocalRandom.current().nextInt(all_sectors.size()));
+		String sector_name = all_sectors.get(ThreadLocalRandom.current().nextInt(0, all_sectors.size()));
 		Long t;
  		//convert active_brokers list to string seperated by commas
 		String activeBrokersStr = org.apache.commons.lang3.StringUtils.join(active_brokers, ',');
@@ -545,7 +545,7 @@ public class arisDemo {
 	private static void customerPositionFrame(arisDemo dbObject, Statistics s) {
 		Long t = System.currentTimeMillis();
 		//Customer Position Frame 1 of 2
-		String cust_id = all_customers.get(ThreadLocalRandom.current().nextInt(all_customers.size()));
+		String cust_id = all_customers.get(ThreadLocalRandom.current().nextInt(0, all_customers.size()));
 		String query1 = String.format(
 				"SELECT CA_ID, CA_BAL, sum(HS_QTY * LT_PRICE) as soma " +
 						"FROM CUSTOMER_ACCOUNT left outer join " +
@@ -665,9 +665,9 @@ public class arisDemo {
 		//String symbol = "TWTR";
 		//boolean type_is_sell = true;
 		//boolean is_lifo = true;
-		String acct_id =  all_acct_ids.get(ThreadLocalRandom.current().nextInt(all_acct_ids.size())).toString();
+		String acct_id =  all_acct_ids.get(ThreadLocalRandom.current().nextInt(0, all_acct_ids.size())).toString();
 
-		String symbol = all_symbols.get(ThreadLocalRandom.current().nextInt(all_symbols.size()));
+		String symbol = all_symbols.get(ThreadLocalRandom.current().nextInt(0, all_symbols.size()));
 
 		int trade_qty = ThreadLocalRandom.current().nextInt(100, 800);
 		boolean type_is_market 	= ThreadLocalRandom.current().nextBoolean();
@@ -1374,7 +1374,7 @@ public class arisDemo {
 	}
 
 	private static void tradeStatus(arisDemo dbObject, Statistics s) {
-		String acct_id =  all_acct_ids.get(ThreadLocalRandom.current().nextInt(all_acct_ids.size())).toString();
+		String acct_id =  all_acct_ids.get(ThreadLocalRandom.current().nextInt(0, all_acct_ids.size())).toString();
 		Long t = System.currentTimeMillis();
 		String  sqlTSF1_1 = String.format(
 				"SELECT t_id, t_dts, st_name, tt_name, t_s_symb, t_qty, " +
