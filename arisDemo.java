@@ -41,8 +41,8 @@ public class arisDemo {
 		}
 	}
 
-	private String LISTENER="52.24.138.123";
-	//private String LISTENER="172.30.0.206";
+	//private String LISTENER="52.24.138.123";
+	private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -566,7 +566,7 @@ public class arisDemo {
         String c_ad_id = "4300000189";
         String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
         try {
-            c_ad_id = dbObject.QUERY2STR(q);
+            c_ad_id = dbObject.QUERY2MAP(q).get("c_ad_id").toString();
         }catch (NullPointerException e){
             System.out.println("Null Pointer Exception in CustomerPositionFrame1");
             System.out.println(dbObject.QUERY(q));
