@@ -41,8 +41,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.89.246.148";
-	private String LISTENER="172.30.0.206";
+	private String LISTENER="52.24.138.123";
+	//private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -81,10 +81,11 @@ public class arisDemo {
 	//public static Random globalRand = ThreadLocalRandom.current();
 	// added global random to improve the txnMix;   8 matches
 	//public static int trxnsPerSession   = 10;
-    public static int SESSIONS          = 8;
-	public static int TIMETORUN			= 20;
-	public static String MIXSELECTOR   	= "d"; //default: all transactions
-    private static boolean DEBUG = false;
+    public static int       SESSIONS        = 20;
+	public static int       TIMETORUN       = 40;
+	public static String    MIXSELECTOR   	= "a"; //default: all transactions
+    private static boolean  DEBUG           = false;
+    private static String   LAST_T_ID       = "200000000290880";
 
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -344,7 +345,7 @@ public class arisDemo {
 	// PRIMARY AND ALL EXTENSION DBs
  	private static void preInitRun(arisDemo dbConn){
 		//RUNTRADE CLEANUP TRANSACTION TO BRING THE DATABASE TO A KNOWN STATE
-		dbConn.EXEC_QUERY("SELECT * FROM TradeCleanupFrame1('CNCL', 'SBMT', 'PNDG', 200000000058176)");
+		dbConn.EXEC_QUERY(String.format("SELECT * FROM TradeCleanupFrame1('CNCL', 'SBMT', 'PNDG', %s)", LAST_T_ID));
 		System.out.println("Database Cleaned...");
 	}
 
@@ -561,7 +562,20 @@ public class arisDemo {
 		//Customer Position Frame 2 of 2
 
 		//String c_ad_id = dbObject.QUERY2STR(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
-		String c_ad_id = dbObject.QUERY2MAP(String.format("select c_ad_id from customer where c_id = '%s'", cust_id)).get("c_ad_id").toString();
+		//System.out.printf("select c_ad_id from customer where c_id = '%s' \n", cust_id);
+        String c_ad_id = "4300000189";
+        String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
+        try {
+            c_ad_id = dbObject.QUERY(q).get(0).toString();
+        }catch (NullPointerException e){
+            System.out.println("Null Pointer Exception in CustomerPositionFrame1");
+            System.out.println(dbObject.QUERY(q));
+            System.out.println(dbObject.QUERY2STR(q));
+            System.out.println(dbObject.QUERY2MAP(q));
+            System.out.println(dbObject.QUERY2LST(q));
+            //System.out.println(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
+            //return;
+        }
 		String query2 = String.format(
 				"SELECT T_ID, T_S_SYMB, T_QTY, ST_NAME, TH_DTS " +
 				"FROM (SELECT T_ID as ID " +
@@ -1524,7 +1538,40 @@ public class arisDemo {
 
 		@Override
         //Changed Object to String
-		public String call() throws Exception {
+        public String call() throws Exception {
+
+            //System.out.println(d.setConsistency("set consistency level 1"));
+
+            long lStartTime = System.currentTimeMillis();
+            int i =0;
+
+            List txnsToRun  = new Vector<String>();
+            txnsToRun = workloadMix(MIXSELECTOR);
+ 			/*
+            while(i < txnsToRun.size()){
+				generateTxn(d,txnsToRun.get(i).toString(), s);
+				i++;
+			}*/
+            //Code changed to support timed out threads
+            while (!Thread.interrupted() && i< txnsToRun.size()) {
+                arisDemo d = new arisDemo();
+                d.CONNECT();
+                generateTxn(d,txnsToRun.get(i).toString(), s);
+                d.DISCONNECT();
+                i++;
+               /*
+               if (i >= txnsToRun.size()) {
+                    i = 0;
+                }
+                */
+            }
+            long lEndTime = System.currentTimeMillis();
+            long dTime = lEndTime - lStartTime;
+
+            //System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
+            return "Connection closed from thread: "+ Thread.currentThread().getName();
+        }
+        public String callUnused() throws Exception {
 			arisDemo d = new arisDemo();
 			String session_id = d.CONNECT();
 			//System.out.println(d.setConsistency("set consistency level 1"));
@@ -1543,7 +1590,8 @@ public class arisDemo {
             while (!Thread.interrupted()) {
                 generateTxn(d,txnsToRun.get(i).toString(), s);
                 i++;
-                if (i >= txnsToRun.size() - 1) {
+
+               if (i >= txnsToRun.size() - 1) {
                     i = 0;
                 }
             }
