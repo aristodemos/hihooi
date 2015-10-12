@@ -566,7 +566,7 @@ public class arisDemo {
         String c_ad_id = "4300000189";
         String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
         try {
-            c_ad_id = dbObject.QUERY(q).get(0).toString();
+            c_ad_id = dbObject.QUERY2STR(q);
         }catch (NullPointerException e){
             System.out.println("Null Pointer Exception in CustomerPositionFrame1");
             System.out.println(dbObject.QUERY(q));
