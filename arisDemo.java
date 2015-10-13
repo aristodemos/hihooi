@@ -258,8 +258,8 @@ public class arisDemo {
 		System.out.println("Starting Sessions");
 		System.out.println("Number of threads (sessions):  "+ SESSIONS);
 		//System.out.println("Txns per Session :  " + trxnsPerSession);
-
-		logWriter.printf("Number of threads (sessions):  " + SESSIONS + "\r\n");
+        //KEEP LOGWRITER CLEAN TO EASE CALCULATIONS
+		//logWriter.printf("Number of threads (sessions):  " + SESSIONS + "\r\n");
 		//logWriter.printf("Txns per Session :  " + trxnsPerSession+"\r\n");
 
 		ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
