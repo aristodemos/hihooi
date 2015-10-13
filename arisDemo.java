@@ -78,15 +78,14 @@ public class arisDemo {
 	private static List activeSymbols 			= new Vector();
 	private static List all_acct_ids 			= new Vector(5000);
 
-	//public static Random globalRand = ThreadLocalRandom.current();
-	// added global random to improve the txnMix;   8 matches
 	//public static int trxnsPerSession   = 10;
     public static int       SESSIONS        = 20;
 	public static int       TIMETORUN       = 40;
 	public static String    MIXSELECTOR   	= "a"; //default: all transactions
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
-
+	private static String 	MODE			= "set consistency level 1"
+	
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
 
@@ -208,6 +207,15 @@ public class arisDemo {
 				if (args[i].equalsIgnoreCase("-mix") || args[i].equalsIgnoreCase("-m")) {
 					MIXSELECTOR = args[i + 1];
 				}
+				if (args[i].equalsIgnoreCase("-time") || args[i].equalsIgnoreCase("-t")) {
+					TIMETORUN = args[i + 1];
+				}
+				if (args[i].equalsIgnoreCase("-op") || args[i].equalsIgnoreCase("-o")) {
+					MODE = args[i + 1];
+				}
+				if (args[i].equalsIgnoreCase("-debug") || args[i].equalsIgnoreCase("-d")) {
+					DEBUG = true;
+				}
 			}
 		}
 
@@ -221,13 +229,19 @@ public class arisDemo {
 		}
 
 		Locale.setDefault(Locale.US);
-		System.out.println("*************** Initializing the Test Run ******************");
+		System.out.println("****************** Test Run Parameters *********************");
 		System.out.println("************************************************************");
-        System.out.println("Using Mix "+MIXSELECTOR);
+        System.out.println("Number of Sessions: "+SESSIONS);
+		System.out.println("Test Duration (in minutes): "+TIMETORUN);
+		System.out.println("Using Mix: "+MIXSELECTOR);
+		System.out.println("Debug is set to: "+DEBUG);
+		System.out.println("Last Trade Id "+LAST_T_ID);
+		System.out.println("Mode = " +MODE);
+		
 		//init Statistics
 		final Statistics stats = new Statistics();
 
-
+		System.out.println("*************** Initializing the Test Run ******************");
 		arisDemo d = new arisDemo();
 		System.out.println(d.CONNECT());
 		System.out.println("Connection Established");
@@ -1556,6 +1570,7 @@ public class arisDemo {
             while (!Thread.interrupted() && i< txnsToRun.size()) {
                 arisDemo d = new arisDemo();
                 d.CONNECT();
+				d.setConsistency(MODE);
                 generateTxn(d,txnsToRun.get(i).toString(), s);
                 d.DISCONNECT();
                 i++;
