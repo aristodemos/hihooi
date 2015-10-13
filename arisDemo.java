@@ -79,12 +79,12 @@ public class arisDemo {
 	private static List all_acct_ids 			= new Vector(5000);
 
 	//public static int trxnsPerSession   = 10;
-    public static int       SESSIONS        = 20;
+	public static int       SESSIONS        = 20;
 	public static int       TIMETORUN       = 40;
 	public static String    MIXSELECTOR   	= "a"; //default: all transactions
-    private static boolean  DEBUG           = false;
-    private static String   LAST_T_ID       = "200000000290880";
-	private static String 	MODE			= "set consistency level 1"
+    	private static boolean  DEBUG           = false;
+    	private static String   LAST_T_ID       = "200000000290880";
+	private static String 	MODE		= "set consistency level 1";
 	
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -208,7 +208,7 @@ public class arisDemo {
 					MIXSELECTOR = args[i + 1];
 				}
 				if (args[i].equalsIgnoreCase("-time") || args[i].equalsIgnoreCase("-t")) {
-					TIMETORUN = args[i + 1];
+					TIMETORUN = Integer.parseInt(args[i + 1]);
 				}
 				if (args[i].equalsIgnoreCase("-op") || args[i].equalsIgnoreCase("-o")) {
 					MODE = args[i + 1];
