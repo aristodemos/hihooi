@@ -62,7 +62,10 @@ public class arisDemo {
       		set consistency level 1             --Hihooi
       		set consistency level 2             --Eventually
 		*/
-		return hih.set(setCMD);
+        if (setCMD == "hihooi"){return hih.set("set consistency level 1");}
+        else if (setCMD == "eventual"){return hih.set("set consistency level 2");}
+        else
+            return hih.set("set consistency level 1");
 	}
 
 	public String DISCONNECT()
