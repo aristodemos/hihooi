@@ -1,0 +1,2 @@
+#!/bin/sh
+awk '{a[i++]=$0} END {for (j=0; j<i;) print a[j+1]-a[j++]}' $1 | sed '$d' | tee output{$1}
