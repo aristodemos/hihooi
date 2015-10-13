@@ -82,9 +82,9 @@ public class arisDemo {
 	public static int       SESSIONS        = 20;
 	public static int       TIMETORUN       = 40;
 	public static String    MIXSELECTOR   	= "a"; //default: all transactions
-    	private static boolean  DEBUG           = false;
-    	private static String   LAST_T_ID       = "200000000290880";
-	private static String 	MODE		= "set consistency level 1";
+    private static boolean  DEBUG           = false;
+    private static String   LAST_T_ID       = "200000000290880";
+	private static String 	MODE		    = "set consistency level 1";
 	
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -233,7 +233,7 @@ public class arisDemo {
 		System.out.println("************************************************************");
         System.out.println("Number of Sessions: "+SESSIONS);
 		System.out.println("Test Duration (in minutes): "+TIMETORUN);
-		System.out.println("Using Mix: "+MIXSELECTOR);
+		System.out.println("Using Mix: " + MIXSELECTOR);
 		System.out.println("Debug is set to: "+DEBUG);
 		System.out.println("Last Trade Id "+LAST_T_ID);
 		System.out.println("Mode = " +MODE);
@@ -1428,10 +1428,143 @@ public class arisDemo {
 		//s.txnMix[11] = s.txnMix[11] + System.currentTimeMillis() - t;
 
 	}
+    private static void securityDetail(arisDemo dbObject, Statistics s) {
+        String symbol = all_symbols.get(ThreadLocalRandom.current().nextInt(0, all_symbols.size()));
 
+        int valRand = ThreadLocalRandom.current().nextInt(5, 21);
+        long beginTime;
+        long endTime;
+        beginTime = Timestamp.valueOf("2000-01-01 00:00:00").getTime();
+        endTime = Timestamp.valueOf("2004-12-31 00:58:00").getTime();
+
+        long diff = endTime - beginTime + 1 - valRand;
+        Date dateRand = new Date(beginTime + (long) (Math.random() * diff));
+
+        String date = dateRand.toString();
+        System.out.println(date);
+        Long t = System.currentTimeMillis();
+
+        String sdf1_1 = String.format("SELECT s_name" +
+                "       co_id" +
+                "       co_name" +
+                "       co_sp_rate" +
+                "       co_ceo" +
+                "       co_desc" +
+                "       co_open_date" +
+                "       co_st_id" +
+                "       ca.ad_line1" +
+                "       ca.ad_line2" +
+                "       zca.zc_town" +
+                "       zca.zc_div" +
+                "       ca.ad_zc_code" +
+                "       ca.ad_ctry" +
+                "       s_num_out" +
+                "       s_start_date" +
+                "       s_exch_date" +
+                "       s_pe" +
+                "       s_52wk_high" +
+                "       s_52wk_high_date" +
+                "       s_52wk_low" +
+                "       s_52wk_low_date" +
+                "       s_dividend" +
+                "       s_yield" +
+                "       zea.zc_div" +
+                "       ea.ad_ctry," +
+                "       ea.ad_line1," +
+                "       ea.ad_line2," +
+                "       zea.zc_town," +
+                "       ea.ad_zc_code," +
+                "       ex_close," +
+                "       ex_desc," +
+                "       ex_name," +
+                "       ex_num_symb," +
+                "       ex_open" +
+                "FROM   security," +
+                "       company," +
+                "       address ca," +
+                "       address ea," +
+                "       zip_code zca," +
+                "       zip_code zea," +
+                "       exchange" +
+                "WHERE  s_symb = '%s'" +
+                "       AND co_id = s_co_id" +
+                "       AND ca.ad_id = co_ad_id" +
+                "       AND ea.ad_id = ex_ad_id" +
+                "       AND ex_id = s_ex_id" +
+                "       AND ca.ad_zc_code = zca.zc_code" +
+                "       AND ea.ad_zc_code = zea.zc_code", symbol);
+        Map values = dbObject.QUERY2MAP(sdf1_1);
+        String co_id = values.get("co_id").toString();
+
+        String sdf1_2 = String.format("SELECT co_name, " +
+                "       in_name " +
+                "FROM   company_competitor, " +
+                "       company, " +
+                "       industry " +
+                "WHERE  cp_co_id = %s " +
+                "       AND co_id = cp_comp_co_id " +
+                "       AND in_id = cp_in_id " +
+                "LIMIT %d", co_id, valRand);
+
+        String sdf1_3 = String.format("SELECT   fi_year," +
+                "         fi_qtr," +
+                "         fi_qtr_start_date," +
+                "         fi_revenue," +
+                "         fi_net_earn," +
+                "         fi_basic_eps," +
+                "         fi_dilut_eps," +
+                "         fi_margin," +
+                "         fi_inventory," +
+                "         fi_assets," +
+                "         fi_liability," +
+                "         fi_out_basic," +
+                "         fi_out_dilut" +
+                "FROM     financial" +
+                "WHERE    fi_co_id = %s" +
+                "ORDER BY fi_year ASC," +
+                "         fi_qtr" +
+                "LIMIT %d", co_id, valRand);
+
+        String sdf1_4 = String.format("SELECT   dm_date," +
+                "         dm_close," +
+                "         dm_high," +
+                "         dm_low," +
+                "         dm_vol" +
+                "FROM     daily_market" +
+                "WHERE    dm_s_symb = '%s'" +
+                "         AND dm_date >= '%s'" +
+                "ORDER BY dm_date ASC" +
+                "LIMIT %d", symbol, date, valRand);
+
+        String sdf1_5 = String.format("SELECT lt_price," +
+                "       lt_open_price," +
+                "       lt_vol" +
+                "FROM   last_trade" +
+                "WHERE  lt_s_symb = '%s'", symbol);
+
+        String sdf1_7 = String.format("SELECT ''," +
+                "       ni_dts," +
+                "       ni_source," +
+                "       ni_author," +
+                "       ni_headline," +
+                "       ni_summary" +
+                "FROM   news_xref," +
+                "       news_item" +
+                "WHERE  ni_id = nx_ni_id" +
+                "       AND nx_co_id = %s" +
+                "LIMIT %d", co_id, valRand);
+
+        dbObject.QUERY(sdf1_2);
+        dbObject.QUERY(sdf1_3);
+        dbObject.QUERY(sdf1_4);
+        dbObject.QUERY(sdf1_5);
+        dbObject.QUERY(sdf1_7);
+        s.insertTime(11, System.currentTimeMillis() - t);
+    }
+
+    /*
 	private static void tradeUpdate(arisDemo dbObject) {
-		/*List tradeIdsList = dbObject.QUERY2LST("select t_id from trade");
-
+		List tradeIdsList = dbObject.QUERY2LST("select t_id from trade");
 
 		Long t = System.currentTimeMillis();
 
@@ -1440,11 +1573,9 @@ public class arisDemo {
 						"FROM trade " +
 						"WHERE t_id = %ld", );
 
-		String SQLTUF1_2a = String.format(
-				"SELECT REPLACE('%s', ' X ', ' ')", );
+		String SQLTUF1_2a = "SELECT REPLACE('%s', ' X ', ' ')";
 
-		String SQLTUF1_2b = String.format(
-				"SELECT REPLACE('%s', ' ', ' X ')", );
+		String SQLTUF1_2b = "SELECT REPLACE('%s', ' ', ' X ')";
 
 		String SQLTUF1_3 = String.format(
 				"UPDATE trade " +
@@ -1540,8 +1671,9 @@ public class arisDemo {
 		String SQLTUF3_6 = SQLTUF2_6;
 
 		TU_Durations.add(System.currentTimeMillis() - t);
-		*/
+
 	}
+	*/
 
 	private static class SimTest implements Callable<String> {
 		private Statistics s;
@@ -1549,10 +1681,50 @@ public class arisDemo {
 		SimTest(Statistics stats){
 			this.s = stats;
 		}
-
-		@Override
-        //Changed Object to String
+        @Override
+        //Changed returned type from Object to String
         public String call() throws Exception {
+			arisDemo d = new arisDemo();
+			String session_id = d.CONNECT();
+            d.setConsistency(MODE);
+
+			long lStartTime = System.currentTimeMillis();
+			int i =0;
+
+            List txnsToRun  = new Vector<String>();
+            txnsToRun = workloadMix(MIXSELECTOR);
+
+            //Code changed to support timed out threads
+            //see next while
+ 			/*
+            while(i < txnsToRun.size()){
+				generateTxn(d,txnsToRun.get(i).toString(), s);
+				i++;
+			}*/
+
+
+            //Code changed to support timed out threads
+            while (!Thread.interrupted()) {
+                generateTxn(d,txnsToRun.get(i).toString(), s);
+                i++;
+                //repeat for ever until TimeOut Clock stops the Thread
+               if (i >= txnsToRun.size() - 1) {
+                    i = 0;
+                }
+            }
+			long lEndTime = System.currentTimeMillis();
+			long dTime = lEndTime - lStartTime;
+			d.DISCONNECT();
+			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
+			return session_id+" completed in "+dTime+" msec.";
+		}
+
+        ///
+        ///
+        ///
+        @Override
+        //Changed Object to String
+        public String callUnused() throws Exception {
 
             //System.out.println(d.setConsistency("set consistency level 1"));
 
@@ -1570,7 +1742,7 @@ public class arisDemo {
             while (!Thread.interrupted() && i< txnsToRun.size()) {
                 arisDemo d = new arisDemo();
                 d.CONNECT();
-				d.setConsistency(MODE);
+                d.setConsistency(MODE);
                 generateTxn(d,txnsToRun.get(i).toString(), s);
                 d.DISCONNECT();
                 i++;
@@ -1586,36 +1758,7 @@ public class arisDemo {
             //System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
             return "Connection closed from thread: "+ Thread.currentThread().getName();
         }
-        public String callUnused() throws Exception {
-			arisDemo d = new arisDemo();
-			String session_id = d.CONNECT();
-			//System.out.println(d.setConsistency("set consistency level 1"));
 
-			long lStartTime = System.currentTimeMillis();
-			int i =0;
-
-            List txnsToRun  = new Vector<String>();
-            txnsToRun = workloadMix(MIXSELECTOR);
- 			/*
-            while(i < txnsToRun.size()){
-				generateTxn(d,txnsToRun.get(i).toString(), s);
-				i++;
-			}*/
-            //Code changed to support timed out threads
-            while (!Thread.interrupted()) {
-                generateTxn(d,txnsToRun.get(i).toString(), s);
-                i++;
-
-               if (i >= txnsToRun.size() - 1) {
-                    i = 0;
-                }
-            }
-			long lEndTime = System.currentTimeMillis();
-			long dTime = lEndTime - lStartTime;
-			d.DISCONNECT();
-			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
-			return session_id+" completed in "+dTime+" msec.";
-		}
-	}
+    }
 }
 
