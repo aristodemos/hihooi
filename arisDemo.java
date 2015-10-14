@@ -1681,9 +1681,9 @@ public class arisDemo {
 		SimTest(Statistics stats){
 			this.s = stats;
 		}
-        //@Override
+        @Override
         //Changed returned type from Object to String
-        public String callUnused() throws Exception {
+        public String call() throws Exception {
 			arisDemo d = new arisDemo();
 			String session_id = d.CONNECT();
             d.setConsistency(MODE);
@@ -1701,7 +1701,6 @@ public class arisDemo {
 				generateTxn(d,txnsToRun.get(i).toString(), s);
 				i++;
 			}*/
-
 
             //Code changed to support timed out threads
             while (!Thread.interrupted()) {
@@ -1722,16 +1721,16 @@ public class arisDemo {
 			if (d != null){
                 d.DISCONNECT();
             }
-            
+
 			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
 			return session_id+" completed in "+dTime+" msec.";
 		}
 
         ///
         ///
-        @Override
+        // @Override
         //Changed Object to String
-        public String call() throws Exception {
+        public String callUnused() throws Exception {
 
             long lStartTime = System.currentTimeMillis();
             int i =0;
