@@ -79,7 +79,7 @@ public class arisDemo {
 	private static List all_acct_ids 			= new Vector(5000);
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 20;
+	public static int       SESSIONS        = 8;
 	public static int       TIMETORUN       = 40;
 	public static String    MIXSELECTOR   	= "a"; //default: all transactions
     private static boolean  DEBUG           = false;
@@ -222,7 +222,7 @@ public class arisDemo {
 		//Create transaction Log File
 		//Remember to close it
 		try{
-			logWriter = new PrintWriter("tps_mix_"+MIXSELECTOR+".txt", "UTF-8");
+			logWriter = new PrintWriter("Mix_"+MIXSELECTOR+"_t_"+TIMETORUN+"_OP_"+MODE+".txt", "UTF-8");
 
 		}catch (FileNotFoundException |UnsupportedEncodingException err){
 			System.out.println("FileNOTfound" + err.getMessage());
