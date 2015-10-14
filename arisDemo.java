@@ -582,11 +582,11 @@ public class arisDemo {
         try {
             c_ad_id = dbObject.QUERY2MAP(q).get("c_ad_id").toString();
         }catch (NullPointerException e){
-            System.out.println("Null Pointer Exception in CustomerPositionFrame1");
-            System.out.println(dbObject.QUERY(q));
-            System.out.println(dbObject.QUERY2STR(q));
-            System.out.println(dbObject.QUERY2MAP(q));
-            System.out.println(dbObject.QUERY2LST(q));
+            //System.out.println("Null Pointer Exception in CustomerPositionFrame1");
+            //System.out.println(dbObject.QUERY(q));
+            //System.out.println(dbObject.QUERY2STR(q));
+            //System.out.println(dbObject.QUERY2MAP(q));
+            //System.out.println(dbObject.QUERY2LST(q));
             //System.out.println(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
             //return;
         }
@@ -1681,9 +1681,9 @@ public class arisDemo {
 		SimTest(Statistics stats){
 			this.s = stats;
 		}
-        @Override
+        //@Override
         //Changed returned type from Object to String
-        public String call() throws Exception {
+        public String callUnused() throws Exception {
 			arisDemo d = new arisDemo();
 			String session_id = d.CONNECT();
             d.setConsistency(MODE);
@@ -1721,11 +1721,9 @@ public class arisDemo {
 
         ///
         ///
-        ///
+        @Override
         //Changed Object to String
-        public String callUnused() throws Exception {
-
-            //System.out.println(d.setConsistency("set consistency level 1"));
+        public String call() throws Exception {
 
             long lStartTime = System.currentTimeMillis();
             int i =0;
@@ -1738,18 +1736,16 @@ public class arisDemo {
 				i++;
 			}*/
             //Code changed to support timed out threads
-            while (!Thread.interrupted() && i< txnsToRun.size()) {
+            while (!Thread.interrupted()) {
                 arisDemo d = new arisDemo();
                 d.CONNECT();
                 d.setConsistency(MODE);
                 generateTxn(d,txnsToRun.get(i).toString(), s);
                 d.DISCONNECT();
                 i++;
-               /*
                if (i >= txnsToRun.size()) {
                     i = 0;
                 }
-                */
             }
             long lEndTime = System.currentTimeMillis();
             long dTime = lEndTime - lStartTime;
