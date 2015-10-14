@@ -56,16 +56,13 @@ public class arisDemo {
 		p.setProperty("service_name","TESTSRV");
 		return hih.connect(p);   /// Retun SESSION-ID e.g  21703567-1ed7-4f59-aeac-39686ea9c2b1
 	}
-	public String setConsistency(String setCMD) {
+	public String setConsistency(int setCMD) {
 		/*
 		* SET COMMANDS:
       		set consistency level 1             --Hihooi
       		set consistency level 2             --Eventually
 		*/
-        if (setCMD == "hihooi"){return hih.set("set consistency level 1");}
-        else if (setCMD == "eventual"){return hih.set("set consistency level 2");}
-        else
-            return hih.set("set consistency level 1");
+        return hih.set("set consistency level "+setCMD);
 	}
 
 	public String DISCONNECT()
@@ -87,7 +84,7 @@ public class arisDemo {
 	public static String    MIXSELECTOR   	= "a"; //default: all transactions
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
-	private static String 	MODE		    = "set consistency level 1";
+	private static int 	    MODE		    = 1;
 	
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -214,7 +211,7 @@ public class arisDemo {
 					TIMETORUN = Integer.parseInt(args[i + 1]);
 				}
 				if (args[i].equalsIgnoreCase("-op") || args[i].equalsIgnoreCase("-o")) {
-					MODE = args[i + 1];
+					MODE = Integer.parseInt(args[i + 1]);
 				}
 				if (args[i].equalsIgnoreCase("-debug") || args[i].equalsIgnoreCase("-d")) {
 					DEBUG = true;
