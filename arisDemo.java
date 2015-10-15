@@ -2,10 +2,8 @@ package hih;
 
 //import com.sun.tools.javac.code.Attribute;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 //import java.lang.reflect.Array;
-import java.io.UnsupportedEncodingException;
 import java.sql.*;
 //import java.text.DateFormat;
 import java.util.*;
@@ -14,7 +12,6 @@ import java.util.concurrent.*;
 import java.util.Arrays;
 //import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 public class arisDemo {
@@ -41,7 +38,7 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.24.138.123";
+	//private String LISTENER="54.149.65.209";
 	private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -71,17 +68,18 @@ public class arisDemo {
 	}
 
 	//GLOBALS used to generate the txns for the benchmark
-	public static List all_brokers 			= new Vector(10);
-	public static List<String> all_sectors 	= new Vector<String>(12);
-	public static List<String> all_customers	= new Vector<String>(1000);
-	public static List<String> all_symbols 	= new Vector<String>(685);
-	private static List activeSymbols 			= new Vector();
-	private static List all_acct_ids 			= new Vector(5000);
+	public static List all_brokers 						= new Vector(10);
+	public static List<String> all_sectors 				= new Vector<String>(12);
+	public static List<String> all_customers			= new Vector<String>(1000);
+	public static List<String> all_symbols 				= new Vector<String>(685);
+	public static List activeSymbols 					= new Vector();
+	private static List all_acct_ids 					= new Vector(5000);
+	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 8;
-	public static int       TIMETORUN       = 40;
-	public static String    MIXSELECTOR   	= "a"; //default: all transactions
+	public static int       SESSIONS        = 20;
+	public static int       TIMETORUN       = 4;
+	public static String    MIXSELECTOR   	= "d"; //default: all transactions
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1;
@@ -374,6 +372,27 @@ public class arisDemo {
 		all_symbols = dbObject.QUERY("select s_symb from security");
 		//account_id
 		all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
+
+		//pricesDM holds avgLow and avgHigh prices of each symbol
+		// to be used in the MarketFeed Transaction
+		//deserialize
+		try (
+				InputStream file = new FileInputStream("pricesDM.ser");
+				InputStream buffer = new BufferedInputStream(file);
+				ObjectInput input = new ObjectInputStream(buffer);
+		) {
+			//deserialize the Map
+			Map<String, List<Double>> rpricesDM = (Map<String,List<Double>>)input.readObject();
+			pricesDM = rpricesDM;
+		}
+		catch (ClassNotFoundException ex){
+			ex.printStackTrace();
+			System.out.println("Cannot perform input. Class not found");
+		}
+		catch (IOException ex){
+			ex.printStackTrace();
+			System.out.println("Cannot perform input");
+		}
 	}
 
 	//TODO: transaction Mix Variations
@@ -623,6 +642,7 @@ public class arisDemo {
 		//price quote[]
 		ArrayList<Double> priceQuote = new ArrayList<Double>(numberOfSymbols);
 		for (int i=0; i<numberOfSymbols; i++){
+			/*
 			String basePriceHigh = String.format("select AVG(dm_high) from daily_market where dm_s_symb = '%s'",
 					activeSymbolsSet.get(i));
 			//double high = Double.parseDouble(dbObject.QUERY2STR(basePriceHigh));
@@ -630,6 +650,9 @@ public class arisDemo {
 			String basePriceLow = String.format("select AVG(dm_low) from daily_market where dm_s_symb = '%s'",
 					activeSymbolsSet.get(i));
 			double low = Double.parseDouble(dbObject.QUERY2MAP(basePriceLow).get("avg").toString());
+			*/
+			double low 	= pricesDM.get(activeSymbolsSet.get(i)).get(0);
+			double high = pricesDM.get(activeSymbolsSet.get(i)).get(1);
 			priceQuote.add(i, ThreadLocalRandom.current().nextDouble(low, high));
 		}
 
@@ -1713,12 +1736,12 @@ public class arisDemo {
             }
 
 			d.DISCONNECT();
-			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
+			System.out.println("Connection closed from thread: " + Thread.currentThread().getName());
 
 			long lEndTime = System.currentTimeMillis();
 			long dTime = lEndTime - lStartTime;
 
-			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
+			//System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
 			return session_id+" completed in "+dTime+" msec.";
 		}
 
