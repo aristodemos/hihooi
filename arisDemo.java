@@ -1711,16 +1711,12 @@ public class arisDemo {
                     i = 0;
                 }
             }
-            if (Thread.interrupted()){
-                d.DISCONNECT();
-                System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
-                return "session exited on interruption";
-            }
+
+			d.DISCONNECT();
+			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
+
 			long lEndTime = System.currentTimeMillis();
 			long dTime = lEndTime - lStartTime;
-			if (d != null){
-                d.DISCONNECT();
-            }
 
 			System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
 			return session_id+" completed in "+dTime+" msec.";
