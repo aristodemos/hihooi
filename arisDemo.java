@@ -38,8 +38,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="54.149.65.209";
-	private String LISTENER="172.30.0.206";
+	private String LISTENER="54.149.19.121";
+	//private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -77,9 +77,9 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 20;
-	public static int       TIMETORUN       = 4;
-	public static String    MIXSELECTOR   	= "d"; //default: all transactions
+	public static int       SESSIONS        = 28;
+	public static int       TIMETORUN       = 5;
+	public static String    MIXSELECTOR   	= "b"; //default: all transactions
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1;
@@ -325,10 +325,11 @@ public class arisDemo {
             */
 			//Close the transaction Log File
 			logWriter.close();
-			exec.shutdownNow();
 
+			pool.shutdownNow();
+			exec.shutdownNow();
 			//PRINT STATS
-			System.out.println("*********************Test Run statistics********************");
+		System.out.println("*********************Test Run statistics********************");
 			System.out.println("************************************************************");
 			System.out.println("Txn Mix:");
 			System.out.println("BrokerVolume Txn was run: \t\t"+stats.txnMix[0]  + " times;");
@@ -393,6 +394,9 @@ public class arisDemo {
 			ex.printStackTrace();
 			System.out.println("Cannot perform input");
 		}
+		//for (String symbol : all_symbols){
+		//	System.out.println(pricesDM.get(symbol)  +" low:  " +pricesDM.get(symbol).get(0)+ " high:  "+pricesDM.get(symbol).get(1));
+		//}
 	}
 
 	//TODO: transaction Mix Variations
