@@ -38,8 +38,8 @@ public class arisDemo {
 		}
 	}
 
-	private String LISTENER="54.149.19.121";
-	//private String LISTENER="172.30.0.206";
+	//private String LISTENER="52.88.76.253";
+	private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -233,7 +233,7 @@ public class arisDemo {
 		System.out.println("Test Duration (in minutes): "+TIMETORUN);
 		System.out.println("Using Mix: " + MIXSELECTOR);
 		System.out.println("Debug is set to: "+DEBUG);
-		System.out.println("Last Trade Id "+LAST_T_ID);
+		//System.out.println("Last Trade Id "+LAST_T_ID);
 		System.out.println("Mode = " +MODE);
 		
 		//init Statistics
@@ -284,6 +284,7 @@ public class arisDemo {
             for(Future<String> fut: listF){
                 System.out.println("Time for Session "+fut.get());
             }
+			pool.shutdown();
         }
         catch(Exception e){
             e.printStackTrace();
@@ -291,7 +292,6 @@ public class arisDemo {
         finally {
             long endTime = System.currentTimeMillis(); //end time
             long duration = endTime - startTime;
-            pool.shutdown();
             System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
             System.out.println(" which equals " + (duration / (1000 * 60.0)) + " minutes \n");
         }
@@ -642,7 +642,7 @@ public class arisDemo {
 		if (numberOfSymbols == 0) {return;}
 		List activeSymbolsSet = randomSample(activeSymbols, numberOfSymbols);
 
-		dbObject.START_TX("marketFeed");
+		//dbObject.START_TX("marketFeed");
 		//price quote[]
 		ArrayList<Double> priceQuote = new ArrayList<Double>(numberOfSymbols);
 		for (int i=0; i<numberOfSymbols; i++){
@@ -693,7 +693,6 @@ public class arisDemo {
 						"WHERE T_ID = %s", request_list.get(j).get("tr_t_id"));
 				String query4 = String.format("DELETE FROM TRADE_REQUEST " +
 						"WHERE TR_T_ID = %s", request_list.get(j).get("tr_t_id"));
-
 				String query5 = String.format( "INSERT INTO TRADE_HISTORY " +
 						" VALUES (%s, now(), 'SBMT')", request_list.get(j).get("tr_t_id"));
 
@@ -702,7 +701,7 @@ public class arisDemo {
 				dbObject.DML(query5);
 			}
 		}
-		dbObject.TCL("commit", "marketfeed");
+		//dbObject.TCL("commit", "marketfeed");
 		s.insertTime(8, System.currentTimeMillis() - t);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
 	}
