@@ -553,7 +553,7 @@ public class arisDemo {
 	}
 
 	private static void brokerVolumeFrame(arisDemo dbObject, Statistics s) {
-		int number_of_brokers = ThreadLocalRandom.current().nextInt(1, all_brokers.size());
+		int number_of_brokers = ThreadLocalRandom.current().nextInt(all_brokers.size());
 		List active_brokers = randomSample(all_brokers, number_of_brokers);
 		String sector_name = all_sectors.get(ThreadLocalRandom.current().nextInt(0, all_sectors.size()));
 		Long t;
@@ -642,7 +642,8 @@ public class arisDemo {
 		if (numberOfSymbols == 0) {return;}
 		List activeSymbolsSet = randomSample(activeSymbols, numberOfSymbols);
 
-		//dbObject.START_TX("marketFeed");
+		try{
+		dbObject.START_TX("marketFeed");
 		//price quote[]
 		ArrayList<Double> priceQuote = new ArrayList<Double>(numberOfSymbols);
 		for (int i=0; i<numberOfSymbols; i++){
@@ -657,6 +658,7 @@ public class arisDemo {
 			*/
 			double low 	= pricesDM.get(activeSymbolsSet.get(i)).get(0);
 			double high = pricesDM.get(activeSymbolsSet.get(i)).get(1);
+			System.out.println("Low: " + low + " _ High: " + high);
 			priceQuote.add(i, ThreadLocalRandom.current().nextDouble(low, high));
 		}
 
@@ -701,7 +703,11 @@ public class arisDemo {
 				dbObject.DML(query5);
 			}
 		}
-		//dbObject.TCL("commit", "marketfeed");
+		dbObject.TCL("commit", "marketfeed");}
+		catch (Exception e){
+			e.printStackTrace();
+			return;
+		}
 		s.insertTime(8, System.currentTimeMillis() - t);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
 	}
