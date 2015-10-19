@@ -280,7 +280,7 @@ public class arisDemo {
         try {
             List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
             for(Future<String> fut: listF){
-                System.out.println("Time for Session "+fut.get(TIMETORUN, TimeUnit.MINUTES));
+                System.out.println("Time for Session "+fut.get(TIMETORUN-3, TimeUnit.MINUTES));
             }
 			pool.shutdown();
         }
