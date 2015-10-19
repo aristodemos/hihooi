@@ -642,7 +642,7 @@ public class arisDemo {
 		List activeSymbolsSet = randomSample(activeSymbols, numberOfSymbols);
 
 
-		dbObject.START_TX("marketFeed");
+		//dbObject.START_TX("marketFeed");
 		//price quote[]
 		ArrayList<Double> priceQuote = new ArrayList<Double>(numberOfSymbols);
 		for (int i=0; i<numberOfSymbols; i++){
@@ -703,7 +703,7 @@ public class arisDemo {
 				dbObject.DML(query5);
 			}
 		}
-		dbObject.TCL("commit", "marketfeed");
+		//dbObject.TCL("commit", "marketfeed");
 		s.insertTime(8, System.currentTimeMillis() - t);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
 	}
