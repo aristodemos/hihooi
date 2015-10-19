@@ -707,6 +707,7 @@ public class arisDemo {
 			e.printStackTrace();
 			System.out.println(e.getMessage());
 			//marketFeedFrame(dbObject, s);
+			s.insertTime(8, System.currentTimeMillis() - t);
 			return;
 		}
 		s.insertTime(8, System.currentTimeMillis() - t);
