@@ -615,16 +615,16 @@ public class arisDemo {
         }
 		String query2 = String.format(
 				"SELECT T_ID, T_S_SYMB, T_QTY, ST_NAME, TH_DTS " +
-				"FROM (SELECT T_ID as ID " +
-				"FROM TRADE " +
-				"WHERE T_CA_ID = '%s' " +
-				"ORDER BY T_DTS desc LIMIT 10) as T, " +
-				"TRADE, TRADE_HISTORY, STATUS_TYPE " +
-				"WHERE T_ID = ID " +
-				"AND TH_T_ID = T_ID " +
-				"AND ST_ID = TH_ST_ID " +
-				"ORDER BY TH_DTS desc " +
-				"LIMIT 30", c_ad_id);
+						"FROM (SELECT T_ID as ID " +
+						"FROM TRADE " +
+						"WHERE T_CA_ID = '%s' " +
+						"ORDER BY T_DTS desc LIMIT 10) as T, " +
+						"TRADE, TRADE_HISTORY, STATUS_TYPE " +
+						"WHERE T_ID = ID " +
+						"AND TH_T_ID = T_ID " +
+						"AND ST_ID = TH_ST_ID " +
+						"ORDER BY TH_DTS desc " +
+						"LIMIT 30", c_ad_id);
 		//System.out.println(query2);
 		dbObject.QUERY(query2);
 		s.insertTime(7, System.currentTimeMillis() - t);
@@ -658,7 +658,7 @@ public class arisDemo {
 			*/
 			double low 	= pricesDM.get(activeSymbolsSet.get(i)).get(0);
 			double high = pricesDM.get(activeSymbolsSet.get(i)).get(1);
-			System.out.println("Low: " + low + " _ High: " + high);
+			//System.out.println("Low: " + low + " _ High: " + high);
 			priceQuote.add(i, ThreadLocalRandom.current().nextDouble(low, high));
 		}
 
@@ -706,7 +706,7 @@ public class arisDemo {
 		dbObject.TCL("commit", "marketfeed");}
 		catch (Exception e){
 			e.printStackTrace();
-			return;
+			marketFeedFrame(dbObject, s);
 		}
 		s.insertTime(8, System.currentTimeMillis() - t);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
