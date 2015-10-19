@@ -641,7 +641,7 @@ public class arisDemo {
 		if (numberOfSymbols == 0) {return;}
 		List activeSymbolsSet = randomSample(activeSymbols, numberOfSymbols);
 
-		try{
+
 		dbObject.START_TX("marketFeed");
 		//price quote[]
 		ArrayList<Double> priceQuote = new ArrayList<Double>(numberOfSymbols);
@@ -655,6 +655,7 @@ public class arisDemo {
 					activeSymbolsSet.get(i));
 			double low = Double.parseDouble(dbObject.QUERY2MAP(basePriceLow).get("avg").toString());
 			*/
+
 			double low 	= pricesDM.get(activeSymbolsSet.get(i)).get(0);
 			double high = pricesDM.get(activeSymbolsSet.get(i)).get(1);
 			//System.out.println(activeSymbolsSet.get(i));
@@ -702,14 +703,7 @@ public class arisDemo {
 				dbObject.DML(query5);
 			}
 		}
-		dbObject.TCL("commit", "marketfeed");}
-		catch (Exception e){
-			e.printStackTrace();
-			System.out.println(e.getMessage());
-			//marketFeedFrame(dbObject, s);
-			s.insertTime(8, System.currentTimeMillis() - t);
-			return;
-		}
+		dbObject.TCL("commit", "marketfeed");
 		s.insertTime(8, System.currentTimeMillis() - t);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
 	}
