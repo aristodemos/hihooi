@@ -38,8 +38,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="54.186.62.171";
-	private String LISTENER="172.30.0.206";
+	private String LISTENER="54.186.62.171";
+	//private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -77,9 +77,9 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 28;
+	public static int       SESSIONS        = 8;
 	public static int       TIMETORUN       = 5;
-	public static String    MIXSELECTOR   	= "b"; //default: all transactions
+	public static String    MIXSELECTOR   	= "d"; //default: all transactions
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1;
@@ -325,7 +325,6 @@ public class arisDemo {
             */
 			//Close the transaction Log File
 			logWriter.close();
-
 			pool.shutdownNow();
 			exec.shutdownNow();
 			//PRINT STATS
@@ -706,7 +705,9 @@ public class arisDemo {
 		dbObject.TCL("commit", "marketfeed");}
 		catch (Exception e){
 			e.printStackTrace();
-			marketFeedFrame(dbObject, s);
+			System.out.println(e.getMessage());
+			//marketFeedFrame(dbObject, s);
+			return;
 		}
 		s.insertTime(8, System.currentTimeMillis() - t);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
