@@ -742,7 +742,7 @@ public class arisDemo {
 		boolean t_is_cash	= ThreadLocalRandom.current().nextBoolean();
 
 		//START TXN
-		dbObject.START_TX("tradeOrder");
+		//dbObject.START_TX("tradeOrder");
 
 		// Get account, customer, and broker information into a Map
 		String  sqlTOF1_1 = String.format(
@@ -1005,7 +1005,7 @@ public class arisDemo {
 				"INSERT INTO trade_history(th_t_id, th_dts, th_st_id) " +
 						"VALUES(%s, now(), '%s')", trade_id, status_id);
 		dbObject.DML(sqlTOF4_3);
-		dbObject.TCL("commit", "tradeOrder");
+		//dbObject.TCL("commit", "tradeOrder");
 		s.insertTime(9, System.currentTimeMillis() - t);
         //s.txnMix[9] = s.txnMix[9] + System.currentTimeMillis() - t;
 		// Invoke tradeResult before exiting method.
@@ -1017,7 +1017,7 @@ public class arisDemo {
 
 	private static void tradeResult(arisDemo dbObject, Statistics s, String trade_id, double trade_price){
 		Long t = System.currentTimeMillis();
-		dbObject.START_TX("tradeResult");
+		//dbObject.START_TX("tradeResult");
 		String trFrame1_1 = String.format(
 				"SELECT t_ca_id, t_tt_id, t_s_symb, t_qty, t_chrg " +
 						"FROM trade " +
@@ -1424,7 +1424,7 @@ public class arisDemo {
 				"FROM customer_account " +
 				"WHERE ca_id = %s", acct_id);
 		dbObject.QUERY(trFrame6_4);
-		dbObject.TCL("commit", "tradeResult");
+		//dbObject.TCL("commit", "tradeResult");
 		s.insertTime(10, System.currentTimeMillis() - t);
 		//s.txnMix[10] = s.txnMix[10] + System.currentTimeMillis() - t;
 	}
