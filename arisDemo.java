@@ -658,7 +658,7 @@ public class arisDemo {
 			*/
 			double low 	= pricesDM.get(activeSymbolsSet.get(i)).get(0);
 			double high = pricesDM.get(activeSymbolsSet.get(i)).get(1);
-			//System.out.println("Low: " + low + " _ High: " + high);
+			System.out.println(activeSymbolsSet.get(i));
 			priceQuote.add(i, ThreadLocalRandom.current().nextDouble(low, high));
 		}
 
