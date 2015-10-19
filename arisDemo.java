@@ -38,7 +38,7 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.88.76.253";
+	//private String LISTENER="54.186.62.171";
 	private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -658,7 +658,7 @@ public class arisDemo {
 			*/
 			double low 	= pricesDM.get(activeSymbolsSet.get(i)).get(0);
 			double high = pricesDM.get(activeSymbolsSet.get(i)).get(1);
-			System.out.println(activeSymbolsSet.get(i));
+			//System.out.println(activeSymbolsSet.get(i));
 			priceQuote.add(i, ThreadLocalRandom.current().nextDouble(low, high));
 		}
 
