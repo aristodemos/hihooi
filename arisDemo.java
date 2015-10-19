@@ -286,8 +286,10 @@ public class arisDemo {
         }
         catch(Exception e){
             e.printStackTrace();
+            pool.shutdownNow();
         }
         finally {
+            pool.shutdownNow();
             long endTime = System.currentTimeMillis(); //end time
             long duration = endTime - startTime;
             System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
