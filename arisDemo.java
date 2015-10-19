@@ -2,8 +2,11 @@ package hih;
 
 //import com.sun.tools.javac.code.Attribute;
 
+import org.omg.PortableServer.THREAD_POLICY_ID;
+
 import java.io.*;
 //import java.lang.reflect.Array;
+import java.nio.channels.InterruptedByTimeoutException;
 import java.sql.*;
 //import java.text.DateFormat;
 import java.util.*;
@@ -195,11 +198,6 @@ public class arisDemo {
 				if (args[i].equalsIgnoreCase("-sessions") ||args[i].equalsIgnoreCase("-s")) {
 					SESSIONS = Integer.parseInt(args[i + 1]);
 				}
-				/*
-				*if (args[i].equalsIgnoreCase("-txns") || args[i].equalsIgnoreCase("-t")) {
-				*	trxnsPerSession= Integer.parseInt(args[i + 1]);
-				*}
-				*/
 				if (args[i].equalsIgnoreCase("-mix") || args[i].equalsIgnoreCase("-m")) {
 					MIXSELECTOR = args[i + 1];
 				}
@@ -269,7 +267,7 @@ public class arisDemo {
 
 
 			ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
-			List<Future<String>> list = new ArrayList<Future<String>>();
+			//List<Future<String>> list = new ArrayList<Future<String>>();
 
             Collection<SimTest> collection = new ArrayList<>();
             for(int i=0; i< SESSIONS; i++){
@@ -280,13 +278,12 @@ public class arisDemo {
         try {
             List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
             for(Future<String> fut: listF){
-                System.out.println("Time for Session " + fut.get(TIMETORUN - 3, TimeUnit.MINUTES));
+                System.out.println("Time for Session " + fut.get());
             }
 			pool.shutdown();
         }
         catch(Exception e){
             e.printStackTrace();
-            pool.shutdownNow();
         }
         finally {
             pool.shutdownNow();
@@ -328,7 +325,7 @@ public class arisDemo {
 			pool.shutdownNow();
 			exec.shutdownNow();
 			//PRINT STATS
-		System.out.println("*********************Test Run statistics********************");
+		    System.out.println("*********************Test Run statistics********************");
 			System.out.println("************************************************************");
 			System.out.println("Txn Mix:");
 			System.out.println("BrokerVolume Txn was run: \t\t"+stats.txnMix[0]  + " times;");
@@ -1731,21 +1728,20 @@ public class arisDemo {
 
             //Code changed to support timed out threads
             while (!Thread.interrupted()) {
-                generateTxn(d,txnsToRun.get(i).toString(), s);
+                generateTxn(d, txnsToRun.get(i).toString(), s);
                 i++;
                 //repeat for ever until TimeOut Clock stops the Thread
-               if (i >= txnsToRun.size() - 1) {
+                if (i >= txnsToRun.size() - 1) {
                     i = 0;
                 }
             }
-
 			d.DISCONNECT();
 			System.out.println("Connection closed from thread: " + Thread.currentThread().getName());
-
 			long lEndTime = System.currentTimeMillis();
 			long dTime = lEndTime - lStartTime;
-
 			//System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
+            Thread.currentThread().interrupt();
+
 			return session_id+" completed in "+dTime+" msec.";
 		}
 
@@ -1766,17 +1762,18 @@ public class arisDemo {
 				i++;
 			}*/
             //Code changed to support timed out threads
-            while (!Thread.interrupted()) {
-                arisDemo d = new arisDemo();
-                d.CONNECT();
-                d.setConsistency(MODE);
-                generateTxn(d,txnsToRun.get(i).toString(), s);
-                d.DISCONNECT();
-                i++;
-               if (i >= txnsToRun.size()) {
-                    i = 0;
+                while (!Thread.currentThread().isInterrupted()) {
+                    arisDemo d = new arisDemo();
+                    d.CONNECT();
+                    d.setConsistency(MODE);
+                    generateTxn(d, txnsToRun.get(i).toString(), s);
+                    d.DISCONNECT();
+                    i++;
+                    if (i >= txnsToRun.size()) {
+                        i = 0;
+                    }
                 }
-            }
+
             long lEndTime = System.currentTimeMillis();
             long dTime = lEndTime - lStartTime;
 
