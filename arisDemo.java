@@ -280,7 +280,7 @@ public class arisDemo {
         try {
             List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
             for(Future<String> fut: listF){
-                System.out.println("Time for Session "+fut.get(TIMETORUN-3, TimeUnit.MINUTES));
+                System.out.println("Time for Session " + fut.get(TIMETORUN - 3, TimeUnit.MINUTES));
             }
 			pool.shutdown();
         }
@@ -875,16 +875,16 @@ public class arisDemo {
 					for(int i=0; i<holdList.size(); i++){
 						//System.out.println(holdList.get(i));
 						Map entry = (Map) holdList.get(i);
-						if ((int) entry.get("h_qty") > needed_qty){
-							buy_value += needed_qty * (double) entry.get("h_price");
+						if (Integer.parseInt(entry.get("h_qty").toString()) > needed_qty){
+							buy_value += needed_qty * Double.parseDouble(entry.get("h_price").toString());
 							sell_value += needed_qty * trade_price;
 							needed_qty = 0;
 							break;
 						}
 						else {
-							buy_value += needed_qty * (double) entry.get("h_price");
+							buy_value += needed_qty * Double.parseDouble(entry.get("h_price").toString());
 							sell_value += needed_qty * trade_price;
-							needed_qty = needed_qty - (int) entry.get("h_qty");
+							needed_qty = needed_qty - Integer.parseInt(entry.get("h_qty").toString());
 						}
 					}
 		 		}
@@ -917,17 +917,17 @@ public class arisDemo {
 				if (!holdList.isEmpty()){
 					for(int i=0; i<holdList.size(); i++){
 						Map entry = (Map) holdList.get(i);
-						if ((int) entry.get("h_qty") + needed_qty < 0){
-							sell_value += needed_qty * (double) entry.get("h_price");
+						if (Integer.parseInt(entry.get("h_qty").toString()) + needed_qty < 0){
+							sell_value += needed_qty * Double.parseDouble(entry.get("h_price").toString());
 							buy_value += needed_qty * trade_price;
 							needed_qty = 0;
 							continue;
 						}
 						else {
 							hold_qty = -hold_qty;
-							sell_value += hold_qty * (double) entry.get("h_price");
+							sell_value += hold_qty * Double.parseDouble(entry.get("h_price").toString());
 							buy_value += hold_qty * trade_price;
-							needed_qty = needed_qty - (int) entry.get("h_qty");
+							needed_qty = needed_qty - Integer.parseInt(entry.get("h_qty").toString());
 						}
 					}
 				}
@@ -1107,7 +1107,7 @@ public class arisDemo {
 					for(int i=0; i<holdList.size(); i++){
 						//System.out.println(holdList.get(i));
 						Map entry = (Map) holdList.get(i);
-						if ((int) entry.get("h_qty") > needed_qty){
+						if ( Integer.parseInt(entry.get("h_qty").toString()) > needed_qty){
 							//Selling some of the holdings
 							String trFrame2_4a = String.format(
 									"INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
@@ -1121,7 +1121,7 @@ public class arisDemo {
 											"SET h_qty = %d " +
 											"WHERE h_t_id = %s", Integer.parseInt(hold_qty)-needed_qty, entry.get("h_t_id"));
 							dbObject.DML(trFrame2_5a);
-							buy_value += needed_qty * (double) entry.get("h_price");
+							buy_value += needed_qty * Double.parseDouble(entry.get("h_price").toString());
 							sell_value += needed_qty * trade_price;
 							needed_qty = 0;
 							continue;
@@ -1138,9 +1138,9 @@ public class arisDemo {
 											"WHERE h_t_id = %s", entry.get("h_t_id"));
 							dbObject.DML(trFrame2_5b);
 
-							buy_value += Integer.parseInt(hold_qty) * (double) entry.get("h_price");
+							buy_value += Integer.parseInt(hold_qty) * Double.parseDouble( entry.get("h_price").toString());
 							sell_value += Integer.parseInt(hold_qty) * trade_price;
-							needed_qty = needed_qty - (int) entry.get("h_qty");
+							needed_qty = needed_qty -  Integer.parseInt(entry.get("h_qty").toString());
 						}
 					}//close
 				}
@@ -1221,20 +1221,19 @@ public class arisDemo {
 				// Buy back securities to cover a short position. open hold_list
 				for(int i=0; i<holdList.size(); i++){
 					Map entry = (Map) holdList.get(i);
-					if ((int) entry.get("h_qty") + needed_qty < 0) {
+					if (Integer.parseInt(entry.get("h_qty").toString()) + needed_qty < 0) {
 						//Bying back some of the short sell
 						String trFrame2_4a = String.format(
 								"INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
 										"                            hh_after_qty) " +
-										"VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, 0, (int) entry.get
-										("h_qty") + needed_qty);
+										"VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, 0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty);
 						dbObject.DML(trFrame2_4a);
 						String trFrame2_5a = String.format(
 								"UPDATE holding " +
 										"SET h_qty = %d " +
 										"WHERE h_t_id = %s", Integer.parseInt(hold_qty)+needed_qty, entry.get("h_t_id"));
 						dbObject.DML(trFrame2_5a);
-						sell_value 	+= needed_qty*(int)entry.get("h_price");
+						sell_value 	+= needed_qty*Integer.parseInt(entry.get("h_price").toString());
 						buy_value 	+= needed_qty*trade_price;
 						needed_qty 	= 0;
 						break;
@@ -1250,7 +1249,7 @@ public class arisDemo {
 						dbObject.DML(trFrame2_5b);
 						// Make hold_qty positive for easy calculations
 						hold_qty = "-"+hold_qty;
-						sell_value += Integer.parseInt(hold_qty) * (int) entry.get("h_price");
+						sell_value += Integer.parseInt(hold_qty) * Integer.parseInt(entry.get("h_price").toString());
 						buy_value += Integer.parseInt(hold_qty) * trade_price;
 						needed_qty = needed_qty - Integer.parseInt(hold_qty);
 					}
