@@ -639,7 +639,7 @@ public class arisDemo {
 		List activeSymbolsSet = randomSample(activeSymbols, numberOfSymbols);
 
 
-		dbObject.START_TX();
+
 		//price quote[]
 		ArrayList<Double> priceQuote = new ArrayList<Double>(numberOfSymbols);
 		for (int i=0; i<numberOfSymbols; i++){
@@ -667,6 +667,7 @@ public class arisDemo {
 			tradeQuantity.add(dbObject.QUERY2MAP(tradeQtQuery).get("tr_qty").toString());
 		}
 		for (int i=0; i<numberOfSymbols; i++) {
+			dbObject.START_TX();
 			String query1 = String.format(
 					"UPDATE LAST_TRADE " +
 							"SET LT_PRICE = %f, " +
@@ -699,8 +700,9 @@ public class arisDemo {
 				dbObject.DML(query4);
 				dbObject.DML(query5);
 			}
+			dbObject.TCL("commit");
 		}
-		dbObject.TCL("commit");
+
 		s.insertTime(8, System.currentTimeMillis() - t);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
 	}
