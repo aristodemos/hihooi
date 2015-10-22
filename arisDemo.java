@@ -87,6 +87,7 @@ public class arisDemo {
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1;
+	private static boolean 	BYPASS			= true;
 	
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -191,7 +192,7 @@ public class arisDemo {
 	}
 
 	public arisDemo() {}
-
+	static ExecuteShellCommand shell = new ExecuteShellCommand();
 
 	public static void main(String [] args) throws IOException {
 		if (args.length > 0) {
@@ -283,13 +284,13 @@ public class arisDemo {
                 	System.out.println("Time for Session " + fut.get());
             	}catch(Exception e){
 					//e.printStackTrace();
-					System.out.println("An exception occurred");
+					//System.out.println("An exception occurred");
 					System.out.println(fut.cancel(true));
 				}
         	}
 			}catch(InterruptedException ie) {
 				ie.printStackTrace();
-				System.out.println("Interrupted Exception");
+				//System.out.println("Interrupted Exception");
 			}
             pool.shutdownNow();
 			while (!pool.isTerminated()) {
@@ -590,7 +591,11 @@ public class arisDemo {
 					"GROUP BY b_name " +
 					"ORDER BY 2 DESC", activeBrokersStr, sector_name);  //actoive.brokers.get(i)
 			t = System.currentTimeMillis();
-			dbObject.QUERY(query);
+			//dbObject.QUERY(query);
+			if (BYPASS){
+				shell.executeCommand(query);
+			}
+			else dbObject.QUERY(query);
 			//
 			s.insertTime(6, System.currentTimeMillis() - t);
 			//s.txnMix[6] = s.txnMix[6] + System.currentTimeMillis() - t;
@@ -609,24 +614,33 @@ public class arisDemo {
 						"GROUP BY CA_ID, CA_BAL " +
 						"ORDER BY 3 asc " +
 						"LIMIT 10", cust_id);
-		dbObject.QUERY(query1);
+		//dbObject.QUERY(query1);
+		if (BYPASS){
+			shell.executeCommand(query1);
+		}
+		else dbObject.QUERY(query1);
 
 		//Customer Position Frame 2 of 2
 
 		//String c_ad_id = dbObject.QUERY2STR(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
         String c_ad_id = "4300000189";
         String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
-        try {
-            c_ad_id = dbObject.QUERY2MAP(q).get("c_ad_id").toString();
-        }catch (NullPointerException e){
-            //System.out.println("Null Pointer Exception in CustomerPositionFrame1");
-            //System.out.println(dbObject.QUERY(q));
-            //System.out.println(dbObject.QUERY2STR(q));
-            //System.out.println(dbObject.QUERY2MAP(q));
-            //System.out.println(dbObject.QUERY2LST(q));
-            //System.out.println(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
-            //return;
-        }
+		if (BYPASS){
+			c_ad_id = shell.executeCommand(q);
+		}
+		else{
+        	try {
+            	c_ad_id = dbObject.QUERY2MAP(q).get("c_ad_id").toString();
+        	}catch (NullPointerException e){
+            	//System.out.println("Null Pointer Exception in CustomerPositionFrame1");
+            	//System.out.println(dbObject.QUERY(q));
+            	//System.out.println(dbObject.QUERY2STR(q));
+            	//System.out.println(dbObject.QUERY2MAP(q));
+            	//System.out.println(dbObject.QUERY2LST(q));
+            	//System.out.println(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
+            	//return;
+        	}
+		}
 		String query2 = String.format(
 				"SELECT T_ID, T_S_SYMB, T_QTY, ST_NAME, TH_DTS " +
 						"FROM (SELECT T_ID as ID " +
@@ -639,7 +653,11 @@ public class arisDemo {
 						"AND ST_ID = TH_ST_ID " +
 						"ORDER BY TH_DTS desc " +
 						"LIMIT 30", c_ad_id);
-		dbObject.QUERY(query2);
+		//dbObject.QUERY(query2);
+		if (BYPASS){
+			shell.executeCommand(query2);
+		}
+		else dbObject.QUERY(query2);
 		s.insertTime(7, System.currentTimeMillis() - t);
 		//s.txnMix[7] = s.txnMix[7] + System.currentTimeMillis() - t;
 	}
@@ -1452,7 +1470,11 @@ public class arisDemo {
 				"  AND ex_id = s_ex_id " +
 				"ORDER BY t_dts DESC " +
 				"LIMIT 50", acct_id);
-		dbObject.QUERY(sqlTSF1_1);
+		//dbObject.QUERY(sqlTSF1_1);
+		if (BYPASS) {
+			shell.executeCommand(sqlTSF1_1);
+		}
+		else dbObject.QUERY(sqlTSF1_1);
 
 		String  sqlTSF1_2 = String.format(
 		"SELECT c_l_name, c_f_name, b_name " +
@@ -1460,7 +1482,11 @@ public class arisDemo {
 		"WHERE ca_id = %s " +
 		"  AND c_id = ca_c_id " +
 		"  AND b_id = ca_b_id", acct_id);
-		dbObject.QUERY(sqlTSF1_2);
+		//dbObject.QUERY(sqlTSF1_2);
+		if (BYPASS) {
+			shell.executeCommand(sqlTSF1_2);
+		}
+		else dbObject.QUERY(sqlTSF1_1);
 		s.insertTime(11, System.currentTimeMillis() - t);
 		//s.txnMix[11] = s.txnMix[11] + System.currentTimeMillis() - t;
 
