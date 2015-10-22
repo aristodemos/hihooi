@@ -80,7 +80,7 @@ public class ExecuteShellCommand {
         StringBuffer output = new StringBuffer();
 
         Runtime rt = Runtime.getRuntime();
-        String[] commands = new String[] {"psql", "-A", "-d", "dbt5", "-c", query};
+        String[] commands = new String[] {"psql", "-A", "-d", "tpc", "-U", "postgres", "-h", "prm1", "-c", query};
 
         try {
             Process proc = rt.exec(commands);
