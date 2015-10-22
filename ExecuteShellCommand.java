@@ -8,7 +8,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.lang.ProcessBuilder;
-import org.apache.commons.io.IOUtils;
+//import org.apache.commons.io.IOUtils;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -80,7 +80,8 @@ public class ExecuteShellCommand {
         StringBuffer output = new StringBuffer();
 
         Runtime rt = Runtime.getRuntime();
-        String[] commands = new String[] {"psql", "-A", "-d", "tpc", "-U", "postgres", "-h", "prm1", "-c", query};
+        //String[] commands = new String[] {"psql", "-A", "-d", "tpc", "-U", "postgres", "-h", "localhost", "-c", query};
+        String[] commands = new String[] {"psql", "-A", "-d", "dbt5", "-h", "localhost", "-c", query};
 
         try {
             Process proc = rt.exec(commands);
