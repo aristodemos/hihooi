@@ -42,8 +42,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.88.136.20";
-	private String LISTENER="172.30.0.206";
+	private String LISTENER="52.26.152.181";
+	//private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -83,7 +83,7 @@ public class arisDemo {
 	//public static int trxnsPerSession   = 10;
 	public static int       SESSIONS        = 8;
 	public static int       TIMETORUN       = 5;
-	public static String    MIXSELECTOR   	= "d"; //default: all transactions
+	public static String    MIXSELECTOR   	= "a"; //default: all transactions
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1;
@@ -240,8 +240,8 @@ public class arisDemo {
 
 		System.out.println("*************** Initializing the Test Run ******************");
 		arisDemo d = new arisDemo();
-		System.out.println(d.CONNECT());
-		System.out.println("Connection Established");
+		//System.out.println(d.CONNECT());
+		//System.out.println("Connection Established");
 
 		//System.out.println("Cleaning Up database");
 		//preInitRun(d);
@@ -249,8 +249,8 @@ public class arisDemo {
 		//Gather necessary data from the initialized database;
 		System.out.println("Initializing Parameters");
 		initParams(d);
-		System.out.println("Disconnecting after initialization...");
-		System.out.println(d.DISCONNECT());
+		//System.out.println("Disconnecting after initialization...");
+		//System.out.println(d.DISCONNECT());
 
 		System.out.println("Starting Sessions");
 		System.out.println("Number of threads (sessions):  "+ SESSIONS);
@@ -393,11 +393,11 @@ public class arisDemo {
 		//account_id
 		//all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
 
-		DeseriaizeThings("all_brokers.ser", all_brokers);
-		DeseriaizeThings("all_sectors.ser", all_sectors);
-		DeseriaizeThings("all_customers.ser", all_customers);
-		DeseriaizeThings("all_symbols.ser", all_symbols);
-		DeseriaizeThings("all_acct_ids.ser", all_acct_ids);
+		all_brokers =   DeseriaizeThings("all_brokers.ser", all_brokers);
+		all_sectors =   DeseriaizeThings("all_sectors.ser", all_sectors);
+		all_customers = DeseriaizeThings("all_customers.ser", all_customers);
+		all_symbols =   DeseriaizeThings("all_symbols.ser", all_symbols);
+		all_acct_ids =  DeseriaizeThings("all_acct_ids.ser", all_acct_ids);
 
 		//pricesDM holds avgLow and avgHigh prices of each symbol
 		// to be used in the MarketFeed Transaction
@@ -424,7 +424,7 @@ public class arisDemo {
 		//}
 	}
 
-	static void DeseriaizeThings(String filename, List javaObject){
+	static List  DeseriaizeThings(String filename, List javaObject){
 		try (
 				InputStream file = new FileInputStream(filename);
 				InputStream buffer = new BufferedInputStream(file);
@@ -441,6 +441,7 @@ public class arisDemo {
 			ex.printStackTrace();
 			System.out.println("Cannot perform input");
 		}
+        return javaObject;
 	}
 
 	//TODO: transaction Mix Variations
@@ -1773,8 +1774,8 @@ public class arisDemo {
         //Changed returned type from Object to String
         public String call() throws Exception {
 			arisDemo d = new arisDemo();
-			String session_id = d.CONNECT();
-            d.setConsistency(MODE);
+			//String session_id = d.CONNECT();
+            //d.setConsistency(MODE);
 
 			long lStartTime = System.currentTimeMillis();
 			int i =0;
@@ -1797,7 +1798,8 @@ public class arisDemo {
 			long dTime = lEndTime - lStartTime;
             //Thread.currentThread().interrupt();
 
-			return session_id+" completed in "+dTime+" msec.";
+			//return session_id+" completed in "+dTime+" msec.";
+            return "Session complete";
 		}
         //
         // / @Override
@@ -1816,7 +1818,8 @@ public class arisDemo {
 			}*/
             //Code changed to support timed out threads
                 while (!Thread.currentThread().isInterrupted()) {
-                    arisDemo d = new arisDemo();
+
+					arisDemo d = new arisDemo();
                     d.CONNECT();
                     d.setConsistency(MODE);
                     generateTxn(d, txnsToRun.get(i).toString(), s);
