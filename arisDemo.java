@@ -42,8 +42,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.89.201.182";
-	private String LISTENER="172.30.0.206";
+	private String LISTENER="52.88.136.20";
+	//private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -383,15 +383,21 @@ public class arisDemo {
 
 	public static void initParams(arisDemo dbObject) {
 		//all_brokers
-		all_brokers = dbObject.QUERY("select b_name from broker");
+		//all_brokers = dbObject.QUERY("select b_name from broker");
 		//all_sectors
-		all_sectors = dbObject.QUERY("select sc_name from sector");
+		//all_sectors = dbObject.QUERY("select sc_name from sector");
 		//all_customers
-		all_customers = dbObject.QUERY("select c_id from customer");
+		//all_customers = dbObject.QUERY("select c_id from customer");
 		//all_symbols
-		all_symbols = dbObject.QUERY("select s_symb from security");
+		//all_symbols = dbObject.QUERY("select s_symb from security");
 		//account_id
-		all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
+		//all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
+
+		DeseriaizeThings("all_brokers.ser", all_brokers);
+		DeseriaizeThings("all_sectors.ser", all_sectors);
+		DeseriaizeThings("all_customers.ser", all_customers);
+		DeseriaizeThings("all_symbols.ser", all_symbols);
+		DeseriaizeThings("all_acct_ids.ser", all_acct_ids);
 
 		//pricesDM holds avgLow and avgHigh prices of each symbol
 		// to be used in the MarketFeed Transaction
@@ -416,6 +422,25 @@ public class arisDemo {
 		//for (String symbol : all_symbols){
 		//	System.out.println(pricesDM.get(symbol)  +" low:  " +pricesDM.get(symbol).get(0)+ " high:  "+pricesDM.get(symbol).get(1));
 		//}
+	}
+
+	static void DeseriaizeThings(String filename, List javaObject){
+		try (
+				InputStream file = new FileInputStream(filename);
+				InputStream buffer = new BufferedInputStream(file);
+				ObjectInput input = new ObjectInputStream(buffer);
+		) {
+			//deserialize the Object
+			javaObject = (List)input.readObject();
+		}
+		catch (ClassNotFoundException ex){
+			ex.printStackTrace();
+			System.out.println("Cannot perform input. Class not found");
+		}
+		catch (IOException ex){
+			ex.printStackTrace();
+			System.out.println("Cannot perform input");
+		}
 	}
 
 	//TODO: transaction Mix Variations

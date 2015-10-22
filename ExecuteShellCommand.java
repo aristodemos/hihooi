@@ -43,7 +43,7 @@ public class ExecuteShellCommand {
         env.put("VAR2", env.get("VAR1") + "suffix");
         pb.directory(new File("myDir"));
         Process p = pb.start();
-        
+
         StringBuffer output = new StringBuffer();
         ProcessBuilder pb = new ProcessBuilder("psql","-l");
         try {
