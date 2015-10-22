@@ -25,7 +25,7 @@ public class ExecuteShellCommand {
         //in mac oxs
         //String command = "ping -c 3 " + domainName;
         String query = "select * from broker";
-        String output = obj.executeCommand2(query);
+        String output = obj.executeCommand(query);
 
         query = "select row_to_json(broker) from broker";
         output = obj.executeCommand(query);
@@ -33,7 +33,7 @@ public class ExecuteShellCommand {
         System.out.println(output);
 
     }
-
+/*
     private String executeCommand2(String command){
 
         /*ProcessBuilder pb = new ProcessBuilder("myCommand", "myArg1", "myArg2");
@@ -43,7 +43,7 @@ public class ExecuteShellCommand {
         env.put("VAR2", env.get("VAR1") + "suffix");
         pb.directory(new File("myDir"));
         Process p = pb.start();
-        */
+        
         StringBuffer output = new StringBuffer();
         ProcessBuilder pb = new ProcessBuilder("psql","-l");
         try {
@@ -74,7 +74,7 @@ public class ExecuteShellCommand {
         return output.toString();
 
     }
-
+*/
     public static String executeCommand(String query) {
 
         StringBuffer output = new StringBuffer();
