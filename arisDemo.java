@@ -42,8 +42,8 @@ public class arisDemo {
 		}
 	}
 
-	private String LISTENER="52.89.224.14";
-	//private String LISTENER="172.30.0.206";
+	//private String LISTENER="52.89.224.14";
+	private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -87,7 +87,7 @@ public class arisDemo {
     private static boolean  DEBUG           = false;
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1;
-	private static boolean 	BYPASS			= true;
+	private static boolean 	BYPASS			= false;
 	
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -212,8 +212,15 @@ public class arisDemo {
 				if (args[i].equalsIgnoreCase("-debug") || args[i].equalsIgnoreCase("-d")) {
 					DEBUG = true;
 				}
+                if (args[i].equalsIgnoreCase("-bypass") || args[i].equalsIgnoreCase("-b")) {
+                    BYPASS = true;
+                }
 			}
 		}
+        if (BYPASS){
+            MIXSELECTOR = "a";
+            System.out.println("note: When bypassing hihooi read-only workload is used");
+        }
 
 		//Create transaction Log File
 		//Remember to close it
@@ -232,6 +239,7 @@ public class arisDemo {
 		System.out.println("Test Duration (in minutes): "+TIMETORUN);
 		System.out.println("Using Mix: " + MIXSELECTOR);
 		System.out.println("Debug is set to: "+DEBUG);
+        System.out.println("Bypass is set to: "+BYPASS);
 		//System.out.println("Last Trade Id "+LAST_T_ID);
 		System.out.println("Mode = " +MODE);
 		
@@ -621,7 +629,9 @@ public class arisDemo {
 			if (BYPASS){
 				shell.executeCommand(query);
 			}
-			else dbObject.QUERY(query);
+			else {
+                dbObject.QUERY(query);
+            }
 			//
 			s.insertTime(6, System.currentTimeMillis() - t);
 			//s.txnMix[6] = s.txnMix[6] + System.currentTimeMillis() - t;
@@ -644,7 +654,9 @@ public class arisDemo {
 		if (BYPASS){
 			shell.executeCommand(query1);
 		}
-		else dbObject.QUERY(query1);
+		else {
+            dbObject.QUERY(query1);
+        }
 
 		//Customer Position Frame 2 of 2
 
@@ -683,7 +695,9 @@ public class arisDemo {
 		if (BYPASS){
 			shell.executeCommand(query2);
 		}
-		else dbObject.QUERY(query2);
+		else {
+            dbObject.QUERY(query2);
+        }
 		s.insertTime(7, System.currentTimeMillis() - t);
 		//s.txnMix[7] = s.txnMix[7] + System.currentTimeMillis() - t;
 	}
@@ -727,7 +741,10 @@ public class arisDemo {
 			tradeQuantity.add(dbObject.QUERY2MAP(tradeQtQuery).get("tr_qty").toString());
 		}
 		for (int i=0; i<numberOfSymbols; i++) {
-			dbObject.START_TX();
+			//dbObject.START_TX();
+            if (BYPASS){
+                shell.executeCommand("START TRANSACTION");
+            }else dbObject.START_TX();
 			String query1 = String.format(
 					"UPDATE LAST_TRADE " +
 							"SET LT_PRICE = %f, " +
@@ -735,7 +752,12 @@ public class arisDemo {
 							"LT_DTS = now() " +
 							"WHERE LT_S_SYMB = '%s'", priceQuote.get(i), tradeQuantity.get(i), activeSymbolsSet.get(i));
 			//store trade_id in request_list
-			dbObject.DML(query1);
+			//dbObject.DML(query1);
+            if (BYPASS){
+                shell.executeCommand(query1);
+            }else {
+                dbObject.DML(query1);
+            }
 			String query2 = String.format(
 					"SELECT TR_T_ID "+
 					"FROM TRADE_REQUEST " +
@@ -744,7 +766,13 @@ public class arisDemo {
 					"(TR_TT_ID = 'TLS' and TR_BID_PRICE <= %.2f) or " +
 					"(TR_TT_ID = 'TLB' and TR_BID_PRICE >= %.2f))",activeSymbolsSet.get(i),priceQuote.get(i),
 					priceQuote.get(i),priceQuote.get(i));
-			List<Map<String, Object>> request_list = dbObject.QUERY2LST(query2);
+			//List<Map<String, Object>> request_list = dbObject.QUERY2LST(query2);
+            List<Map<String, Object>> request_list = null;
+            if (BYPASS){
+                //request_list = shell.executeCommand(query2);
+            }else {
+                request_list = dbObject.QUERY2LST(query2);
+            }
 			//loop over request_list
 			for (int j=0; j<request_list.size();j++) {
 				String query3 =String.format("UPDATE TRADE " +
@@ -756,11 +784,23 @@ public class arisDemo {
 				String query5 = String.format( "INSERT INTO TRADE_HISTORY " +
 						" VALUES (%s, now(), 'SBMT')", request_list.get(j).get("tr_t_id"));
 
-				dbObject.DML(query3);
-				dbObject.DML(query4);
-				dbObject.DML(query5);
+				//dbObject.DML(query3);
+				//dbObject.DML(query4);
+				//dbObject.DML(query5);
+                if (BYPASS){
+                    shell.executeCommand(query3);
+                    shell.executeCommand(query4);
+                    shell.executeCommand(query5);
+                }else {
+                    dbObject.DML(query3);
+                    dbObject.DML(query4);
+                    dbObject.DML(query5);
+                }
 			}
-			dbObject.TCL("commit");
+			//dbObject.TCL("commit");
+            if (BYPASS){
+                shell.executeCommand("COMMIT");
+            }else dbObject.TCL("commit");
 		}
 
 		s.insertTime(8, System.currentTimeMillis() - t);
@@ -1500,7 +1540,9 @@ public class arisDemo {
 		if (BYPASS) {
 			shell.executeCommand(sqlTSF1_1);
 		}
-		else dbObject.QUERY(sqlTSF1_1);
+		else {
+            dbObject.QUERY(sqlTSF1_1);
+        }
 
 		String  sqlTSF1_2 = String.format(
 		"SELECT c_l_name, c_f_name, b_name " +
@@ -1512,7 +1554,9 @@ public class arisDemo {
 		if (BYPASS) {
 			shell.executeCommand(sqlTSF1_2);
 		}
-		else dbObject.QUERY(sqlTSF1_1);
+		else {
+            dbObject.QUERY(sqlTSF1_1);
+        }
 		s.insertTime(11, System.currentTimeMillis() - t);
 		//s.txnMix[11] = s.txnMix[11] + System.currentTimeMillis() - t;
 
@@ -1774,8 +1818,10 @@ public class arisDemo {
         //Changed returned type from Object to String
         public String call() throws Exception {
 			arisDemo d = new arisDemo();
-			//String session_id = d.CONNECT();
-            //d.setConsistency(MODE);
+            if (!BYPASS){
+                d.CONNECT();
+                d.setConsistency(MODE);
+            }
 
 			long lStartTime = System.currentTimeMillis();
 			int i =0;
@@ -1794,11 +1840,8 @@ public class arisDemo {
             }
 			d.DISCONNECT();
 			System.out.println("Connection closed from thread: " + Thread.currentThread().getName());
-			long lEndTime = System.currentTimeMillis();
-			long dTime = lEndTime - lStartTime;
-            //Thread.currentThread().interrupt();
-
-			//return session_id+" completed in "+dTime+" msec.";
+			//long lEndTime = System.currentTimeMillis();
+			//long dTime = lEndTime - lStartTime;
             return "Session complete";
 		}
         //
