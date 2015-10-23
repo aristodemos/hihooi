@@ -42,8 +42,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.26.152.181";
-	private String LISTENER="172.30.0.206";
+	private String LISTENER="52.89.224.14";
+	//private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -652,7 +652,7 @@ public class arisDemo {
         String c_ad_id = "4300000189";
         String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
 		if (BYPASS){
-			c_ad_id = shell.executeCommand(q);
+			c_ad_id = shell.executeCommand(q).replace("c_ad_id", "").replace("(1 row)", "");
 		}
 		else{
         	try {
