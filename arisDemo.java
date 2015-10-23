@@ -289,11 +289,12 @@ public class arisDemo {
             List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
             for(Future<String> fut: listF){
 				try {
-                	System.out.println("Time for Session " + fut.get());
+                	//System.out.println("Time for Session " + fut.get());
+			fut.get();
             	}catch(Exception e){
 					//e.printStackTrace();
 					//System.out.println("An exception occurred");
-					System.out.println(fut.cancel(true));
+					fut.cancel(true);
 				}
         	}
 			}catch(InterruptedException ie) {
@@ -1839,7 +1840,7 @@ public class arisDemo {
                 }
             }
 			d.DISCONNECT();
-			System.out.println("Connection closed from thread: " + Thread.currentThread().getName());
+			//System.out.println("Connection closed from thread: " + Thread.currentThread().getName());
 			//long lEndTime = System.currentTimeMillis();
 			//long dTime = lEndTime - lStartTime;
             return "Session complete";
