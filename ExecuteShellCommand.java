@@ -96,7 +96,7 @@ public class ExecuteShellCommand {
             //System.out.println("Here is the standard output of the command:\n");
             String s = null;
             while ((s = stdInput.readLine()) != null) {
-                //System.out.println(s);
+                System.out.println(s);
                 output.append(s);
             }
 

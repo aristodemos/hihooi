@@ -42,7 +42,7 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.89.224.14";
+	//private String LISTENER="52.25.19.103";
 	private String LISTENER="172.30.0.206";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -59,9 +59,10 @@ public class arisDemo {
 	}
 	public String setConsistency(int setCMD) {
 		/*
-		* SET COMMANDS:
-      		set consistency level 1             --Hihooi
-      		set consistency level 2             --Eventually
+		hih.set(“set consistency level 1”)etc.
+			set consistency level 2;
+			set consistency level 3;
+			set consistency level 4;
 		*/
         return hih.set("set consistency level "+setCMD);
 	}
@@ -81,13 +82,13 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 8;
-	public static int       TIMETORUN       = 5;
-	public static String    MIXSELECTOR   	= "a"; //default: all transactions
-    private static boolean  DEBUG           = false;
+	public static int       SESSIONS        = 8; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 5; //in minutes
+	public static String    MIXSELECTOR   	= "a"; //b,c,d    default: all transactions (d)
+    private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
-	private static int 	    MODE		    = 1;
-	private static boolean 	BYPASS			= false;
+	private static int 	    MODE		    = 4; //1, 2, 3, 4
+	private static boolean 	BYPASS			= false; //run direclty on postgres. stopAll and start postgres normally (pg_ctl)
 	
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -109,7 +110,31 @@ public class arisDemo {
 				output = ""+entry.get(key);
 			}
 		}
+		if (DEBUG){System.out.println(output);}
 		return output;
+	}
+	private final ExecutorService futPool = Executors.newFixedThreadPool(10);
+
+	public Future<List> QUERYF(final String SQL) {
+		return futPool.submit(new Callable<List>() {
+			@Override
+			public List call()  {
+				List<Map<String, Object>> rows = hih.executeQuery(SQL);
+				String output ="";
+				List resultOut = new Vector();
+				for( int i = rows.size() -1; i >= 0 ; i --)
+					{
+						Map<String,Object> entry = rows.get(i);
+						for (String key : entry.keySet())
+						{
+							output += entry.get(key)+" ";
+							resultOut.add(entry.get(key));
+						}
+					}
+					if (DEBUG){System.out.println(resultOut);}
+					return resultOut;
+			}
+		});
 	}
 
 	public List QUERY(String SQL) {
@@ -126,8 +151,10 @@ public class arisDemo {
 				resultOut.add(entry.get(key));
 			}
 		}
+		if (DEBUG){System.out.println(resultOut);}
 		return resultOut;
 	}
+
 
 	public String QUERY2STR(String SQL){
         //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
@@ -144,6 +171,26 @@ public class arisDemo {
 		return output;
 	}
 
+
+	public Future<Map> QUERYF2MAP(final String SQL) {
+		return futPool.submit(new Callable<Map>() {
+			@Override
+			public Map call()  {
+				List<Map<String, Object>> rows = hih.executeQuery(SQL);
+				Map<String, Object> results = new HashMap<>();
+				for( int i = rows.size() -1; i >= 0 ; i --) {
+					Map<String,Object> entry = rows.get(i);
+					for (String key : entry.keySet()){
+						results.put(key, entry.get(key));
+					}
+				}
+				if (DEBUG){System.out.println(results);}
+				return results;
+			}
+		});
+	}
+
+
 	public Map QUERY2MAP(String SQL){
         //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
@@ -154,8 +201,31 @@ public class arisDemo {
 				results.put(key, entry.get(key));
 			}
 		}
+		if (DEBUG){System.out.println(results);}
 		return results;
 	}
+
+
+	public Future<List> QUERYF2LST(final String SQL) {
+		return futPool.submit(new Callable<List>() {
+			@Override
+			public List call()  {
+				List<Map<String, Object>> rows = hih.executeQuery(SQL);
+				String output ="";
+				for( int i = rows.size() -1; i >= 0 ; i --)
+				{
+					Map<String,Object> entry = rows.get(i);
+					for (String key : entry.keySet())
+					{
+						output += entry.get(key);
+					}
+				}
+				if (DEBUG){System.out.println(rows);}
+				return rows;
+			}
+		});
+	}
+
 
 	public List QUERY2LST(String SQL){
         //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
@@ -169,6 +239,7 @@ public class arisDemo {
 				output += entry.get(key);
 			}
 		}
+		if (DEBUG){System.out.println(rows);}
 		return rows;
 	}
 
@@ -247,7 +318,7 @@ public class arisDemo {
 		final Statistics stats = new Statistics();
 
 		System.out.println("*************** Initializing the Test Run ******************");
-		arisDemo d = new arisDemo();
+		//arisDemo d = new arisDemo();
 		//System.out.println(d.CONNECT());
 		//System.out.println("Connection Established");
 
@@ -256,7 +327,7 @@ public class arisDemo {
 
 		//Gather necessary data from the initialized database;
 		System.out.println("Initializing Parameters");
-		initParams(d);
+		initParams();
 		//System.out.println("Disconnecting after initialization...");
 		//System.out.println(d.DISCONNECT());
 
@@ -276,110 +347,113 @@ public class arisDemo {
 			}
 		}, 0, 5, TimeUnit.SECONDS);
 
-			long startTime = System.currentTimeMillis(); //fetch starting time
-			ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
-			//List<Future<String>> list = new ArrayList<Future<String>>();
+		long startTime = System.currentTimeMillis(); //fetch starting time
+		ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
+		//List<Future<String>> list = new ArrayList<Future<String>>();
 
-            Collection<SimTest> collection = new ArrayList<>();
-            for(int i=0; i< SESSIONS; i++){
-                SimTest task = new SimTest(stats);
-                collection.add(task);
-            }
-			try{
-            List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
-            for(Future<String> fut: listF){
+		Collection<SimTest> collection = new ArrayList<>();
+		for(int i=0; i< SESSIONS; i++){
+			SimTest task = new SimTest(stats); //SimTest task = new SimTest(); //
+			collection.add(task);
+		}
+		try{
+			List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
+			for(Future<String> fut: listF){
 				try {
-                	//System.out.println("Time for Session " + fut.get());
-			fut.get();
-            	}catch(Exception e){
+					//System.out.println("Time for Session " + fut.get());
+					fut.get();
+				}catch(Exception e){
 					//e.printStackTrace();
 					//System.out.println("An exception occurred");
 					fut.cancel(true);
 				}
-        	}
-			}catch(InterruptedException ie) {
-				ie.printStackTrace();
+			}
+		}catch(InterruptedException ie){
+			ie.printStackTrace();
 				//System.out.println("Interrupted Exception");
+		}catch(CancellationException ce){
+			ce.printStackTrace();
+		}
+		pool.shutdownNow();
+		while (!pool.isTerminated()) {
+			//this can throw InterruptedException, you'll need to decide how to deal with that.
+			//System.out.println("Awaiting pool termination");
+			try{
+				pool.awaitTermination(1,TimeUnit.MILLISECONDS);
+				pool.shutdownNow();
 			}
-            pool.shutdownNow();
-			while (!pool.isTerminated()) {
-				//this can throw InterruptedException, you'll need to decide how to deal with that.
-				//System.out.println("Awaiting pool termination");
-				try{
-					pool.awaitTermination(1,TimeUnit.MILLISECONDS);
-					pool.shutdownNow();
-				}
-				catch(Exception e){
-					e.printStackTrace();
-				}
+			catch(Exception e){
+				e.printStackTrace();
 			}
-            long endTime = System.currentTimeMillis(); //end time
-            long duration = endTime - startTime;
-            System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
-            System.out.println(" which equals " + (duration / (1000 * 60.0)) + " minutes \n");
-			exec.shutdownNow();
+		}
+		long endTime = System.currentTimeMillis(); //end time
+		long duration = endTime - startTime;
+		System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
+		System.out.println(" which equals " + (duration / (1000 * 60.0)) + " minutes \n");
+		exec.shutdownNow();
 
-            //TODO: check if the above piece of code works
-			/*
-			Callable<String> callable = new  SimTest(stats);
-			for(int i=0; i< SESSIONS; i++)
-			{
-				//submit Callable tasks to be executed by thread pool
-				Future<String> future = pool.submit(callable);
-				//add Future to the list, we can get return value using Future
-				list.add(future);
+		//TODO: check if the above piece of code works
+		/*
+		Callable<String> callable = new  SimTest(stats);
+		for(int i=0; i< SESSIONS; i++){
+			//submit Callable tasks to be executed by thread pool
+			Future<String> future = pool.submit(callable);
+			//add Future to the list, we can get return value using Future
+			list.add(future);
+		}
+		pool.shutdown();
+
+		for(Future<String> fut : list) {
+			try {
+				System.out.println("Time for Session "+fut.get());
 			}
-			pool.shutdown();
-
-			for(Future<String> fut : list) {
-				try {
-					System.out.println("Time for Session "+fut.get());
-				}
-				catch(Exception e) {
-					e.printStackTrace();
-					System.out.println("An exception occurred");
-				}
+			catch(Exception e) {
+				e.printStackTrace();
+				System.out.println("An exception occurred");
 			}
-			pool.shutdownNow();
-			while (!pool.isTerminated()) {
-				//this can throw InterruptedException, you'll need to decide how to deal with that.
-				try{pool.awaitTermination(1,TimeUnit.MILLISECONDS);}
-				catch(Exception e){
-					e.printStackTrace();
-					System.out.println("An other exception occurred");
-				}
+		}
+		pool.shutdownNow();
+		while (!pool.isTerminated()) {
+			//this can throw InterruptedException, you'll need to decide how to deal with that.
+			try{pool.awaitTermination(1,TimeUnit.MILLISECONDS);}
+			catch(Exception e){
+				e.printStackTrace();
+				System.out.println("An other exception occurred");
 			}
-			long endTime = System.currentTimeMillis(); //end time
-			long duration = endTime - startTime;
-			*/
-			//Close the transaction Log File
-			logWriter.close();
-			//exec.shutdownNow();
-			System.out.println("Closing Print Writer...");
-			//PRINT STATS
-		    System.out.println("*********************Test Run statistics********************");
-			System.out.println("************************************************************");
-			System.out.println("Txn Mix:");
-			System.out.println("BrokerVolume Txn was run: \t\t"+stats.txnMix[0]  + " times;");
-			System.out.println("CustomerPosition Txn was run: \t"+stats.txnMix[1] + " times;");
-			System.out.println("MaretFeed Txn was run: \t\t\t"+stats.txnMix[2] + " times;");
-			System.out.println("TradeOrder Txn was run: \t\t"+stats.txnMix[3] + " times;");
-			System.out.println("TradeResult Txn was run: \t\t"+stats.txnMix[4] + " times;");
-			System.out.println("TradeStatus Txn was run: \t\t"+stats.txnMix[5] + " times;");
+		}
+		long endTime = System.currentTimeMillis(); //end time
+		long duration = endTime - startTime;
+		*/
 
-			long totalTxns = stats.txnMix[0]+stats.txnMix[1]+stats.txnMix[2]+stats.txnMix[3]+stats
-					.txnMix[4]+stats.txnMix[5];
-			System.out.println("Total Number of Txns run: \t\t"+totalTxns);
+		//Close the transaction Log File
+		logWriter.close();
+		//exec.shutdownNow();
+		System.out.println("Closing Print Writer...");
+		//PRINT STATS
+		long totalTxns = stats.txnMix[0]+stats.txnMix[1]+stats.txnMix[2]+stats.txnMix[3]+stats
+				.txnMix[4]+stats.txnMix[5];
+		System.out.println("Total Number of Txns run: \t\t" + totalTxns);
+		System.out.println("Estimated Throughput: \t\t" + totalTxns / (TIMETORUN * 60.0) + " tps");
+        System.out.println("************************************************************\n\n\n");
 
-			System.out.println("\n\n****************** Txn Duration (in msec) ******************");
-			System.out.println("************************************************************");
-			System.out.println("Broker Volume avg time\t\t: " + ((double) stats.txnMix[6])/stats.txnMix[0]);
-			System.out.println("Customer Position avg time\t: " + ((double) stats.txnMix[7])/stats.txnMix[1]);
-			System.out.println("Market Feed avg time\t\t: " + ((double) stats.txnMix[8])/stats.txnMix[2]);
-			System.out.println("Trade Order avg time\t\t: " + ((double) stats.txnMix[9])/stats.txnMix[3]);
-			System.out.println("Trade Result avg rime\t\t: " + ((double) stats.txnMix[10])/stats.txnMix[4]);
-			System.out.println("Trade Status avg rime\t\t: " + ((double) stats.txnMix[11])/stats.txnMix[5]);
+        System.out.println("*********************Test Run statistics********************");
+		System.out.println("************************************************************");
+		System.out.println("Txn Mix:");
+		System.out.println("BrokerVolume Txn was run: \t\t"+stats.txnMix[0]  + " times;");
+		System.out.println("CustomerPosition Txn was run: \t"+stats.txnMix[1] + " times;");
+		System.out.println("MaretFeed Txn was run: \t\t\t"+stats.txnMix[2] + " times;");
+		System.out.println("TradeOrder Txn was run: \t\t"+stats.txnMix[3] + " times;");
+		System.out.println("TradeResult Txn was run: \t\t"+stats.txnMix[4] + " times;");
+		System.out.println("TradeStatus Txn was run: \t\t"+stats.txnMix[5] + " times;");
 
+		System.out.println("\n\n****************** Txn Duration (in msec) ******************");
+		System.out.println("************************************************************");
+		System.out.println("Broker Volume avg time\t\t: " + ((double) stats.txnMix[6])/stats.txnMix[0]);
+		System.out.println("Customer Position avg time\t: " + ((double) stats.txnMix[7])/stats.txnMix[1]);
+		System.out.println("Market Feed avg time\t\t: " + ((double) stats.txnMix[8])/stats.txnMix[2]);
+		System.out.println("Trade Order avg time\t\t: " + ((double) stats.txnMix[9])/stats.txnMix[3]);
+		System.out.println("Trade Result avg rime\t\t: " + ((double) stats.txnMix[10])/stats.txnMix[4]);
+		System.out.println("Trade Status avg rime\t\t: " + ((double) stats.txnMix[11])/stats.txnMix[5]);
 
 	}
 	// TODO: THIS METHOD MUST RUN ON ALL(!) DATABASE INSTANCES
@@ -390,7 +464,7 @@ public class arisDemo {
 		System.out.println("Database Cleaned...");
 	}
 
-	public static void initParams(arisDemo dbObject) {
+	public static void initParams() {
 		//all_brokers
 		//all_brokers = dbObject.QUERY("select b_name from broker");
 		//all_sectors
@@ -545,16 +619,33 @@ public class arisDemo {
         }
         return randomSample(pool, pool.size());
     }
+    */
 
-    public static double getAverage(Vector<Long> list) {
+    public static List<Double> getStats(Vector<Long> list) {
+		//returning List contains:
+		//min, max, avg
+		List results = new Vector<Double>(3);
 		double sum = 0.0;
+		double min = list.get(0);
+		double max = list.get(0);
 		for (int i=0; i<list.size(); i++){
-			sum += list.get(i);
+			long elem = list.get(i);
+			sum += elem;
+			if (elem < min){
+				min = elem;
+			}
+			if (elem > max){
+				max = elem;
+			}
 		}
-		return sum/list.size();
+		results.add(min);
+		results.add(max);
+		results.add(sum/list.size());
+		System.out.println(results);
+		return results;
 	}
 
-    */
+
 
 	private static void generateTxn(arisDemo d, String txnFrame, Statistics stats) {
 		switch (txnFrame)
@@ -563,20 +654,17 @@ public class arisDemo {
 				//System.out.print("Executing Broker Volume from: ");
 				//System.out.println(Thread.currentThread());
 				brokerVolumeFrame(d, stats);
-				stats.increment(0);
 				//txnMix[0]++;
 				break;
 			case "CustomerPosition":
 				//System.out.print("Executing Customer Position from: ");
 				//System.out.println(Thread.currentThread());
 				customerPositionFrame(d, stats);
-				stats.increment(1);
 				break;
 			case "MarketFeed":
 				//System.out.print("Executing Market Feed from: ");
 				//System.out.println(Thread.currentThread());
 				marketFeedFrame(d, stats);
-				stats.increment(2);
 				break;
 			case "TradeOrder":
 				//System.out.print("Executing Trade Order followed by Trade Result from: ");
@@ -631,19 +719,20 @@ public class arisDemo {
 				shell.executeCommand(query);
 			}
 			else {
-                dbObject.QUERY(query);
-            }
+				dbObject.QUERY(query);
+			}
 			//
 			s.insertTime(6, System.currentTimeMillis() - t);
+			s.increment(0);
 			//s.txnMix[6] = s.txnMix[6] + System.currentTimeMillis() - t;
 		//}
 	}
 
-	private static void customerPositionFrame(arisDemo dbObject, Statistics s) {
+	private static void customerPositionFrame(final arisDemo dbObject, Statistics s) {
 		Long t = System.currentTimeMillis();
 		//Customer Position Frame 1 of 2
 		String cust_id = all_customers.get(ThreadLocalRandom.current().nextInt(0, all_customers.size()));
-		String query1 = String.format(
+		final String query1 = String.format(
 				"SELECT CA_ID, CA_BAL, sum(HS_QTY * LT_PRICE) as soma " +
 						"FROM CUSTOMER_ACCOUNT left outer join " +
 						"HOLDING_SUMMARY on HS_CA_ID = CA_ID, LAST_TRADE " +
@@ -656,14 +745,14 @@ public class arisDemo {
 			shell.executeCommand(query1);
 		}
 		else {
-            dbObject.QUERY(query1);
+			dbObject.QUERY(query1);
         }
 
 		//Customer Position Frame 2 of 2
 
 		//String c_ad_id = dbObject.QUERY2STR(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
         String c_ad_id = "4300000189";
-        String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
+        final String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
 		if (BYPASS){
 			c_ad_id = shell.executeCommand(q).replace("c_ad_id", "").replace("(1 row)", "");
 		}
@@ -680,7 +769,7 @@ public class arisDemo {
             	//return;
         	}
 		}
-		String query2 = String.format(
+		final String query2 = String.format(
 				"SELECT T_ID, T_S_SYMB, T_QTY, ST_NAME, TH_DTS " +
 						"FROM (SELECT T_ID as ID " +
 						"FROM TRADE " +
@@ -698,8 +787,9 @@ public class arisDemo {
 		}
 		else {
             dbObject.QUERY(query2);
-        }
+		}
 		s.insertTime(7, System.currentTimeMillis() - t);
+		s.increment(1);
 		//s.txnMix[7] = s.txnMix[7] + System.currentTimeMillis() - t;
 	}
 
@@ -803,8 +893,8 @@ public class arisDemo {
                 shell.executeCommand("COMMIT");
             }else dbObject.TCL("commit");
 		}
-
 		s.insertTime(8, System.currentTimeMillis() - t);
+		s.increment(2);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
 	}
 
@@ -1523,10 +1613,10 @@ public class arisDemo {
 		//s.txnMix[10] = s.txnMix[10] + System.currentTimeMillis() - t;
 	}
 
-	private static void tradeStatus(arisDemo dbObject, Statistics s) {
+	private static void tradeStatus(final arisDemo dbObject, Statistics s) {
 		String acct_id =  all_acct_ids.get(ThreadLocalRandom.current().nextInt(0, all_acct_ids.size())).toString();
 		Long t = System.currentTimeMillis();
-		String  sqlTSF1_1 = String.format(
+		final String  sqlTSF1_1 = String.format(
 				"SELECT t_id, t_dts, st_name, tt_name, t_s_symb, t_qty, " +
 				"       t_exec_name, t_chrg, s_name, ex_name "+
 				"FROM trade, status_type, trade_type, security, exchange "+
@@ -1545,7 +1635,7 @@ public class arisDemo {
             dbObject.QUERY(sqlTSF1_1);
         }
 
-		String  sqlTSF1_2 = String.format(
+		final String  sqlTSF1_2 = String.format(
 		"SELECT c_l_name, c_f_name, b_name " +
 		"FROM customer_account, customer, broker " +
 		"WHERE ca_id = %s " +
@@ -1556,8 +1646,8 @@ public class arisDemo {
 			shell.executeCommand(sqlTSF1_2);
 		}
 		else {
-            dbObject.QUERY(sqlTSF1_1);
-        }
+            dbObject.QUERY(sqlTSF1_2);
+		}
 		s.insertTime(11, System.currentTimeMillis() - t);
 		//s.txnMix[11] = s.txnMix[11] + System.currentTimeMillis() - t;
 
@@ -1811,16 +1901,14 @@ public class arisDemo {
 
 	private static class SimTest implements Callable<String> {
 		private Statistics s;
+        SimTest(Statistics stats){this.s = stats;}
 
-		SimTest(Statistics stats){
-			this.s = stats;
-		}
         @Override
         //Changed returned type from Object to String
         public String call() throws Exception {
 			arisDemo d = new arisDemo();
             if (!BYPASS){
-                d.CONNECT();
+				d.CONNECT();
                 d.setConsistency(MODE);
             }
 
@@ -1839,10 +1927,13 @@ public class arisDemo {
                     i = 0;
                 }
             }
+            long lEndTime = System.currentTimeMillis();
+            long duration = lEndTime - lStartTime;
 			d.DISCONNECT();
-			//System.out.println("Connection closed from thread: " + Thread.currentThread().getName());
-			//long lEndTime = System.currentTimeMillis();
-			//long dTime = lEndTime - lStartTime;
+            //System.out.println("Stats from thread: " + Thread.currentThread().getName());
+            //long totalTxns = s.txnMix[0]+s.txnMix[1]+s.txnMix[2]+s.txnMix[3]+s.txnMix[4]+s.txnMix[5];
+            //System.out.println("Total Number of Txns run: \t\t" + totalTxns);
+            //System.out.println("Estimated Throughput: \t\t" + totalTxns * 1000 / duration + " tps");
             return "Session complete";
 		}
         //
