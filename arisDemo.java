@@ -42,8 +42,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.25.19.103";
-	private String LISTENER="172.30.0.206";
+	//private String LISTENER="52.32.81.70";
+	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -82,12 +82,12 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 8; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 5; //in minutes
-	public static String    MIXSELECTOR   	= "a"; //b,c,d    default: all transactions (d)
+	public static int       SESSIONS        = 10; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 3; //in minutes
+	public static String    MIXSELECTOR   	= "d"; //b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
-	private static int 	    MODE		    = 4; //1, 2, 3, 4
+	private static int 	    MODE		    = 1; //1, 2, 3, 4
 	private static boolean 	BYPASS			= false; //run direclty on postgres. stopAll and start postgres normally (pg_ctl)
 	
 	//The writer for the Log
