@@ -42,7 +42,7 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.32.81.70";
+	//private String LISTENER="52.10.26.81";
 	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -84,7 +84,7 @@ public class arisDemo {
 	//public static int trxnsPerSession   = 10;
 	public static int       SESSIONS        = 10; //threads to spawn (on the machine where this program is run)
 	public static int       TIMETORUN       = 3; //in minutes
-	public static String    MIXSELECTOR   	= "d"; //b,c,d    default: all transactions (d)
+	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1; //1, 2, 3, 4
@@ -101,7 +101,7 @@ public class arisDemo {
 	//private static  long[] txnMix = new long[2*(txnPoolMaster.size()+1)];
 
 	public String EXEC_QUERY(String SQL) {
-		//if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		String output ="";
 		for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -138,7 +138,7 @@ public class arisDemo {
 	}
 
 	public List QUERY(String SQL) {
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		String output ="";
 		List resultOut = new Vector();
@@ -157,7 +157,7 @@ public class arisDemo {
 
 
 	public String QUERY2STR(String SQL){
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		String output ="";
 		for( int i = rows.size() -1; i >= 0 ; i --)
@@ -192,7 +192,7 @@ public class arisDemo {
 
 
 	public Map QUERY2MAP(String SQL){
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		Map<String, Object> results = new HashMap<>();
 		for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -228,7 +228,7 @@ public class arisDemo {
 
 
 	public List QUERY2LST(String SQL){
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		String output ="";
 		for( int i = rows.size() -1; i >= 0 ; i --)
@@ -245,7 +245,7 @@ public class arisDemo {
 
 	//Data Manipulation Language: INSERT, DELETE, UPDATE;
 	public String DML(String SQL) {
-        //if (DEBUG){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		return hih.executeUpdate(SQL);
 	}
 
@@ -1580,7 +1580,7 @@ public class arisDemo {
 
 		String trFrame6_2 = String.format(
 				"UPDATE customer_account " +
-				"SET ca_bal = ca_bal + %f " +
+				"SET ca_bal = ca_bal + (%f) " +
 				"WHERE ca_id = %s", se_amount, acct_id);
 		dbObject.DML(trFrame6_2);
 
