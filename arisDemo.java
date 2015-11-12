@@ -42,7 +42,7 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.10.26.81";
+	//private String LISTENER="52.33.73.128";
 	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -82,9 +82,9 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 10; //threads to spawn (on the machine where this program is run)
+	public static int       SESSIONS        = 1; //threads to spawn (on the machine where this program is run)
 	public static int       TIMETORUN       = 3; //in minutes
-	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
+	public static String    MIXSELECTOR   	= "a"; // a,b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1; //1, 2, 3, 4
@@ -202,6 +202,7 @@ public class arisDemo {
 			}
 		}
 		if (DEBUG){System.out.println(results);}
+		System.out.print(SQL);
 		return results;
 	}
 
@@ -350,7 +351,6 @@ public class arisDemo {
 		long startTime = System.currentTimeMillis(); //fetch starting time
 		ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
 		//List<Future<String>> list = new ArrayList<Future<String>>();
-
 		Collection<SimTest> collection = new ArrayList<>();
 		for(int i=0; i< SESSIONS; i++){
 			SimTest task = new SimTest(stats); //SimTest task = new SimTest(); //
@@ -358,19 +358,21 @@ public class arisDemo {
 		}
 		try{
 			List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
+			System.out.println("Print the pool");
+			System.out.println(pool);
 			for(Future<String> fut: listF){
 				try {
-					//System.out.println("Time for Session " + fut.get());
+					System.out.println("Time for Session " + fut.get());
 					fut.get();
 				}catch(Exception e){
-					//e.printStackTrace();
-					//System.out.println("An exception occurred");
+					e.printStackTrace();
+					System.out.println("An exception occurred");
 					fut.cancel(true);
 				}
 			}
 		}catch(InterruptedException ie){
 			ie.printStackTrace();
-				//System.out.println("Interrupted Exception");
+				System.out.println("Interrupted Exception");
 		}catch(CancellationException ce){
 			ce.printStackTrace();
 		}
