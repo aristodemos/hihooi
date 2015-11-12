@@ -202,7 +202,7 @@ public class arisDemo {
 			}
 		}
 		if (DEBUG){System.out.println(results);}
-		System.out.print(SQL);
+		//System.out.print(SQL);
 		return results;
 	}
 
