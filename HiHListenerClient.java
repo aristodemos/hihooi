@@ -362,7 +362,7 @@ public class HiHListenerClient
 		{
 			//System.out.println(e.getMessage());
 			//System.out.println("XML_DATA:" + xml_data);
-			e.printStackTrace();  
+			//e.printStackTrace();
 			columns=null;
 		}
 		return columns;
