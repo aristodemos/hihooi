@@ -368,8 +368,10 @@ public class arisDemo {
 				catch(InterruptedException ie){
 					ie.printStackTrace();
 					System.out.println("Inner Interrupted Exception");
+					fut.cancel(true);
 				}catch(CancellationException ce){
 					ce.printStackTrace();
+					fut.cancel(true);
 				}
 				catch(Exception e){
 					e.printStackTrace();
