@@ -364,7 +364,14 @@ public class arisDemo {
 				try {
 					System.out.println("Time for Session " + fut.get());
 					fut.get();
-				}catch(Exception e){
+				}
+				catch(InterruptedException ie){
+					ie.printStackTrace();
+					System.out.println("Inner Interrupted Exception");
+				}catch(CancellationException ce){
+					ce.printStackTrace();
+				}
+				catch(Exception e){
 					e.printStackTrace();
 					System.out.println("An exception occurred");
 					fut.cancel(true);
@@ -372,7 +379,7 @@ public class arisDemo {
 			}
 		}catch(InterruptedException ie){
 			ie.printStackTrace();
-				System.out.println("Interrupted Exception");
+				System.out.println("outer Interrupted Exception");
 		}catch(CancellationException ce){
 			ce.printStackTrace();
 		}
@@ -1938,42 +1945,6 @@ public class arisDemo {
             //System.out.println("Estimated Throughput: \t\t" + totalTxns * 1000 / duration + " tps");
             return "Session complete";
 		}
-        //
-        // / @Override
-        //Changed Object to String
-        public String callUnused() throws Exception {
-
-            long lStartTime = System.currentTimeMillis();
-            int i =0;
-
-            List txnsToRun  = new Vector<String>();
-            txnsToRun = workloadMix(MIXSELECTOR);
- 			/*
-            while(i < txnsToRun.size()){
-				generateTxn(d,txnsToRun.get(i).toString(), s);
-				i++;
-			}*/
-            //Code changed to support timed out threads
-                while (!Thread.currentThread().isInterrupted()) {
-
-					arisDemo d = new arisDemo();
-                    d.CONNECT();
-                    d.setConsistency(MODE);
-                    generateTxn(d, txnsToRun.get(i).toString(), s);
-                    d.DISCONNECT();
-                    i++;
-                    if (i >= txnsToRun.size()) {
-                        i = 0;
-                    }
-                }
-
-            long lEndTime = System.currentTimeMillis();
-            long dTime = lEndTime - lStartTime;
-
-            //System.out.println("Connection closed from thread: "+ Thread.currentThread().getName());
-            return "Connection closed from thread: "+ Thread.currentThread().getName();
-        }
-
     }
 }
 
