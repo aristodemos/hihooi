@@ -37,9 +37,9 @@ public class serializeObjects {
         //account_id
         all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
 
-        System.out.println(dbObject.DISCONNECT());
-        //symbols = dbObject.QUERY("select s_symb from security");
-        /*
+
+        symbols = dbObject.QUERY("select s_symb from security");
+
         for (String symbol : symbols){
             List<Double> values = new ArrayList<Double>();
             String basePriceHigh = String.format("select AVG(dm_high) from daily_market where dm_s_symb = '%s'",
@@ -51,13 +51,17 @@ public class serializeObjects {
             values.add(low);
             values.add(high);
             s_pricesDM.put(symbol, values);
-        }*/
+        }
+
+        System.out.println(dbObject.DISCONNECT());
 
         SerializeThings("all_brokers.ser", all_brokers);
         SerializeThings("all_sectors.ser", all_sectors);
         SerializeThings("all_customers.ser", all_customers);
         SerializeThings("all_symbols.ser", all_symbols);
         SerializeThings("all_acct_ids.ser", all_acct_ids);
+
+        SerializeThings("pricesDM.ser", s_pricesDM);
 
         //deserialize
         /*
