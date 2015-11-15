@@ -46,8 +46,8 @@ public class arisDemo {
 		}
 	}
 
-	private String LISTENER="52.33.164.177";
-	//private String LISTENER="172.30.0.130";
+	//private String LISTENER="52.33.164.177";
+	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -1222,7 +1222,7 @@ public class arisDemo {
         //s.txnMix[9] = s.txnMix[9] + System.currentTimeMillis() - t;
 		// Invoke tradeResult before exiting method.
 		tradeResult(dbObject, s, trade_id, trade_price);
-		s.increment(4);
+		s.increment(3);
 		//s.txnMix[4]++;
 
 	}
@@ -1635,6 +1635,7 @@ public class arisDemo {
 		dbObject.QUERY(trFrame6_4);
 		dbObject.TCL("commit");
 		s.insertTime(10, System.currentTimeMillis() - t);
+		s.increment(4);
 		//s.txnMix[10] = s.txnMix[10] + System.currentTimeMillis() - t;
 	}
 
@@ -1674,6 +1675,7 @@ public class arisDemo {
             dbObject.QUERY(sqlTSF1_2);
 		}
 		s.insertTime(11, System.currentTimeMillis() - t);
+		s.increment(5);
 		//s.txnMix[11] = s.txnMix[11] + System.currentTimeMillis() - t;
 
 	}
