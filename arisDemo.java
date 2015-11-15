@@ -23,7 +23,7 @@ public class arisDemo {
 
 
 	static final class Statistics {
-		private long[] txnMix = new long[2*(txnPoolMaster.size()+1)];
+		private long[] txnMix = new long[2*(txnPoolMaster.size()+1)+1];
 		//private final Object lock = new Object();
 
 		public void increment(int i){
@@ -46,8 +46,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.10.26.81";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="52.33.164.177";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -88,7 +88,7 @@ public class arisDemo {
 	//public static int trxnsPerSession   = 10;
 	public static int       SESSIONS        = 10; //threads to spawn (on the machine where this program is run)
 	public static int       TIMETORUN       = 3; //in minutes
-	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
+	public static String    MIXSELECTOR   	= "c"; // a,b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1; //1, 2, 3, 4
@@ -103,7 +103,8 @@ public class arisDemo {
 
 	//Atomic Array of Long to save the total latency(cummulative) and total number of each transaction
 	//private static  long[] txnMix = new long[2*(txnPoolMaster.size()+1)];
-	public final static  Statistics stats = new Statistics();
+
+	static  Statistics stats = new Statistics();
 
 	public String EXEC_QUERY(String SQL) {
 		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
@@ -255,6 +256,7 @@ public class arisDemo {
 	//Data Manipulation Language: INSERT, DELETE, UPDATE;
 	public String DML(String SQL) {
         if (DEBUG){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+		stats.increment(12);
 		return hih.executeUpdate(SQL);
 	}
 
@@ -264,9 +266,11 @@ public class arisDemo {
 	//TRANSACTION CONTROL LANGUAGE: COMMIT, ROLLBACK;
 	public String TCL(String tcl_cmd) {
 		if (tcl_cmd.equalsIgnoreCase("commit")) {
+			stats.increment(12);
 			return hih.commitTransaction();
 		}
 		else {
+			stats.increment(12);
 			return hih.rollbackTransaction();
 		}
 	}
@@ -1929,6 +1933,7 @@ public class arisDemo {
         public String call() throws Exception {
 			arisDemo d = new arisDemo();
             if (!BYPASS){
+				//System.out.println(d.CONNECT());
 				d.CONNECT();
                 d.setConsistency(MODE);
             }
