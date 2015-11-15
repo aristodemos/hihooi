@@ -3,6 +3,7 @@ package hih;
 //import com.sun.tools.javac.code.Attribute;
 
 import org.omg.PortableServer.THREAD_POLICY_ID;
+import org.xml.sax.SAXParseException;
 
 import java.io.*;
 //import java.lang.reflect.Array;
@@ -39,6 +40,9 @@ public class arisDemo {
 
 		public long txnsPerSec(){
 			 return txnMix[0]+txnMix[1]+txnMix[2]+txnMix[3]+txnMix[4]+txnMix[5];
+		}
+		public long opsPerSec(){
+			return txnMix[12];
 		}
 	}
 
@@ -99,6 +103,7 @@ public class arisDemo {
 
 	//Atomic Array of Long to save the total latency(cummulative) and total number of each transaction
 	//private static  long[] txnMix = new long[2*(txnPoolMaster.size()+1)];
+	public final static  Statistics stats = new Statistics();
 
 	public String EXEC_QUERY(String SQL) {
 		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
@@ -111,6 +116,7 @@ public class arisDemo {
 			}
 		}
 		if (DEBUG){System.out.println(output);}
+		stats.increment(12);
 		return output;
 	}
 	private final ExecutorService futPool = Executors.newFixedThreadPool(10);
@@ -152,6 +158,7 @@ public class arisDemo {
 			}
 		}
 		if (DEBUG){System.out.println(resultOut);}
+		stats.increment(12);
 		return resultOut;
 	}
 
@@ -202,6 +209,7 @@ public class arisDemo {
 			}
 		}
 		if (DEBUG){System.out.println(results);}
+		stats.increment(12);
 		return results;
 	}
 
@@ -240,6 +248,7 @@ public class arisDemo {
 			}
 		}
 		if (DEBUG){System.out.println(rows);}
+		stats.increment(12);
 		return rows;
 	}
 
@@ -315,7 +324,7 @@ public class arisDemo {
 		System.out.println("Mode = " +MODE);
 		
 		//init Statistics
-		final Statistics stats = new Statistics();
+		//final Statistics stats = new Statistics();
 
 		System.out.println("*************** Initializing the Test Run ******************");
 		//arisDemo d = new arisDemo();
@@ -433,16 +442,20 @@ public class arisDemo {
 		//PRINT STATS
 		long totalTxns = stats.txnMix[0]+stats.txnMix[1]+stats.txnMix[2]+stats.txnMix[3]+stats
 				.txnMix[4]+stats.txnMix[5];
-		System.out.println("Total Number of Txns run: \t\t" + totalTxns);
-		System.out.println("Estimated Throughput: \t\t" + totalTxns / (TIMETORUN * 60.0) + " tps");
-        System.out.println("************************************************************\n\n\n");
+		System.out.println("Total Number of Txns ran: \t\t" + totalTxns);
+		System.out.println("Estimated Throughput (tps): \t\t" + totalTxns / (TIMETORUN * 60.0) + " tps");
+
+		System.out.println("Total Number of Operations ran: \t\t" + stats.txnMix[12]);
+		System.out.println("Estimated Throughput (ops): \t\t" + stats.txnMix[12] / (TIMETORUN * 60.0) + " ops");
+
+		System.out.println("************************************************************\n\n\n");
 
         System.out.println("*********************Test Run statistics********************");
 		System.out.println("************************************************************");
 		System.out.println("Txn Mix:");
 		System.out.println("BrokerVolume Txn was run: \t\t"+stats.txnMix[0]  + " times;");
 		System.out.println("CustomerPosition Txn was run: \t"+stats.txnMix[1] + " times;");
-		System.out.println("MaretFeed Txn was run: \t\t\t"+stats.txnMix[2] + " times;");
+		System.out.println("MarketFeed Txn was run: \t\t\t"+stats.txnMix[2] + " times;");
 		System.out.println("TradeOrder Txn was run: \t\t"+stats.txnMix[3] + " times;");
 		System.out.println("TradeResult Txn was run: \t\t"+stats.txnMix[4] + " times;");
 		System.out.println("TradeStatus Txn was run: \t\t"+stats.txnMix[5] + " times;");
@@ -671,13 +684,13 @@ public class arisDemo {
 				//System.out.print("Executing Trade Order followed by Trade Result from: ");
 				//System.out.println(Thread.currentThread());
 				tradeOrder(d, stats);
-				stats.increment(3);
+				//stats.increment(3);
 				break;
 			case "TradeStatus":
 				//System.out.print("Executing Trade Status from: ");
 				//System.out.println(Thread.currentThread());
 				tradeStatus(d, stats);
-				stats.increment(5);
+				//stats.increment(5);
 				break;
 			//default: "";
 			//	break;
@@ -830,7 +843,14 @@ public class arisDemo {
 		for (int i=0; i<numberOfSymbols; i++){
 			String tradeQtQuery = String.format("select tr_qty from trade_request where tr_s_symb = '%s'",
 					activeSymbolsSet.get(i));
-			tradeQuantity.add(dbObject.QUERY2MAP(tradeQtQuery).get("tr_qty").toString());
+			try{
+				tradeQuantity.add(dbObject.QUERY2MAP(tradeQtQuery).get("tr_qty").toString());
+			}catch (Exception e){
+				dbObject.TCL("rollback");
+				s.insertTime(8, System.currentTimeMillis() - t);
+				s.increment(2);
+				return;
+			}
 		}
 		for (int i=0; i<numberOfSymbols; i++) {
 			//dbObject.START_TX();
@@ -959,13 +979,13 @@ public class arisDemo {
 		Map output3 = dbObject.QUERY2MAP(sqlTOF1_3);
 
 		String  sqlTOF2_1 = String.format(
-                "SELECT ap_acl  " +
-                        "FROM account_permission " +
-                        "WHERE ap_ca_id = %s " +
-                        "  AND ap_f_name = '%s' " +
-                        "  AND ap_l_name = '%s' " +
-                        "  AND ap_tax_id = '%s'", acct_id, output2.get("c_f_name"), output2.get("c_l_name"), output2
-                        .get("c_tax_id"));
+				"SELECT ap_acl  " +
+						"FROM account_permission " +
+						"WHERE ap_ca_id = %s " +
+						"  AND ap_f_name = '%s' " +
+						"  AND ap_l_name = '%s' " +
+						"  AND ap_tax_id = '%s'", acct_id, output2.get("c_f_name"), output2.get("c_l_name"), output2
+						.get("c_tax_id"));
 		Map output4 = dbObject.QUERY2MAP(sqlTOF2_1);
 		//TODO: check this rollback!
         if (output1.isEmpty()){
@@ -986,9 +1006,9 @@ public class arisDemo {
 						"  AND s_issue = '%s'",);*/
 
 		String  sqlTOF3_1b = String.format(
-                "SELECT s_co_id, s_ex_id, s_name " +
-                        "FROM security " +
-                        "WHERE s_symb = '%s' ", symbol);
+				"SELECT s_co_id, s_ex_id, s_name " +
+						"FROM security " +
+						"WHERE s_symb = '%s' ", symbol);
 		Map output5 = dbObject.QUERY2MAP(sqlTOF3_1b);
 
 		String  sqlTOF3_2b = String.format(
@@ -1020,10 +1040,10 @@ public class arisDemo {
 		int hold_qty = 0, needed_qty = trade_qty;
 
 		String  sqlTOF3_5 = String.format(
-                "SELECT hs_qty " +
-                        "FROM holding_summary " +
-                        "WHERE hs_ca_id = %s " +
-                        "  AND hs_s_symb = '%s'", acct_id, symbol);
+				"SELECT hs_qty " +
+						"FROM holding_summary " +
+						"WHERE hs_ca_id = %s " +
+						"  AND hs_s_symb = '%s'", acct_id, symbol);
 		Map hs_qtyMap = dbObject.QUERY2MAP(sqlTOF3_5);
 		if (!hs_qtyMap.isEmpty()) {hold_qty = Integer.valueOf((String) hs_qtyMap.get("hs_qty"));}
 
