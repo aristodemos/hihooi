@@ -46,8 +46,8 @@ public class arisDemo {
 		}
 	}
 
-	private String LISTENER="52.34.55.133";
-	//private String LISTENER="172.30.0.130";
+	//private String LISTENER="52.34.55.133";
+	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
