@@ -46,8 +46,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.33.164.177";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="52.34.55.133";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -86,9 +86,9 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 10; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 3; //in minutes
-	public static String    MIXSELECTOR   	= "c"; // a,b,c,d    default: all transactions (d)
+	public static int       SESSIONS        = 2; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 5; //in minutes
+	public static String    MIXSELECTOR   	= "a"; // a,b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1; //1, 2, 3, 4
@@ -814,6 +814,10 @@ public class arisDemo {
 	private static void marketFeedFrame(arisDemo dbObject, Statistics s) {
 		Long t = System.currentTimeMillis();
 
+		//dbObject.START_TX();
+		if (BYPASS){
+			shell.executeCommand("START TRANSACTION");
+		}else dbObject.START_TX();
 		activeSymbols = dbObject.QUERY("select TR_S_SYMB from TRADE_REQUEST");
 		//int numberOfSymbols = ThreadLocalRandom.current().nextInt(0, activeSymbols.size());
 		//the previous line is commented out because the spec states that the number of symbols must be 20;
@@ -857,10 +861,6 @@ public class arisDemo {
 			}
 		}
 		for (int i=0; i<numberOfSymbols; i++) {
-			//dbObject.START_TX();
-            if (BYPASS){
-                shell.executeCommand("START TRANSACTION");
-            }else dbObject.START_TX();
 			String query1 = String.format(
 					"UPDATE LAST_TRADE " +
 							"SET LT_PRICE = %f, " +
@@ -911,13 +911,13 @@ public class arisDemo {
                     dbObject.DML(query3);
                     dbObject.DML(query4);
                     dbObject.DML(query5);
-                }
+				}
 			}
-			//dbObject.TCL("commit");
-            if (BYPASS){
-                shell.executeCommand("COMMIT");
-            }else dbObject.TCL("commit");
 		}
+		//dbObject.TCL("commit");
+		if (BYPASS){
+			shell.executeCommand("COMMIT");
+		}else dbObject.TCL("commit");
 		s.insertTime(8, System.currentTimeMillis() - t);
 		s.increment(2);
 		//s.txnMix[8] = s.txnMix[8] + System.currentTimeMillis() - t;
@@ -1949,7 +1949,8 @@ public class arisDemo {
             //Code changed to support timed out threads
             while (!Thread.interrupted()) {
                 generateTxn(d, txnsToRun.get(i).toString(), s);
-                i++;
+                //Thread.sleep(ThreadLocalRandom.current().nextInt(50, 350));
+				i++;
                 //repeat for ever until TimeOut Clock stops the Thread
                 if (i >= txnsToRun.size() - 1) {
                     i = 0;
