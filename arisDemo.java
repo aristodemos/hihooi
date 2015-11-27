@@ -377,7 +377,7 @@ public class arisDemo {
 					fut.get();
 				}catch(Exception e){
 					//e.printStackTrace();
-					System.out.println("An exception occurred");
+					//System.out.println("An exception occurred");
 					fut.cancel(true);
 				}
 			}
