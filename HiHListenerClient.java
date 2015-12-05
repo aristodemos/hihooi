@@ -550,7 +550,7 @@ public class HiHListenerClient
 				}
 				catch(Exception e)
 				{
-					System.out.println(new Date()+ e.getMessage());
+					//System.out.println(new Date()+ e.getMessage());
 				}
 				return exit_code;
         	}
