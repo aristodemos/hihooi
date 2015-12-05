@@ -46,8 +46,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.34.55.133";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="52.34.218.73";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -86,8 +86,8 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 2; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 5; //in minutes
+	public static int       SESSIONS        = 12; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 10; //in minutes
 	public static String    MIXSELECTOR   	= "a"; // a,b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
@@ -366,30 +366,53 @@ public class arisDemo {
 
 		Collection<SimTest> collection = new ArrayList<>();
 		for(int i=0; i< SESSIONS; i++){
-			SimTest task = new SimTest(stats); //SimTest task = new SimTest(); //
+			arisDemo connector = new arisDemo();
+			SimTest task = new SimTest(stats, connector); //SimTest task = new SimTest(); //
 			collection.add(task);
 		}
 		try{
 			List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
 			for(Future<String> fut: listF){
 				try {
-					//System.out.println("Time for Session " + fut.get());
+					System.out.println("Time for Session " + fut.get());
 					fut.get();
-				}catch(Exception e){
+				}
+				catch(CancellationException ce) {
+					//ce.printStackTrace();
+					//System.out.println("A cancellation exception occurred");
+					fut.cancel(true);
+				}
+				catch (ExecutionException e) {
+					System.out.println("An execution exception occurred");
+					fut.cancel(true);
+				} catch (InterruptedException ex) {
+					System.out.println("An interrupted exception occurred");
+					fut.cancel(true);
+				}
+				catch(Exception e){
 					//e.printStackTrace();
-					//System.out.println("An exception occurred");
+					System.out.println("An exception occurred");
 					fut.cancel(true);
 				}
 			}
 		}catch(InterruptedException ie){
 			ie.printStackTrace();
 			System.out.println("outer Interrupted Exception");
-				System.out.println("Interrupted Exception");
+			System.out.println("Interrupted Exception");
 		}catch(CancellationException ce){
 			ce.printStackTrace();
+			System.out.println("outer Cancellation Exception");
 		}
 		pool.shutdownNow();
-		while (!pool.isTerminated()) {
+		System.out.println("Closing Connections . . .");
+		for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
+			SimTest type = (SimTest) iterator.next();
+			System.out.println(type.d);
+			//type.disconnectNow();
+			type.onCancel();
+		}
+		System.out.println("Connections Closed.");
+		/*while (!pool.isTerminated()) {
 			//this can throw InterruptedException, you'll need to decide how to deal with that.
 			//System.out.println("Awaiting pool termination");
 			try{
@@ -399,7 +422,7 @@ public class arisDemo {
 			catch(Exception e){
 				e.printStackTrace();
 			}
-		}
+		}*/
 		long endTime = System.currentTimeMillis(); //end time
 		long duration = endTime - startTime;
 		System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
@@ -1926,28 +1949,54 @@ public class arisDemo {
 	}
 	*/
 
-	private static class SimTest implements Callable<String> {
+	public class MyRunnable implements Runnable {
+
+		private volatile boolean shutdown;
+
+		public void run(){
+			while (!shutdown){
+				System.out.println("Running");
+			}
+		}
+		public void shutdown(){
+			shutdown = true;
+		}
+	}
+
+	private static class SimTest implements Callable<String>{
 		private Statistics s;
-        SimTest(Statistics stats){this.s = stats;}
+		public arisDemo d;
+        SimTest(Statistics stats, arisDemo db){this.s = stats; this.d = db;}
+
+		public void disconnectNow(){
+			System.out.println(d.DISCONNECT());
+		}
+
+		private volatile boolean cancelled = false;
+		public void onCancel() throws IOException{
+			cancelled = true;
+			d.DISCONNECT();
+			Thread.currentThread().interrupt();
+		}
 
         @Override
         //Changed returned type from Object to String
-        public String call() throws Exception {
-			arisDemo d = new arisDemo();
+        public String call() throws Exception{
             if (!BYPASS){
 				//System.out.println(d.CONNECT());
 				d.CONNECT();
                 d.setConsistency(MODE);
             }
 
-			long lStartTime = System.currentTimeMillis();
+			//long lStartTime = System.currentTimeMillis();
 			int i =0;
 
             List txnsToRun  = new Vector<String>();
             txnsToRun = workloadMix(MIXSELECTOR);
 
             //Code changed to support timed out threads
-            while (!Thread.interrupted()) {
+            /*
+            while (!Thread.currentThread().isInterrupted()) {
                 generateTxn(d, txnsToRun.get(i).toString(), s);
                 //Thread.sleep(ThreadLocalRandom.current().nextInt(50, 350));
 				i++;
@@ -1955,15 +2004,18 @@ public class arisDemo {
                 if (i >= txnsToRun.size() - 1) {
                     i = 0;
                 }
-            }
-            long lEndTime = System.currentTimeMillis();
-            long duration = lEndTime - lStartTime;
-			d.DISCONNECT();
-            //System.out.println("Stats from thread: " + Thread.currentThread().getName());
-            //long totalTxns = s.txnMix[0]+s.txnMix[1]+s.txnMix[2]+s.txnMix[3]+s.txnMix[4]+s.txnMix[5];
-            //System.out.println("Total Number of Txns run: \t\t" + totalTxns);
-            //System.out.println("Estimated Throughput: \t\t" + totalTxns * 1000 / duration + " tps");
-            return "Session complete";
+            }*/
+
+			while (!cancelled){
+				generateTxn(d, txnsToRun.get(i).toString(), s);
+				i++;
+				if (i >= txnsToRun.size() - 1) {i = 0;}
+			}
+			if (Thread.currentThread().isInterrupted()){
+				System.out.println(d.DISCONNECT());
+			}
+			//System.out.println("Thread: " + Thread.currentThread().getName() + " finished");
+			return "Session complete";
 		}
     }
 }

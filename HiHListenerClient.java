@@ -532,8 +532,15 @@ public class HiHListenerClient
 						this.in.close();
 						exit_code="Disconnect Successfuly";
 					}
+					else if (serverResponse.equalsIgnoreCase("END DATA")){
+						this.out.close();
+						this.in.close();
+						exit_code="Disconnect Successfuly";
+					}
 					else
 					{
+						this.out.close();
+						this.in.close();
 						exit_code="No Response from server.";
 					}
 
