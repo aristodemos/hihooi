@@ -524,7 +524,7 @@ public class HiHListenerClient
         	{
 				try
 				{
-					/*out.println("End");
+					out.println("End");
 					serverResponse= in.readLine();
 					if (serverResponse.equalsIgnoreCase("Bye"))
 					{
@@ -542,7 +542,7 @@ public class HiHListenerClient
 						this.out.close();
 						this.in.close();
 						exit_code="No Response from server.";
-					}*/
+					}
 					this.out.close();
 					this.in.close();
 					exit_code="Disconnect Abruptly";
