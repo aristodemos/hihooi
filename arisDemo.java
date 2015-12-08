@@ -918,13 +918,13 @@ public class arisDemo {
 		}
 		String query1 = String.format(
 				"with new_values (LT_PRICE, LTs_VOL, LT_DTS, LT_S_SYMB) as (" +
-						"values" + " )" +
+						"values  %s  )" +
 						"update LAST_TRADE m"+
 						"set LT_PRICE = nv.LT_PRICE,"+
 						"LT_VOL = LT_VOL + nv.LTs_VOL,"+
 						"LT_DTS = nv.LT_DTS"+
 						"from new_values nv"+
-						"where m.LT_S_SYMB = nv.LT_S_SYMB;"
+						"where m.LT_S_SYMB = nv.LT_S_SYMB", values
 		);
 
 
