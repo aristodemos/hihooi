@@ -46,8 +46,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.33.215.25";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="52.33.215.25";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -923,11 +923,9 @@ public class arisDemo {
 						"set LT_PRICE = nv.LT_PRICE,"+
 						"LT_VOL = LT_VOL + nv.LTs_VOL,"+
 						"LT_DTS = nv.LT_DTS"+
-						"from new_values nv"+
-						"where m.LT_S_SYMB = nv.LT_S_SYMB", values
-		);
-
-
+						"from new_values nv  "+
+						"where   m.LT_S_SYMB = nv.LT_S_SYMB", values);
+		System.out.println(query1);
 
 			//store trade_id in request_list
 			//dbObject.DML(query1);
