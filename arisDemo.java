@@ -46,7 +46,7 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="52.34.144.108";
+	//private String LISTENER="52.33.215.25";
 	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -86,8 +86,8 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 2; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 1; //in minutes
+	public static int       SESSIONS        = 20; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 5; //in minutes
 	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
@@ -218,18 +218,18 @@ public class arisDemo {
 	public Future<List> QUERYF2LST(final String SQL) {
 		return futPool.submit(new Callable<List>() {
 			@Override
-			public List call()  {
+			public List call() {
 				List<Map<String, Object>> rows = hih.executeQuery(SQL);
-				String output ="";
-				for( int i = rows.size() -1; i >= 0 ; i --)
-				{
-					Map<String,Object> entry = rows.get(i);
-					for (String key : entry.keySet())
-					{
+				String output = "";
+				for (int i = rows.size() - 1; i >= 0; i--) {
+					Map<String, Object> entry = rows.get(i);
+					for (String key : entry.keySet()) {
 						output += entry.get(key);
 					}
 				}
-				if (DEBUG){System.out.println(rows);}
+				if (DEBUG) {
+					System.out.println(rows);
+				}
 				return rows;
 			}
 		});
@@ -883,20 +883,61 @@ public class arisDemo {
 				return;
 			}
 		}
+		/*
+		with new_values (LT_PRICE, LTs_VOL, LT_DTS, LT_S_SYMB) as (
+	values
+		(25.753078,	787, now(), 'AVSR'),
+		(23.932491,	776, now(), 'ABCW'),
+		(24.540930,	180, now(), 'BXP'),
+		(26.085656,	465, now(), 'TWR'),
+		(24.009905,	797, now(), 'TDSC'),
+		(25.676966,	575, now(), 'ANF'),
+		(24.975209,	793, now(), 'APHPRA'),
+		(23.935118,	688, now(), 'TRFX')
+	)
+
+	update LAST_TRADE m
+		set LT_PRICE = nv.LT_PRICE,
+			LT_VOL = LT_VOL + nv.LTs_VOL,
+			LT_DTS = nv.LT_DTS
+		from new_values nv
+		where m.LT_S_SYMB = nv.LT_S_SYMB;
+		*/
+		String values = "";
 		for (int i=0; i<numberOfSymbols; i++) {
-			String query1 = String.format(
+			/*String query1j = String.format(
 					"UPDATE LAST_TRADE " +
 							"SET LT_PRICE = %f, " +
 							"LT_VOL = LT_VOL + %s, " +
 							"LT_DTS = now() " +
-							"WHERE LT_S_SYMB = '%s'", priceQuote.get(i), tradeQuantity.get(i), activeSymbolsSet.get(i));
+							"WHERE LT_S_SYMB = '%s'", priceQuote.get(i), tradeQuantity.get(i), activeSymbolsSet.get(i));*/
+			values += "( "+priceQuote.get(i)+", "+tradeQuantity.get(i)+", now(), "+"'"+activeSymbolsSet.get(i)+"')";
+			if (i<numberOfSymbols-1){
+				values += ",";
+			}
+		}
+		String query1 = String.format(
+				"with new_values (LT_PRICE, LTs_VOL, LT_DTS, LT_S_SYMB) as (" +
+						"values" + " )" +
+						"update LAST_TRADE m"+
+						"set LT_PRICE = nv.LT_PRICE,"+
+						"LT_VOL = LT_VOL + nv.LTs_VOL,"+
+						"LT_DTS = nv.LT_DTS"+
+						"from new_values nv"+
+						"where m.LT_S_SYMB = nv.LT_S_SYMB;"
+		);
+
+
+
 			//store trade_id in request_list
 			//dbObject.DML(query1);
+
             if (BYPASS){
                 shell.executeCommand(query1);
             }else {
                 dbObject.DML(query1);
             }
+			for (int i=0; i<numberOfSymbols; i++) {
 			String query2 = String.format(
 					"SELECT TR_T_ID "+
 					"FROM TRADE_REQUEST " +
