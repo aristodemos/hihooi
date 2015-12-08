@@ -46,8 +46,8 @@ public class arisDemo {
 		}
 	}
 
-	private String LISTENER="52.33.215.25";
-	//private String LISTENER="172.30.0.130";
+	//private String LISTENER="52.34.106.133";
+	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -379,11 +379,12 @@ public class arisDemo {
 				}
 				catch(CancellationException ce) {
 					//ce.printStackTrace();
-					//System.out.println("A cancellation exception occurred");
+					System.out.println("A cancellation exception occurred");
 					fut.cancel(true);
 				}
 				catch (ExecutionException e) {
 					System.out.println("An execution exception occurred");
+					e.printStackTrace();
 					fut.cancel(true);
 				} catch (InterruptedException ex) {
 					System.out.println("An interrupted exception occurred");
@@ -920,12 +921,11 @@ public class arisDemo {
 				"with new_values (LT_PRICE, LTs_VOL, LT_DTS, LT_S_SYMB) as (" +
 						"values  %s  )" +
 						"update LAST_TRADE m "+
-						"set LT_PRICE = nv.LT_PRICE,"+
+						" set LT_PRICE = nv.LT_PRICE,"+
 						"LT_VOL = LT_VOL + nv.LTs_VOL,"+
 						"LT_DTS = nv.LT_DTS"+
 						" from new_values nv  "+
 						"where   m.LT_S_SYMB = nv.LT_S_SYMB", values);
-		System.out.println(query1);
 
 			//store trade_id in request_list
 			//dbObject.DML(query1);
@@ -1987,20 +1987,6 @@ public class arisDemo {
 
 	}
 	*/
-
-	public class MyRunnable implements Runnable {
-
-		private volatile boolean shutdown;
-
-		public void run(){
-			while (!shutdown){
-				System.out.println("Running");
-			}
-		}
-		public void shutdown(){
-			shutdown = true;
-		}
-	}
 
 	private static class SimTest implements Callable<String>{
 		private Statistics s;

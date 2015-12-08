@@ -526,27 +526,19 @@ public class HiHListenerClient
 				{
 					out.println("End");
 					serverResponse= in.readLine();
-					if (serverResponse.equalsIgnoreCase("Bye"))
-					{
+					if (serverResponse.equalsIgnoreCase("Bye")){
 						this.out.close();
 						this.in.close();
 						exit_code="Disconnect Successfuly";
 					}
-					else if (serverResponse.equalsIgnoreCase("END DATA")){
-						this.out.close();
-						this.in.close();
-						exit_code="Disconnect Successfuly";
-					}
-					else
-					{
+					else{
 						this.out.close();
 						this.in.close();
 						exit_code="No Response from server.";
 					}
-					this.out.close();
+					/*this.out.close();
 					this.in.close();
-					exit_code="Disconnect Abruptly";
-
+					exit_code="Disconnect Abruptly";*/
 				}
 				catch(Exception e)
 				{
