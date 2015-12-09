@@ -20,7 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
  
-public class HiHListenerClient 
+public class HiHListenerClient
 {
 	public HiHListenerClient()
 	{
@@ -111,58 +111,6 @@ public class HiHListenerClient
 			
 			return exit_code;
 		}
-		//####################################################################################################################################################
-		 //####################################################################################################################################################
-			public String fastload(Vector<String> SQLSTMT, Properties prop)
-			{
-				/*
-				 *  0  no insert .
-				 *  > 1 OK
-				 */
-				String exit_code="";
-				String serverResponse="";
-				if (!CONNECTED)
-		        {
-					exit_code="You are no connected.";
-		        }
-				else
-				{
-					
-					String xml_execute_update =""+ 
-		         			"<?xml version=\"1.0\"?>" + 
-		     				"<root>" +
-		     				"<RequestType>Bulk Load</RequestType>" ;
-	        			
-					
-					String DML = "<dml>" +
-	         				"	<service-name>"+this.SERVICE_NAME+"</service-name>" + 
-	         				"	<session-id>"+this.SESSION_ID+"</session-id>" +
-					        "	<statement>";
-					
-					
-					for (int i=0; i<SQLSTMT.size(); i++)
-					{
-						DML += "<sql>"+XMLEscapeConverter((String)SQLSTMT.elementAt(i))+"</sql>";
-					}
-					DML += " </statement></dml></root>";	
-					
-					
-					try
-					{
-							out.println(xml_execute_update+DML);
-							serverResponse=in.readLine();
-							return serverResponse;
-					}
-					catch(Exception e)
-					{
-						exit_code=e.getMessage();
-					}
-				}
-				
-				return exit_code;
-			}
-			//####################################################################################################################################################
-			//####################################################################################################################################################
 	   //####################################################################################################################################################
 	   //####################################################################################################################################################
 		public String executeUpdate(String sql_stmt)
@@ -187,7 +135,7 @@ public class HiHListenerClient
         				"<dml>" +
          				"	<service-name>"+this.SERVICE_NAME+"</service-name>" + 
          				"	<session-id>"+this.SESSION_ID+"</session-id>" + 
-         				"	<statement>"+XMLEscapeConverter(sql_stmt)+"</statement>" + 
+         				"	<statement>"+XMLEscapeConverter(sql_stmt)+"</statement>" +
           				"</dml>"+ 
 	     				"</root>";
 				
@@ -261,22 +209,20 @@ public class HiHListenerClient
 			return exit_code;
 		}
 	   //####################################################################################################################################################
+	   private String XMLEscapeConverter(String input)
+	   {
+		   input= input.replaceAll("&", "&amp;");
+		   input= input.replaceAll("<", "&lt;");
+		   input= input.replaceAll(">", "&gt;");
+		   input= input.replaceAll("'", "&apos;");
+		   //from stack overflow
+		   //http://stackoverflow.com/questions/3030903/content-is-not-allowed-in-prolog-when-parsing-perfectly-valid-xml-on-gae
+		   //trying to avoid org.xml.sax.SAXParseException;
+		   //exception message says: "Content is not allowed in prolog."
+		   input= input.trim().replaceFirst("(^([\\W]+)<)","<");
+		   return input;
+	   }
 	   //####################################################################################################################################################
-		  private String XMLEscapeConverter(String input)
-		  {
-			  input= input.replaceAll("&", "&amp;");
-			  input= input.replaceAll("<", "&lt;");
-			  input= input.replaceAll(">", "&gt;");
-			  input= input.replaceAll("'", "&apos;");
-			  //from stack overflow
-			  //http://stackoverflow.com/questions/3030903/content-is-not-allowed-in-prolog-when-parsing-perfectly-valid-xml-on-gae
-			  //trying to avoid org.xml.sax.SAXParseException;
-			  //exception message says: "Content is not allowed in prolog."
-			  input= input.trim().replaceFirst("(^([\\W]+)<)","<");
-			  return input;
-		  }
-		 //####################################################################################################################################################
-		//####################################################################################################################################################
 		public List<Map<String, Object>> executeQuery(String query)
 		{
 			List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
@@ -302,7 +248,7 @@ public class HiHListenerClient
         				"<query>" +
          				"	<service-name>"+this.SERVICE_NAME+"</service-name>" + 
          				"	<session-id>"+this.SESSION_ID+"</session-id>" + 
-         				"	<statement>"+XMLEscapeConverter(query)+"</statement>" + 
+         				"	<statement>"+XMLEscapeConverter(query)+"</statement>" +
           				"</query>"+ 
 	     				"</root>";
 				try
@@ -328,7 +274,7 @@ public class HiHListenerClient
 				}
 				catch(Exception e)
 				{
-					System.out.println(new Date()+ e.getMessage());
+					//System.out.println(new Date()+ e.getMessage());
 				}
 
 			}
@@ -358,11 +304,9 @@ public class HiHListenerClient
 				      break;  
 				    }
 		}
-		catch (IOException | org.xml.sax.SAXException|javax.xml.parsers.ParserConfigurationException e)
+		catch(Exception e)
 		{
-			System.out.println(e.getMessage());
-			//System.out.println("XML_DATA:" + xml_data);
-			e.printStackTrace();
+			//e.printStackTrace();
 			columns=null;
 		}
 		return columns;
@@ -457,9 +401,9 @@ public class HiHListenerClient
              				"<RequestType>"+requestType+"</RequestType>"+
              				"<session>" +
              				"	<service-name>"+this.SERVICE_NAME+"</service-name>" + 
-             				"	<username>"+XMLEscapeConverter(username)+"</username>" + 
-             				"	<password>"+XMLEscapeConverter(password)+"</password>" + 
-             				"	<identifier>"+XMLEscapeConverter(identifier)+"</identifier>" + 
+             				"	<username>"+XMLEscapeConverter(username)+"</username>" +
+             				"	<password>"+XMLEscapeConverter(password)+"</password>" +
+             				"	<identifier>"+XMLEscapeConverter(identifier)+"</identifier>" +
              				"</session>" + 
              				"</root>";
             			out.println(xml_create_session);
@@ -526,19 +470,17 @@ public class HiHListenerClient
 				{
 					out.println("End");
 					serverResponse= in.readLine();
-					if (serverResponse.equalsIgnoreCase("Bye")){
+					if (serverResponse.equalsIgnoreCase("Bye"))
+					{
 						this.out.close();
 						this.in.close();
 						exit_code="Disconnect Successfuly";
 					}
-					else{
-						this.out.close();
-						this.in.close();
+					else
+					{
 						exit_code="No Response from server.";
 					}
-					/*this.out.close();
-					this.in.close();
-					exit_code="Disconnect Abruptly";*/
+
 				}
 				catch(Exception e)
 				{

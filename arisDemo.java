@@ -23,7 +23,7 @@ public class arisDemo {
 
 
 	static final class Statistics {
-		private long[] txnMix = new long[2*(txnPoolMaster.size()+1)+1];
+		private long[] txnMix = new long[2*(txnPoolMaster.size()+1)+2]; //13
 		//private final Object lock = new Object();
 
 		public void increment(int i){
@@ -42,12 +42,12 @@ public class arisDemo {
 			 return txnMix[0]+txnMix[1]+txnMix[2]+txnMix[3]+txnMix[4]+txnMix[5];
 		}
 		public long opsPerSec(){
-			return txnMix[12];
+			return txnMix[12]+txnMix[13];
 		}
 	}
 
-	//private String LISTENER="52.34.106.133";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="52.35.18.49";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -86,8 +86,8 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 20; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 5; //in minutes
+	public static int       SESSIONS        = 10; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 20; //in minutes
 	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
     private static String   LAST_T_ID       = "200000000290880";
@@ -256,7 +256,7 @@ public class arisDemo {
 	//Data Manipulation Language: INSERT, DELETE, UPDATE;
 	public String DML(String SQL) {
         if (DEBUG){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
-		stats.increment(12);
+		stats.increment(13);
 		return hih.executeUpdate(SQL);
 	}
 
@@ -276,6 +276,8 @@ public class arisDemo {
 	}
 
 	public arisDemo() {}
+
+	//static MarketSim marketSEE = new MarketSim();
 	static ExecuteShellCommand shell = new ExecuteShellCommand();
 
 	public static void main(String [] args) throws IOException {
@@ -351,6 +353,7 @@ public class arisDemo {
 		//logWriter.printf("Number of threads (sessions):  " + SESSIONS + "\r\n");
 		//logWriter.printf("Txns per Session :  " + trxnsPerSession+"\r\n");
 
+		/*
 		ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 		exec.scheduleAtFixedRate(new Runnable() {
 			@Override
@@ -359,17 +362,24 @@ public class arisDemo {
 				logWriter.print(stats.txnsPerSec() + "\r\n");
 			}
 		}, 0, 5, TimeUnit.SECONDS);
-
+		*/
 		long startTime = System.currentTimeMillis(); //fetch starting time
 		ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
 		//List<Future<String>> list = new ArrayList<Future<String>>();
+		arisDemo marketConnection = new arisDemo();
+		MarketSim marketSEE = new MarketSim(marketConnection);
+
+		ExecutorService marketService = Executors.newSingleThreadExecutor();
+		marketService.submit(marketSEE);
 
 		Collection<SimTest> collection = new ArrayList<>();
 		for(int i=0; i< SESSIONS; i++){
 			arisDemo connector = new arisDemo();
-			SimTest task = new SimTest(stats, connector); //SimTest task = new SimTest(); //
+			SimTest task = new SimTest(stats, connector, marketSEE); //SimTest task = new SimTest(); //
 			collection.add(task);
 		}
+		//marketService.submit(marketSEE);
+
 		try{
 			List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
 			for(Future<String> fut: listF){
@@ -379,7 +389,7 @@ public class arisDemo {
 				}
 				catch(CancellationException ce) {
 					//ce.printStackTrace();
-					System.out.println("A cancellation exception occurred");
+					//System.out.println("A cancellation exception occurred");
 					fut.cancel(true);
 				}
 				catch (ExecutionException e) {
@@ -405,13 +415,16 @@ public class arisDemo {
 			System.out.println("outer Cancellation Exception");
 		}
 		pool.shutdownNow();
+
 		System.out.println("Closing Connections . . .");
+
 		for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
 			SimTest type = (SimTest) iterator.next();
-			System.out.println(type.d);
+			//System.out.println(type.d);
 			//type.disconnectNow();
 			type.onCancel();
 		}
+		marketSEE.setCloseMarket();
 		System.out.println("Connections Closed.");
 		/*while (!pool.isTerminated()) {
 			//this can throw InterruptedException, you'll need to decide how to deal with that.
@@ -428,8 +441,8 @@ public class arisDemo {
 		long duration = endTime - startTime;
 		System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
 		System.out.println(" which equals " + (duration / (1000 * 60.0)) + " minutes \n");
-		exec.shutdownNow();
-
+		//exec.shutdownNow();
+		marketService.shutdownNow();
 		//TODO: check if the above piece of code works
 		/*
 		Callable<String> callable = new  SimTest(stats);
@@ -473,8 +486,9 @@ public class arisDemo {
 		System.out.println("Total Number of Txns ran: \t\t" + totalTxns);
 		System.out.println("Estimated Throughput (tps): \t\t" + totalTxns / (TIMETORUN * 60.0) + " tps");
 
-		System.out.println("Total Number of Operations ran: \t\t" + stats.txnMix[12]);
-		System.out.println("Estimated Throughput (ops): \t\t" + stats.txnMix[12] / (TIMETORUN * 60.0) + " ops");
+		System.out.println("Total Number of Operations ran: \t\t" + stats.opsPerSec());
+		System.out.println("Total writes: \t\t" + stats.txnMix[13]);
+		System.out.println("Estimated Throughput (ops): \t\t" + stats.opsPerSec() / (TIMETORUN * 60.0) + " ops");
 
 		System.out.println("************************************************************\n\n\n");
 
@@ -689,7 +703,7 @@ public class arisDemo {
 
 
 
-	private static void generateTxn(arisDemo d, String txnFrame, Statistics stats) {
+	private static void generateTxn(arisDemo d, String txnFrame, Statistics stats, MarketSim ms) {
 		switch (txnFrame)
 		{
 			case "BrokerVolume":
@@ -706,12 +720,13 @@ public class arisDemo {
 			case "MarketFeed":
 				//System.out.print("Executing Market Feed from: ");
 				//System.out.println(Thread.currentThread());
-				marketFeedFrame(d, stats);
+				//marketFeedFrame(d, stats);
+				ms.runMarketFeed();
 				break;
 			case "TradeOrder":
 				//System.out.print("Executing Trade Order followed by Trade Result from: ");
 				//System.out.println(Thread.currentThread());
-				tradeOrder(d, stats);
+				tradeOrder(d, stats, ms);
 				//stats.increment(3);
 				break;
 			case "TradeStatus":
@@ -842,7 +857,7 @@ public class arisDemo {
 		if (BYPASS){
 			shell.executeCommand("START TRANSACTION");
 		}else dbObject.START_TX();
-		activeSymbols = dbObject.QUERY("select TR_S_SYMB from TRADE_REQUEST");
+		activeSymbols = dbObject.QUERY("select distinct(TR_S_SYMB) from TRADE_REQUEST");
 		//int numberOfSymbols = ThreadLocalRandom.current().nextInt(0, activeSymbols.size());
 		//the previous line is commented out because the spec states that the number of symbols must be 20;
 		int numberOfSymbols = 20;
@@ -988,7 +1003,7 @@ public class arisDemo {
 	//Important:
 	//After a successfully Committed market order, the EGenTxnHarness sends the order for the trade to the appropriate MEE.
 	//In other wors the trade Result txn is called !!!
-	private static void tradeOrder(arisDemo dbObject, Statistics s) {
+	private static void tradeOrder(arisDemo dbObject, Statistics s, MarketSim ms) {
 		Long t = System.currentTimeMillis();
 		//Frame Inputs: account_id, symbol of the security (stock), trade_quantity
 		//bools: type_is_market, type_is_sell, use LIFO on FILO traversal
@@ -1283,6 +1298,7 @@ public class arisDemo {
 		s.insertTime(9, System.currentTimeMillis() - t);
         //s.txnMix[9] = s.txnMix[9] + System.currentTimeMillis() - t;
 		// Invoke tradeResult before exiting method.
+		//ms.queTR(trade_price, trade_id);
 		tradeResult(dbObject, s, trade_id, trade_price);
 		s.increment(3);
 		//s.txnMix[4]++;
@@ -1988,14 +2004,64 @@ public class arisDemo {
 	}
 	*/
 
+	public static class Pair{
+		private Double tr_price;
+		private String tr_id;
+	}
+
+	private static class MarketSim implements Runnable{
+		MarketSim(arisDemo dd){
+			this.db=dd;
+		}
+		public arisDemo db;
+
+		private volatile boolean closeMarket = false;
+
+		//private volatile List<Pair> listTR = new ArrayList<Pair>();
+		private volatile List listMF = new ArrayList();
+		/*
+		public void queTR(Double t_price, String t_id){
+			Pair p = new Pair();
+			p.tr_id=t_id;
+			p.tr_price=t_price;
+			listTR.add(p);
+		}*/
+
+		public void setCloseMarket() throws IOException{
+			closeMarket = true;
+			db.DISCONNECT();
+			Thread.currentThread().interrupt();
+		}
+
+		public void runMarketFeed(){
+			listMF.add(1);
+		}
+		@Override
+		public void  run() {
+			System.out.println(db.CONNECT());						///put Back
+			Thread.currentThread().setPriority(10);
+			db.setConsistency(MODE);								///put Back
+			while(!closeMarket || !Thread.currentThread().isInterrupted()){
+				if (!listMF.isEmpty()) {
+					//arisDemo cdb = new arisDemo(); 					///new
+					//cdb.CONNECT();									///new
+					//cdb.setConsistency(MODE);						///new
+					marketFeedFrame(db, stats);
+					//cdb.DISCONNECT();								///new
+					listMF.remove(0);
+					//System.out.println("MF Transactions in queue: " + listMF.size());
+				}
+			}
+			System.out.println(db.DISCONNECT());					///put Back
+			System.out.println("Disconnect MarketSEE thread.");
+		}
+	}
+
 	private static class SimTest implements Callable<String>{
 		private Statistics s;
 		public arisDemo d;
-        SimTest(Statistics stats, arisDemo db){this.s = stats; this.d = db;}
-
-		public void disconnectNow(){
-			System.out.println(d.DISCONNECT());
-		}
+		private MarketSim ms;
+        SimTest(Statistics stats, arisDemo db, MarketSim ms){this.s = stats; this.d = db; this.ms = ms;}
 
 		private volatile boolean cancelled = false;
 		public void onCancel() throws IOException{
@@ -2017,29 +2083,16 @@ public class arisDemo {
 			int i =0;
 
             List txnsToRun  = new Vector<String>();
-            txnsToRun = workloadMix(MIXSELECTOR);
-
-            //Code changed to support timed out threads
-            /*
-            while (!Thread.currentThread().isInterrupted()) {
-                generateTxn(d, txnsToRun.get(i).toString(), s);
-                //Thread.sleep(ThreadLocalRandom.current().nextInt(50, 350));
-				i++;
-                //repeat for ever until TimeOut Clock stops the Thread
-                if (i >= txnsToRun.size() - 1) {
-                    i = 0;
-                }
-            }*/
-
+			txnsToRun = workloadMix(MIXSELECTOR);
 			while (!cancelled){
-				generateTxn(d, txnsToRun.get(i).toString(), s);
+				//generateTxn(d, txnsToRun.get(i).toString(), stats, ms);
+				generateTxn(d, txnsToRun.get(i).toString(), s, ms);
 				i++;
 				if (i >= txnsToRun.size() - 1) {i = 0;}
 			}
 			if (Thread.currentThread().isInterrupted()){
-				System.out.println(d.DISCONNECT());
+				d.DISCONNECT();
 			}
-			//System.out.println("Thread: " + Thread.currentThread().getName() + " finished");
 			return "Session complete";
 		}
     }
