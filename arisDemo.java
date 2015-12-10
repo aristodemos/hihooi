@@ -1904,7 +1904,7 @@ public class arisDemo {
 		public void setCloseMarket() throws IOException{
 			closeMarket = true;
 			db.DISCONNECT();
-			Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt();
 		}
 
 		public void runMarketFeed(){
@@ -1915,7 +1915,7 @@ public class arisDemo {
 			System.out.println(db.CONNECT());						///put Back
 			//Thread.currentThread().setPriority(10);
 			db.setConsistency(MODE);								///put Back
-			while(!closeMarket || !Thread.currentThread().isInterrupted()){
+			while(!closeMarket){
 				if (!listMF.isEmpty()) {
 					//arisDemo cdb = new arisDemo(); 					///new
 					//cdb.CONNECT();									///new
@@ -1926,6 +1926,9 @@ public class arisDemo {
 					//System.out.println("MF Transactions in queue: " + listMF.size());
 				}
 			}
+            if (Thread.currentThread().isInterrupted()){
+                db.DISCONNECT();
+            }
 			System.out.println(db.DISCONNECT());					///put Back
 			System.out.println("Disconnect MarketSEE thread.");
 		}
