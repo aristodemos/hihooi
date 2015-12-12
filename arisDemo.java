@@ -38,8 +38,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="54.213.94.189";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="54.201.240.12";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -78,8 +78,8 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 16; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 24; //in minutes
+	public static int       SESSIONS        = 4; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 4; //in minutes
 	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
 	private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
 	private static String   LAST_T_ID       = "200000000290880";
@@ -1809,7 +1809,7 @@ public class arisDemo {
 		public arisDemo d;
 		public int name;
         private TransactionTicket tt;
-        private List<Integer> temp;
+
 
         SimTest(Statistics stats, arisDemo db, int name, TransactionTicket trT){
             this.s = stats;
@@ -1831,13 +1831,27 @@ public class arisDemo {
 				d.CONNECT();
 				d.setConsistency(MODE);
 			}
-            //TransactionTicket ttt = new TransactionTicket(workloadMix(MIXSELECTOR), SESSIONS);
+
 			while (!cancelled){
 				generateTxn(d, tt.getNextTransaction(name), s);
-                /*temp = tt.getNexTransactionSet(name, 20);
-                for (int j=0;j<20;j++){
-                    generateTxn(d, temp.get(j), s);
-                }*/
+
+                /*ExecutorService exec = Executors.newScheduledThreadPool(2);
+                final Future handler = exec.submit(new GenerateTransaction(s, d, tt.getNextTransaction(name)));
+                if (!exec.awaitTermination(15, TimeUnit.SECONDS)){
+                    d.TCL("rollback");
+                    System.out.println("transaction killed by timeout . . .");
+                }
+                */
+                /*
+                ScheduledExecutorService se = Executors.newScheduledThreadPool(2);
+                final Future handler = se.submit(new GenerateTransaction(s, d, tt.getNextTransaction(name)));
+                se.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.cancel(true);
+                        d.TCL("rollback");
+                    }
+                }, 10000, TimeUnit.MILLISECONDS);*/
 			}
 			if (Thread.currentThread().isInterrupted()){
 				d.DISCONNECT();
@@ -1845,4 +1859,21 @@ public class arisDemo {
 			return "Session complete";
 		}
 	}
+
+    private static class GenerateTransaction implements Runnable{
+        private Statistics s;
+        private arisDemo dbconn;
+        private int transId;
+
+        GenerateTransaction(Statistics s, arisDemo ad, int txn){
+            this.s =s; this.dbconn = ad; this.transId = txn;
+        }
+
+        @Override
+        public void run(){
+            arisDemo.generateTxn(dbconn, transId, s);
+        }
+    }
+
+
 }
