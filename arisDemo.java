@@ -16,6 +16,7 @@ import java.util.concurrent.*;
 import java.util.Arrays;
 import java.text.SimpleDateFormat;
 //import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLongArray;
 
@@ -28,26 +29,26 @@ public class arisDemo {
 
 		public void increment(int i){
 			//synchronized(lock){
-				txnMix[i]++;
+			txnMix[i]++;
 			//}
 		}
 
 		public void insertTime(int i, long timeInterval){
 			//synchronized (lock){
-				txnMix[i]=txnMix[i]+timeInterval;
+			txnMix[i]=txnMix[i]+timeInterval;
 			//}
 		}
 
 		public long txnsPerSec(){
-			 return txnMix[0]+txnMix[1]+txnMix[2]+txnMix[3]+txnMix[4]+txnMix[5];
+			return txnMix[0]+txnMix[1]+txnMix[2]+txnMix[3]+txnMix[4]+txnMix[5];
 		}
 		public long opsPerSec(){
 			return txnMix[12]+txnMix[13];
 		}
 	}
 
-	//private String LISTENER="52.35.126.0";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="54.201.248.105";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -68,7 +69,7 @@ public class arisDemo {
 			set consistency level 3;
 			set consistency level 4;
 		*/
-        return hih.set("set consistency level "+setCMD);
+		return hih.set("set consistency level "+setCMD);
 	}
 
 	public String DISCONNECT()
@@ -86,20 +87,20 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 20; //threads to spawn (on the machine where this program is run)
+	public static int       SESSIONS        = 4; //threads to spawn (on the machine where this program is run)
 	public static int       TIMETORUN       = 5; //in minutes
-	public static String    MIXSELECTOR   	= "b"; // a,b,c,d    default: all transactions (d)
-    private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
-    private static String   LAST_T_ID       = "200000000290880";
-	private static int 	    MODE		    = 2; //1, 2, 3, 4
+	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
+	private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
+	private static String   LAST_T_ID       = "200000000290880";
+	private static int 	    MODE		    = 1; //1, 2, 3, 4
 	private static boolean 	BYPASS			= false; //run direclty on postgres. stopAll and start postgres normally (pg_ctl)
-	
+
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
 
 	//The pool of transactions - we choose one at random
-	public static List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
-			"TradeOrder", "TradeStatus");
+	//public static List<String> txnPoolMeister = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed", "TradeOrder", "TradeStatus");
+    public static List<Integer> txnPoolMaster = Arrays.asList(0, 1, 2, 3, 5);
 
 	//Atomic Array of Long to save the total latency(cummulative) and total number of each transaction
 	//private static  long[] txnMix = new long[2*(txnPoolMaster.size()+1)];
@@ -124,7 +125,7 @@ public class arisDemo {
 
 
 	public List QUERY(String SQL) {
-        if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		String output ="";
 		List resultOut = new Vector();
@@ -144,7 +145,7 @@ public class arisDemo {
 
 
 	public Map QUERY2MAP(String SQL){
-        if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		Map<String, Object> results = new HashMap<>();
 		for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -161,7 +162,7 @@ public class arisDemo {
 
 
 	public List QUERY2LST(String SQL){
-        if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
 		String output ="";
 		for( int i = rows.size() -1; i >= 0 ; i --)
@@ -179,7 +180,7 @@ public class arisDemo {
 
 	//Data Manipulation Language: INSERT, DELETE, UPDATE;
 	public String DML(String SQL) {
-        if (DEBUG){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+		if (DEBUG){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		stats.increment(13);
 		return hih.executeUpdate(SQL);
 	}
@@ -222,38 +223,38 @@ public class arisDemo {
 				if (args[i].equalsIgnoreCase("-debug") || args[i].equalsIgnoreCase("-d")) {
 					DEBUG = true;
 				}
-                if (args[i].equalsIgnoreCase("-bypass") || args[i].equalsIgnoreCase("-b")) {
-                    BYPASS = true;
-                }
+				if (args[i].equalsIgnoreCase("-bypass") || args[i].equalsIgnoreCase("-b")) {
+					BYPASS = true;
+				}
 			}
 		}
-        if (BYPASS){
-            MIXSELECTOR = "a";
-            System.out.println("note: When bypassing hihooi read-only workload is used");
-        }
+		if (BYPASS){
+			MIXSELECTOR = "a";
+			System.out.println("note: When bypassing hihooi read-only workload is used");
+		}
 
 		//Create transaction Log File
 		//Remember to close it
 		String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
-		/*
+
 		try{
 			logWriter = new PrintWriter(timeStamp+"_"+MIXSELECTOR+"_"+MODE+".txt", "UTF-8");
 
 		}catch (FileNotFoundException |UnsupportedEncodingException err){
 			System.out.println("FileNOTfound" + err.getMessage());
-		}*/
+		}
 
 		Locale.setDefault(Locale.US);
 		System.out.println("****************** Test Run Parameters *********************");
 		System.out.println("************************************************************");
-        System.out.println("Number of Sessions: "+SESSIONS);
+		System.out.println("Number of Sessions: "+SESSIONS);
 		System.out.println("Test Duration (in minutes): "+TIMETORUN);
 		System.out.println("Using Mix: " + MIXSELECTOR);
 		System.out.println("Debug is set to: "+DEBUG);
-        System.out.println("Bypass is set to: "+BYPASS);
+		System.out.println("Bypass is set to: "+BYPASS);
 		//System.out.println("Last Trade Id "+LAST_T_ID);
 		System.out.println("Mode = " +MODE);
-		
+
 		//init Statistics
 		//final Statistics stats = new Statistics();
 
@@ -272,13 +273,10 @@ public class arisDemo {
 		//System.out.println(d.DISCONNECT());
 
 		System.out.println("Starting Sessions");
-		System.out.println("Number of threads (sessions):  "+ SESSIONS);
+        System.out.println("Number of threads (sessions):  " + SESSIONS);
 		//System.out.println("Txns per Session :  " + trxnsPerSession);
-        //KEEP LOGWRITER CLEAN TO EASE CALCULATIONS
-		//logWriter.printf("Number of threads (sessions):  " + SESSIONS + "\r\n");
-		//logWriter.printf("Txns per Session :  " + trxnsPerSession+"\r\n");
 
-		/*
+
 		ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 		exec.scheduleAtFixedRate(new Runnable() {
 			@Override
@@ -287,25 +285,19 @@ public class arisDemo {
 				logWriter.print(stats.txnsPerSec() + "\r\n");
 			}
 		}, 0, 5, TimeUnit.SECONDS);
-		*/
+
 		long startTime = System.currentTimeMillis(); //fetch starting time
 		ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
-		//List<Future<String>> list = new ArrayList<Future<String>>();
-		arisDemo marketConnection = new arisDemo();
-		MarketSim marketSEE = new MarketSim(marketConnection);
 
-		ExecutorService marketService = Executors.newSingleThreadExecutor();
-		if (!MIXSELECTOR.equalsIgnoreCase("a")){
-			marketService.submit(marketSEE);
-		}
+
+        TransactionTicket trT = new TransactionTicket(workloadMix(MIXSELECTOR));
 
 		Collection<SimTest> collection = new ArrayList<>();
 		for(int i=0; i< SESSIONS; i++){
 			arisDemo connector = new arisDemo();
-			SimTest task = new SimTest(stats, connector, marketSEE); //SimTest task = new SimTest(); //
+			SimTest task = new SimTest(stats, connector, i, trT); //SimTest task = new SimTest(); //
 			collection.add(task);
 		}
-		//marketService.submit(marketSEE);
 
 		try{
 			List<Future<String>> listF = pool.invokeAll(collection, TIMETORUN, TimeUnit.MINUTES);
@@ -351,62 +343,16 @@ public class arisDemo {
 			//type.disconnectNow();
 			type.onCancel();
 		}
-		marketSEE.setCloseMarket();
 		System.out.println("Connections Closed.");
-		/*while (!pool.isTerminated()) {
-			//this can throw InterruptedException, you'll need to decide how to deal with that.
-			//System.out.println("Awaiting pool termination");
-			try{
-				pool.awaitTermination(1,TimeUnit.MILLISECONDS);
-				pool.shutdownNow();
-			}
-			catch(Exception e){
-				e.printStackTrace();
-			}
-		}*/
+
 		long endTime = System.currentTimeMillis(); //end time
 		long duration = endTime - startTime;
 		System.out.println(" ALL SESSIONS COMPLETED IN " +duration+" msec \n");
 		System.out.println(" which equals " + (duration / (1000 * 60.0)) + " minutes \n");
-		//exec.shutdownNow();
-		if (!MIXSELECTOR.equalsIgnoreCase("a")){
-			marketService.shutdownNow();
-		}
-		//TODO: check if the above piece of code works
-		/*
-		Callable<String> callable = new  SimTest(stats);
-		for(int i=0; i< SESSIONS; i++){
-			//submit Callable tasks to be executed by thread pool
-			Future<String> future = pool.submit(callable);
-			//add Future to the list, we can get return value using Future
-			list.add(future);
-		}
-		pool.shutdown();
-
-		for(Future<String> fut : list) {
-			try {
-				System.out.println("Time for Session "+fut.get());
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-				System.out.println("An exception occurred");
-			}
-		}
-		pool.shutdownNow();
-		while (!pool.isTerminated()) {
-			//this can throw InterruptedException, you'll need to decide how to deal with that.
-			try{pool.awaitTermination(1,TimeUnit.MILLISECONDS);}
-			catch(Exception e){
-				e.printStackTrace();
-				System.out.println("An other exception occurred");
-			}
-		}
-		long endTime = System.currentTimeMillis(); //end time
-		long duration = endTime - startTime;
-		*/
+		exec.shutdownNow();
 
 		//Close the transaction Log File
-		//logWriter.close();
+		logWriter.close();
 		System.out.println("Closing Print Writer...");
 		//PRINT STATS
 		long totalTxns = stats.txnMix[0]+stats.txnMix[1]+stats.txnMix[2]+stats.txnMix[3]+stats
@@ -420,7 +366,7 @@ public class arisDemo {
 
 		System.out.println("************************************************************\n\n\n");
 
-        System.out.println("*********************Test Run statistics********************");
+		System.out.println("*********************Test Run statistics********************");
 		System.out.println("************************************************************");
 		System.out.println("Txn Mix:");
 		System.out.println("BrokerVolume Txn was run: \t\t"+stats.txnMix[0]  + " times;");
@@ -492,7 +438,7 @@ public class arisDemo {
 			ex.printStackTrace();
 			System.out.println("Cannot perform input");
 		}
-        return javaObject;
+		return javaObject;
 	}
 
 	//TODO: transaction Mix Variations
@@ -500,70 +446,73 @@ public class arisDemo {
 	// b: 5% writes		: 095 - 05
 	// c: 10% writes	: 090 - 10
 	// d: 30% writes	: 070 - 30
-	public static List workloadMix(String selector) {
-		List<String> pool = new Vector<String>();
+	public static List<Integer> workloadMix(String selector) {
+		List<Integer> pool = new Vector<Integer>();
 		switch(selector) {
 			case "a":
-				for (int i=0; i<50;i++){
-					pool.add("BrokerVolume");
-			}
-				for (int i=50; i<80;i++){
-					pool.add("TradeStatus");
+				for (int i=0; i<500;i++){
+					pool.add(0);
 				}
-				for (int i=80;i<100;i++){
-					pool.add("CustomerPosition");
+				for (int i=500; i<800;i++){
+					pool.add(5);
+				}
+				for (int i=800;i<1000;i++){
+					pool.add(1);
 				}
 				return randomSample(pool, pool.size());
 			case "b":
 				for (int i=0; i<25;i++){
-					pool.add("BrokerVolume");
+					pool.add(0);
 				}
 				for (int i=25; i<50;i++){
-					pool.add("CustomerPosition");
+					pool.add(1);
 				}
 				for (int i=50;i<95;i++){
-					pool.add("TradeStatus");
+					pool.add(5);
 				}
 				for (int i=95;i<96;i++){
-					pool.add("MarketFeed");
+					pool.add(2);
 				}
 				for (int i=96;i<98;i++){
-					pool.add("TradeOrder");
+					pool.add(3);
 				}
 				return randomSample(pool, pool.size());
 			case "c":
 				for (int i=0; i<20;i++){
-					pool.add("BrokerVolume");
+					pool.add(0);
 				}
 				for (int i=20; i<45;i++){
-					pool.add("CustomerPosition");
+					pool.add(1);
 				}
 				for (int i=45;i<90;i++){
-					pool.add("TradeStatus");
+					pool.add(5);
 				}
 				for (int i=90;i<94;i++){
-					pool.add("MarketFeed");
+					pool.add(2);
 				}
 				for (int i=94;i<97;i++){
-					pool.add("TradeOrder");
+					pool.add(3);
 				}
 				return randomSample(pool, pool.size());
 			//case 'd' is the default
 			default:
-				for (int i=0; i<15;i++){
-					pool.add("BrokerVolume");
+				for (int i=0; i<150;i++){
+					pool.add(0);
 				}
-				for (int i=15; i<30;i++){
-					pool.add("CustomerPosition");
+				for (int i=150; i<300;i++){
+					pool.add(1);
 				}
-				for (int i=30;i<70;i++){
-					pool.add("TradeStatus");
+				for (int i=300; i<500;i++){
+					pool.add(1);
 				}
-				for (int i=70;i<80;i++){
-					pool.add("MarketFeed");
+				for (int i=500;i<700;i++){
+					pool.add(5);
 				}
-				for (int i=80;i<90;i++){
-					pool.add("TradeOrder");
+				for (int i=700;i<800;i++){
+					pool.add(2);
+				}
+				for (int i=800;i<900;i++){
+					pool.add(3);
 				}
 				return randomSample(pool, pool.size());
 
@@ -571,39 +520,33 @@ public class arisDemo {
 	}
 
 
-	private static void generateTxn(arisDemo d, String txnFrame, Statistics stats, MarketSim ms) {
+	public static void generateTxn(arisDemo d, Integer txnFrame, Statistics stats) {
 		switch (txnFrame)
 		{
-			case "BrokerVolume":
+			case 0:
 				//System.out.print("Executing Broker Volume from: ");
 				//System.out.println(Thread.currentThread());
 				brokerVolumeFrame(d, stats);
 				//txnMix[0]++;
 				break;
-			case "CustomerPosition":
+			case 1:
 				//System.out.print("Executing Customer Position from: ");
 				//System.out.println(Thread.currentThread());
 				customerPositionFrame(d, stats);
 				break;
-			case "MarketFeed":
+			case 2:
 				//System.out.print("Executing Market Feed from: ");
 				//System.out.println(Thread.currentThread());
 				//marketFeedFrame(d, stats);
-				if (!MIXSELECTOR.equalsIgnoreCase("a")){
-					ms.runMarketFeed();
-				}
-				else{
-					marketFeedFrame(d, stats);
-				}
-
+                marketFeedFrame(d, stats);
 				break;
-			case "TradeOrder":
+			case 3:
 				//System.out.print("Executing Trade Order followed by Trade Result from: ");
 				//System.out.println(Thread.currentThread());
-				tradeOrder(d, stats, ms);
+				tradeOrder(d, stats);
 				//stats.increment(3);
 				break;
-			case "TradeStatus":
+			case 5:
 				//System.out.print("Executing Trade Status from: ");
 				//System.out.println(Thread.currentThread());
 				tradeStatus(d, stats);
@@ -630,32 +573,32 @@ public class arisDemo {
 		List active_brokers = randomSample(all_brokers, number_of_brokers);
 		String sector_name = all_sectors.get(ThreadLocalRandom.current().nextInt(0, all_sectors.size()));
 		Long t;
- 		//convert active_brokers list to string seperated by commas
+		//convert active_brokers list to string seperated by commas
 		String activeBrokersStr = org.apache.commons.lang3.StringUtils.join(active_brokers, ',');
 		//for (int i=0; i<active_brokers.size(); i++) {
-			String query = String.format("SELECT b_name, SUM(tr_qty * tr_bid_price) AS vol " +
-					"FROM trade_request, sector, industry, company, broker, security " +
-					"WHERE tr_b_id = b_id " +
-					"AND tr_s_symb = s_symb " +
-					"AND s_co_id = co_id " +
-					"AND co_in_id = in_id " +
-					"AND sc_id = in_sc_id " +
-					"AND b_name = ANY ('{%s}')" +			//'%s' " +//"AND b_name =
-					"AND sc_name = '%s' " +
-					"GROUP BY b_name " +
-					"ORDER BY 2 DESC", activeBrokersStr, sector_name);  //actoive.brokers.get(i)
-			t = System.currentTimeMillis();
-			//dbObject.QUERY(query);
-			if (BYPASS){
-				shell.executeCommand(query);
-			}
-			else {
-				dbObject.QUERY(query);
-			}
-			//
-			s.insertTime(6, System.currentTimeMillis() - t);
-			s.increment(0);
-			//s.txnMix[6] = s.txnMix[6] + System.currentTimeMillis() - t;
+		String query = String.format("SELECT b_name, SUM(tr_qty * tr_bid_price) AS vol " +
+				"FROM trade_request, sector, industry, company, broker, security " +
+				"WHERE tr_b_id = b_id " +
+				"AND tr_s_symb = s_symb " +
+				"AND s_co_id = co_id " +
+				"AND co_in_id = in_id " +
+				"AND sc_id = in_sc_id " +
+				"AND b_name = ANY ('{%s}')" +			//'%s' " +//"AND b_name =
+				"AND sc_name = '%s' " +
+				"GROUP BY b_name " +
+				"ORDER BY 2 DESC", activeBrokersStr, sector_name);  //actoive.brokers.get(i)
+		t = System.currentTimeMillis();
+		//dbObject.QUERY(query);
+		if (BYPASS){
+			shell.executeCommand(query);
+		}
+		else {
+			dbObject.QUERY(query);
+		}
+		//
+		s.insertTime(6, System.currentTimeMillis() - t);
+		s.increment(0);
+		//s.txnMix[6] = s.txnMix[6] + System.currentTimeMillis() - t;
 		//}
 	}
 
@@ -677,28 +620,28 @@ public class arisDemo {
 		}
 		else {
 			dbObject.QUERY(query1);
-        }
+		}
 
 		//Customer Position Frame 2 of 2
 
 		//String c_ad_id = dbObject.QUERY2STR(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
-        String c_ad_id = "4300000189";
-        final String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
+		String c_ad_id = "4300000189";
+		final String q = String.format("select c_ad_id from customer where c_id = '%s'", cust_id);
 		if (BYPASS){
 			c_ad_id = shell.executeCommand(q).replace("c_ad_id", "").replace("(1 row)", "");
 		}
 		else{
-        	try {
-            	c_ad_id = dbObject.QUERY2MAP(q).get("c_ad_id").toString();
-        	}catch (NullPointerException e){
-            	//System.out.println("Null Pointer Exception in CustomerPositionFrame1");
-            	//System.out.println(dbObject.QUERY(q));
-            	//System.out.println(dbObject.QUERY2STR(q));
-            	//System.out.println(dbObject.QUERY2MAP(q));
-            	//System.out.println(dbObject.QUERY2LST(q));
-            	//System.out.println(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
-            	//return;
-        	}
+			try {
+				c_ad_id = dbObject.QUERY2MAP(q).get("c_ad_id").toString();
+			}catch (NullPointerException e){
+				//System.out.println("Null Pointer Exception in CustomerPositionFrame1");
+				//System.out.println(dbObject.QUERY(q));
+				//System.out.println(dbObject.QUERY2STR(q));
+				//System.out.println(dbObject.QUERY2MAP(q));
+				//System.out.println(dbObject.QUERY2LST(q));
+				//System.out.println(String.format("select c_ad_id from customer where c_id = '%s'", cust_id));
+				//return;
+			}
 		}
 		final String query2 = String.format(
 				"SELECT T_ID, T_S_SYMB, T_QTY, ST_NAME, TH_DTS " +
@@ -717,7 +660,7 @@ public class arisDemo {
 			shell.executeCommand(query2);
 		}
 		else {
-            dbObject.QUERY(query2);
+			dbObject.QUERY(query2);
 		}
 		s.insertTime(7, System.currentTimeMillis() - t);
 		s.increment(1);
@@ -795,7 +738,7 @@ public class arisDemo {
 		*/
 		String values = "";
 		for (int i=0; i<numberOfSymbols; i++) {
-			/*String query1j = String.format(
+			/*String query1 = String.format(
 					"UPDATE LAST_TRADE " +
 							"SET LT_PRICE = %f, " +
 							"LT_VOL = LT_VOL + %s, " +
@@ -805,6 +748,7 @@ public class arisDemo {
 			if (i<numberOfSymbols-1){
 				values += ",";
 			}
+			//values = dbObject.DML(query1);
 		}
 		String query1 = String.format(
 				"with new_values (LT_PRICE, LTs_VOL, LT_DTS, LT_S_SYMB) as (" +
@@ -815,31 +759,23 @@ public class arisDemo {
 						"LT_DTS = nv.LT_DTS"+
 						" from new_values nv  "+
 						"where   m.LT_S_SYMB = nv.LT_S_SYMB", values);
+		values = dbObject.DML(query1);
 
-			//store trade_id in request_list
-			//dbObject.DML(query1);
-
-            if (BYPASS){
-                shell.executeCommand(query1);
-            }else {
-                dbObject.DML(query1);
-            }
-			for (int i=0; i<numberOfSymbols; i++) {
+		//store trade_id in request_list
+		for (int i=0; i<numberOfSymbols; i++) {
 			String query2 = String.format(
 					"SELECT TR_T_ID "+
-					"FROM TRADE_REQUEST " +
-					"WHERE TR_S_SYMB = '%s' and " +
-					"((TR_TT_ID = 'TSL' and TR_BID_PRICE >= %.2f) or " +
-					"(TR_TT_ID = 'TLS' and TR_BID_PRICE <= %.2f) or " +
-					"(TR_TT_ID = 'TLB' and TR_BID_PRICE >= %.2f))",activeSymbolsSet.get(i),priceQuote.get(i),
+							"FROM TRADE_REQUEST " +
+							"WHERE TR_S_SYMB = '%s' and " +
+							"((TR_TT_ID = 'TSL' and TR_BID_PRICE >= %.2f) or " +
+							"(TR_TT_ID = 'TLS' and TR_BID_PRICE <= %.2f) or " +
+							"(TR_TT_ID = 'TLB' and TR_BID_PRICE >= %.2f))",activeSymbolsSet.get(i),priceQuote.get(i),
 					priceQuote.get(i),priceQuote.get(i));
-			//List<Map<String, Object>> request_list = dbObject.QUERY2LST(query2);
-            List<Map<String, Object>> request_list = null;
-            if (BYPASS){
-                //request_list = shell.executeCommand(query2);
-            }else {
-                request_list = dbObject.QUERY2LST(query2);
-            }
+
+			List<Map<String, Object>> request_list = null;
+
+			request_list = dbObject.QUERY2LST(query2);
+
 			//loop over request_list
 			for (int j=0; j<request_list.size();j++) {
 				String query3 =String.format("UPDATE TRADE " +
@@ -851,18 +787,9 @@ public class arisDemo {
 				String query5 = String.format( "INSERT INTO TRADE_HISTORY " +
 						" VALUES (%s, now(), 'SBMT')", request_list.get(j).get("tr_t_id"));
 
-				//dbObject.DML(query3);
-				//dbObject.DML(query4);
-				//dbObject.DML(query5);
-                if (BYPASS){
-                    shell.executeCommand(query3);
-                    shell.executeCommand(query4);
-                    shell.executeCommand(query5);
-                }else {
-                    dbObject.DML(query3);
-                    dbObject.DML(query4);
-                    dbObject.DML(query5);
-				}
+				dbObject.DML(query3);
+				dbObject.DML(query4);
+				dbObject.DML(query5);
 			}
 		}
 		//dbObject.TCL("commit");
@@ -877,7 +804,7 @@ public class arisDemo {
 	//Important:
 	//After a successfully Committed market order, the EGenTxnHarness sends the order for the trade to the appropriate MEE.
 	//In other wors the trade Result txn is called !!!
-	private static void tradeOrder(arisDemo dbObject, Statistics s, MarketSim ms) {
+	private static void tradeOrder(arisDemo dbObject, Statistics s) {
 		Long t = System.currentTimeMillis();
 		//Frame Inputs: account_id, symbol of the security (stock), trade_quantity
 		//bools: type_is_market, type_is_sell, use LIFO on FILO traversal
@@ -922,9 +849,9 @@ public class arisDemo {
 		String broker_id = output1.get("ca_b_id").toString();
 
 		String  sqlTOF1_2 = String.format(
-                "SELECT c_f_name, c_l_name, c_tier, c_tax_id " +
-                        "FROM customer " +
-                        "WHERE c_id = %s", output1.get("ca_c_id"));
+				"SELECT c_f_name, c_l_name, c_tier, c_tax_id " +
+						"FROM customer " +
+						"WHERE c_id = %s", output1.get("ca_c_id"));
 		Map output2 = dbObject.QUERY2MAP(sqlTOF1_2);
 
 		String  sqlTOF1_3 = String.format(
@@ -943,7 +870,7 @@ public class arisDemo {
 						.get("c_tax_id"));
 		Map output4 = dbObject.QUERY2MAP(sqlTOF2_1);
 		//TODO: check this rollback!
-        if (output1.isEmpty()){
+		if (output1.isEmpty()){
 			dbObject.TCL("rollback");
 			return;
 		}
@@ -1018,9 +945,9 @@ public class arisDemo {
 						"ORDER BY h_dts ASC", acct_id, symbol);
 		List holdList =new ArrayList<Map<String, Object>>();
 		if (type_is_sell) {
-		// This is a sell transaction, so estimate the impact to any currently held
-		// long postions in the security.
-		 	if (hold_qty > 0 ){
+			// This is a sell transaction, so estimate the impact to any currently held
+			// long postions in the security.
+			if (hold_qty > 0 ){
 				if (is_lifo){
 					// Estimates will be based on closing most recently acquired holdings
 					// Could return 0, 1 or many rows
@@ -1050,13 +977,13 @@ public class arisDemo {
 							needed_qty = needed_qty - Integer.parseInt(entry.get("h_qty").toString());
 						}
 					}
-		 		}
+				}
 				// NOTE: If needed_qty is still greater than 0 at this point, then the
 				// customer would be liquidating all current holdings for this security, and
 				// then creating a new short position for the remaining balance of
 				// this transaction.
 			}
-		 }
+		}
 		else
 		// This is a buy transaction, so estimate the impact to any currently held
 		// short positions in the security. These are represented as negative H_QTY
@@ -1073,10 +1000,10 @@ public class arisDemo {
 				{
 					holdList = dbObject.QUERY2LST(sqlTOF3_6b);
 				}
-			// Estimate, based on the requested price, any profit that may be realized
-			// by covering short postions currently held for this security. The customer
-			// may have multiple holdings at different prices for this security
-			// (representing multiple purchases at different times).
+				// Estimate, based on the requested price, any profit that may be realized
+				// by covering short postions currently held for this security. The customer
+				// may have multiple holdings at different prices for this security
+				// (representing multiple purchases at different times).
 				if (!holdList.isEmpty()){
 					for(int i=0; i<holdList.size(); i++){
 						Map entry = (Map) holdList.get(i);
@@ -1143,19 +1070,20 @@ public class arisDemo {
 		String tradePriceStr = Double.toString(trade_price).replace(",", ".");
 		//String is_lifo_str  = is_lifo ? "1" :"0";
 
+		//:USE EXEC_QUERY
+		String trade_id = dbObject.EXEC_QUERY("SELECT NEXTVAL('SEQ_TRADE_ID')");
 		String  sqlTOF4_1 = String.format(
 				"INSERT INTO trade(t_id, t_dts, t_st_id, t_tt_id, t_is_cash, " +
 						"                  t_s_symb, t_qty, t_bid_price, t_ca_id, " +
 						"                  t_exec_name, t_trade_price, t_chrg, t_comm, " +
 						"                  t_tax, t_lifo) " +
-						"VALUES (NEXTVAL('seq_trade_id'), now(), '%s', '%s', %s, '%s', " +
-						"        %d, %s, %s, '%s', NULL, %s, %s, 0, %s) ",
-						 status_id, t_tt_id, t_is_cash, symbol, trade_qty, tradePriceStr, acct_id,
+						"VALUES (%s, now(), '%s', '%s', %s, '%s', " +
+						"        %d, %s, %s, '%s', NULL, %s, %s, 0, %s) ", trade_id,
+				status_id, t_tt_id, t_is_cash, symbol, trade_qty, tradePriceStr, acct_id,
 				exec_name, charge_amount, comm_amount, is_lifo);
-
 		dbObject.DML(sqlTOF4_1);
-		//:USE EXEC_QUERY
-		String trade_id = dbObject.EXEC_QUERY("SELECT CURRVAL('SEQ_TRADE_ID')");
+
+		//String trade_id = dbObject.EXEC_QUERY("SELECT CURRVAL('SEQ_TRADE_ID')");
 
 		String  sqlTOF4_2 = String.format(
 				"INSERT INTO trade_request(tr_t_id, tr_tt_id, tr_s_symb, tr_qty, " +
@@ -1170,9 +1098,8 @@ public class arisDemo {
 		dbObject.DML(sqlTOF4_3);
 		dbObject.TCL("commit");
 		s.insertTime(9, System.currentTimeMillis() - t);
-        //s.txnMix[9] = s.txnMix[9] + System.currentTimeMillis() - t;
+		//s.txnMix[9] = s.txnMix[9] + System.currentTimeMillis() - t;
 		// Invoke tradeResult before exiting method.
-		//ms.queTR(trade_price, trade_id);
 		tradeResult(dbObject, s, trade_id, trade_price);
 		s.increment(3);
 		//s.txnMix[4]++;
@@ -1196,8 +1123,8 @@ public class arisDemo {
 
 		String trFrame1_2 = String.format(
 				"SELECT tt_name " +
-				"FROM trade_type " +
-				"WHERE tt_id = '%s'", type_id);
+						"FROM trade_type " +
+						"WHERE tt_id = '%s'", type_id);
 		dbObject.QUERY(trFrame1_2);
 		String trFrame1_3 = String.format(
 				"SELECT hs_qty " +
@@ -1207,7 +1134,7 @@ public class arisDemo {
 		Map output1a = dbObject.QUERY2MAP(trFrame1_3);
 		String hold_qty = "";
 		if (output1a.containsKey("h_qty")){
-			 hold_qty = output1a.get("h_qty").toString();
+			hold_qty = output1a.get("h_qty").toString();
 		}else{
 			hold_qty = "0";
 		}
@@ -1231,9 +1158,9 @@ public class arisDemo {
 
 		String trFrame2_1 = String.format(
 				"SELECT ca_b_id, ca_c_id, ca_tax_st " +
-				"FROM customer_account " +
-				"WHERE ca_id = %s " +
-				"FOR UPDATE", acct_id);
+						"FROM customer_account " +
+						"WHERE ca_id = %s " +
+						"FOR UPDATE", acct_id);
 		Map initFrame3 = dbObject.QUERY2MAP(trFrame2_1);
 
 		List holdList =new ArrayList<Map<String, Object>>();
@@ -1325,15 +1252,15 @@ public class arisDemo {
 								"VALUES(%s, %s, %s, %d)", trade_id, trade_id, 0, (-1)*needed_qty);
 				dbObject.DML(trFrame2_4a);
 
-                String checkUpdate = String.format("Select count(*) from holding_summary where " +
-                        "hs_s_symb =" +
-                        " '%s' and hs_ca_id = %s", symbol, acct_id);
-                String count = dbObject.QUERY2MAP(checkUpdate).get("count").toString();
-                if (Integer.parseInt(count) < 1) {
-                    String trFrame2_update = String.format("insert into holding_summary(hs_ca_id, hs_s_symb, hs_qty) " +
-                            "VALUES (%s, '%s', %d)", acct_id, symbol, (-1) * needed_qty);
-                    dbObject.DML(trFrame2_update);
-                }
+				String checkUpdate = String.format("Select count(*) from holding_summary where " +
+						"hs_s_symb =" +
+						" '%s' and hs_ca_id = %s", symbol, acct_id);
+				String count = dbObject.QUERY2MAP(checkUpdate).get("count").toString();
+				if (Integer.parseInt(count) < 1) {
+					String trFrame2_update = String.format("insert into holding_summary(hs_ca_id, hs_s_symb, hs_qty) " +
+							"VALUES (%s, '%s', %d)", acct_id, symbol, (-1) * needed_qty);
+					dbObject.DML(trFrame2_update);
+				}
 
 				String trFrame2_7a = String.format(
 						"INSERT INTO holding(h_t_id, h_ca_id, h_s_symb, h_dts, h_price, " +
@@ -1429,15 +1356,15 @@ public class arisDemo {
 								"VALUES(%s, %s, %s, %d)", trade_id, trade_id, 0, needed_qty);
 				dbObject.DML(trFrame2_4a);
 
-                String checkUpdate = String.format("Select count(*) from holding_summary where " +
-                        "hs_s_symb =" +
-                        " '%s' and hs_ca_id = %s", symbol, acct_id);
-                String count = dbObject.QUERY2MAP(checkUpdate).get("count").toString();
-                if (Integer.parseInt(count) < 1) {
-                    String trFrame2_update = String.format("insert into holding_summary(hs_ca_id, hs_s_symb, hs_qty) " +
-                            "VALUES (%s, '%s', %d)", acct_id, symbol, needed_qty);
-                    dbObject.DML(trFrame2_update);
-                }
+				String checkUpdate = String.format("Select count(*) from holding_summary where " +
+						"hs_s_symb =" +
+						" '%s' and hs_ca_id = %s", symbol, acct_id);
+				String count = dbObject.QUERY2MAP(checkUpdate).get("count").toString();
+				if (Integer.parseInt(count) < 1) {
+					String trFrame2_update = String.format("insert into holding_summary(hs_ca_id, hs_s_symb, hs_qty) " +
+							"VALUES (%s, '%s', %d)", acct_id, symbol, needed_qty);
+					dbObject.DML(trFrame2_update);
+				}
 
 				String trFrame2_7a = String.format(
 						"INSERT INTO holding(h_t_id, h_ca_id, h_s_symb, h_dts, h_price, " +
@@ -1473,8 +1400,8 @@ public class arisDemo {
 
 		String trFrame3_2 = String.format(
 				"UPDATE trade " +
-				"SET t_tax = %f " +
-				"WHERE t_id = %s", tax_amount, trade_id);
+						"SET t_tax = %f " +
+						"WHERE t_id = %s", tax_amount, trade_id);
 		dbObject.DML(trFrame3_2);
 
 		//Finished frame 3.
@@ -1515,24 +1442,27 @@ public class arisDemo {
 		String st_completed_id = "CMPT";
 		String trFrame5_1 = String.format(
 				"UPDATE trade " +
-				"SET t_comm = %f, " +
-				"    t_dts = '%s', " +
-				"    t_st_id = '%s', " +
-				"    t_trade_price = %f " +
-				"WHERE t_id = %s", comm_amount, trade_dts, st_completed_id, trade_price, trade_id);
+						"SET t_comm = %f, " +
+						"    t_dts = '%s', " +
+						"    t_st_id = '%s', " +
+						"    t_trade_price = %f " +
+						"WHERE t_id = %s", comm_amount, trade_dts, st_completed_id, trade_price, trade_id);
 		dbObject.DML(trFrame5_1);
+
 
 		String trFrame5_2 = String.format(
 				"INSERT INTO trade_history(th_t_id, th_dts, th_st_id) " +
-				"VALUES (%s, '%s', '%s')", trade_id, trade_dts, st_completed_id);
+						"VALUES (%s, '%s', '%s')", trade_id, trade_dts, st_completed_id);
 		dbObject.DML(trFrame5_2);
+
 
 		String trFrame5_3 = String.format(
 				"UPDATE broker " +
-				"SET b_comm_total = b_comm_total + %f, " +
-				"    b_num_trades = b_num_trades + 1 " +
-				"WHERE b_id = %s", comm_amount, broker_id);
+						"SET b_comm_total = b_comm_total + %f, " +
+						"    b_num_trades = b_num_trades + 1 " +
+						"WHERE b_id = %s", comm_amount, broker_id);
 		dbObject.DML(trFrame5_3);
+
 
 		//END OF FRAME 5
 		//GO FOR FRAME 6
@@ -1551,15 +1481,17 @@ public class arisDemo {
 
 		String trFrame6_1 = String.format(
 				"INSERT INTO settlement(se_t_id, se_cash_type, se_cash_due_date,  " +
-				"                       se_amt) " +
-				"VALUES (%s, '%s', '%s', %f)", trade_id, cash_type, due_date, se_amount);
+						"                       se_amt) " +
+						"VALUES (%s, '%s', '%s', %f)", trade_id, cash_type, due_date, se_amount);
 		dbObject.DML(trFrame6_1);
+
 
 		String trFrame6_2 = String.format(
 				"UPDATE customer_account " +
-				"SET ca_bal = ca_bal + (%f) " +
-				"WHERE ca_id = %s", se_amount, acct_id);
+						"SET ca_bal = ca_bal + (%f) " +
+						"WHERE ca_id = %s", se_amount, acct_id);
 		dbObject.DML(trFrame6_2);
+
 
 		String type_name = "";
 		switch(type_id){
@@ -1576,15 +1508,17 @@ public class arisDemo {
 
 		String trFrame6_3 = String.format(
 				"INSERT INTO cash_transaction(ct_dts, ct_t_id, ct_amt, ct_name) " +
-				"VALUES ('%s', %s, %f, e'%s %s shared of %s')", trade_dts, trade_id, se_amount, type_name,
+						"VALUES ('%s', %s, %f, e'%s %s shared of %s')", trade_dts, trade_id, se_amount, type_name,
 				trade_qty, s_name);
 		dbObject.DML(trFrame6_3);
 
+
 		String trFrame6_4 = String.format(
 				"SELECT ca_bal " +
-				"FROM customer_account " +
-				"WHERE ca_id = %s", acct_id);
+						"FROM customer_account " +
+						"WHERE ca_id = %s", acct_id);
 		dbObject.QUERY(trFrame6_4);
+
 		dbObject.TCL("commit");
 		s.insertTime(10, System.currentTimeMillis() - t);
 		s.increment(4);
@@ -1596,35 +1530,35 @@ public class arisDemo {
 		Long t = System.currentTimeMillis();
 		final String  sqlTSF1_1 = String.format(
 				"SELECT t_id, t_dts, st_name, tt_name, t_s_symb, t_qty, " +
-				"       t_exec_name, t_chrg, s_name, ex_name "+
-				"FROM trade, status_type, trade_type, security, exchange "+
-				"WHERE t_ca_id = %s " +
-				"  AND st_id = t_st_id " +
-				"  AND tt_id = t_tt_id " +
-				"  AND s_symb = t_s_symb " +
-				"  AND ex_id = s_ex_id " +
-				"ORDER BY t_dts DESC " +
-				"LIMIT 50", acct_id);
+						"       t_exec_name, t_chrg, s_name, ex_name "+
+						"FROM trade, status_type, trade_type, security, exchange "+
+						"WHERE t_ca_id = %s " +
+						"  AND st_id = t_st_id " +
+						"  AND tt_id = t_tt_id " +
+						"  AND s_symb = t_s_symb " +
+						"  AND ex_id = s_ex_id " +
+						"ORDER BY t_dts DESC " +
+						"LIMIT 50", acct_id);
 		//dbObject.QUERY(sqlTSF1_1);
 		if (BYPASS) {
 			shell.executeCommand(sqlTSF1_1);
 		}
 		else {
-            dbObject.QUERY(sqlTSF1_1);
-        }
+			dbObject.QUERY(sqlTSF1_1);
+		}
 
 		final String  sqlTSF1_2 = String.format(
-		"SELECT c_l_name, c_f_name, b_name " +
-		"FROM customer_account, customer, broker " +
-		"WHERE ca_id = %s " +
-		"  AND c_id = ca_c_id " +
-		"  AND b_id = ca_b_id", acct_id);
+				"SELECT c_l_name, c_f_name, b_name " +
+						"FROM customer_account, customer, broker " +
+						"WHERE ca_id = %s " +
+						"  AND c_id = ca_c_id " +
+						"  AND b_id = ca_b_id", acct_id);
 		//dbObject.QUERY(sqlTSF1_2);
 		if (BYPASS) {
 			shell.executeCommand(sqlTSF1_2);
 		}
 		else {
-            dbObject.QUERY(sqlTSF1_2);
+			dbObject.QUERY(sqlTSF1_2);
 		}
 		s.insertTime(11, System.currentTimeMillis() - t);
 		s.increment(5);
@@ -1632,138 +1566,138 @@ public class arisDemo {
 
 	}
 
-    private static void securityDetail(arisDemo dbObject, Statistics s) {
-        String symbol = all_symbols.get(ThreadLocalRandom.current().nextInt(0, all_symbols.size()));
+	private static void securityDetail(arisDemo dbObject, Statistics s) {
+		String symbol = all_symbols.get(ThreadLocalRandom.current().nextInt(0, all_symbols.size()));
 
-        int valRand = ThreadLocalRandom.current().nextInt(5, 21);
-        long beginTime;
-        long endTime;
-        beginTime = Timestamp.valueOf("2000-01-01 00:00:00").getTime();
-        endTime = Timestamp.valueOf("2004-12-31 00:58:00").getTime();
+		int valRand = ThreadLocalRandom.current().nextInt(5, 21);
+		long beginTime;
+		long endTime;
+		beginTime = Timestamp.valueOf("2000-01-01 00:00:00").getTime();
+		endTime = Timestamp.valueOf("2004-12-31 00:58:00").getTime();
 
-        long diff = endTime - beginTime + 1 - valRand;
-        Date dateRand = new Date(beginTime + (long) (Math.random() * diff));
+		long diff = endTime - beginTime + 1 - valRand;
+		Date dateRand = new Date(beginTime + (long) (Math.random() * diff));
 
-        String date = dateRand.toString();
-        Long t = System.currentTimeMillis();
+		String date = dateRand.toString();
+		Long t = System.currentTimeMillis();
 
-        String sdf1_1 = String.format("SELECT s_name" +
-                "       co_id" +
-                "       co_name" +
-                "       co_sp_rate" +
-                "       co_ceo" +
-                "       co_desc" +
-                "       co_open_date" +
-                "       co_st_id" +
-                "       ca.ad_line1" +
-                "       ca.ad_line2" +
-                "       zca.zc_town" +
-                "       zca.zc_div" +
-                "       ca.ad_zc_code" +
-                "       ca.ad_ctry" +
-                "       s_num_out" +
-                "       s_start_date" +
-                "       s_exch_date" +
-                "       s_pe" +
-                "       s_52wk_high" +
-                "       s_52wk_high_date" +
-                "       s_52wk_low" +
-                "       s_52wk_low_date" +
-                "       s_dividend" +
-                "       s_yield" +
-                "       zea.zc_div" +
-                "       ea.ad_ctry," +
-                "       ea.ad_line1," +
-                "       ea.ad_line2," +
-                "       zea.zc_town," +
-                "       ea.ad_zc_code," +
-                "       ex_close," +
-                "       ex_desc," +
-                "       ex_name," +
-                "       ex_num_symb," +
-                "       ex_open" +
-                "FROM   security," +
-                "       company," +
-                "       address ca," +
-                "       address ea," +
-                "       zip_code zca," +
-                "       zip_code zea," +
-                "       exchange" +
-                "WHERE  s_symb = '%s'" +
-                "       AND co_id = s_co_id" +
-                "       AND ca.ad_id = co_ad_id" +
-                "       AND ea.ad_id = ex_ad_id" +
-                "       AND ex_id = s_ex_id" +
-                "       AND ca.ad_zc_code = zca.zc_code" +
-                "       AND ea.ad_zc_code = zea.zc_code", symbol);
-        Map values = dbObject.QUERY2MAP(sdf1_1);
-        String co_id = values.get("co_id").toString();
+		String sdf1_1 = String.format("SELECT s_name" +
+				"       co_id" +
+				"       co_name" +
+				"       co_sp_rate" +
+				"       co_ceo" +
+				"       co_desc" +
+				"       co_open_date" +
+				"       co_st_id" +
+				"       ca.ad_line1" +
+				"       ca.ad_line2" +
+				"       zca.zc_town" +
+				"       zca.zc_div" +
+				"       ca.ad_zc_code" +
+				"       ca.ad_ctry" +
+				"       s_num_out" +
+				"       s_start_date" +
+				"       s_exch_date" +
+				"       s_pe" +
+				"       s_52wk_high" +
+				"       s_52wk_high_date" +
+				"       s_52wk_low" +
+				"       s_52wk_low_date" +
+				"       s_dividend" +
+				"       s_yield" +
+				"       zea.zc_div" +
+				"       ea.ad_ctry," +
+				"       ea.ad_line1," +
+				"       ea.ad_line2," +
+				"       zea.zc_town," +
+				"       ea.ad_zc_code," +
+				"       ex_close," +
+				"       ex_desc," +
+				"       ex_name," +
+				"       ex_num_symb," +
+				"       ex_open" +
+				"FROM   security," +
+				"       company," +
+				"       address ca," +
+				"       address ea," +
+				"       zip_code zca," +
+				"       zip_code zea," +
+				"       exchange" +
+				"WHERE  s_symb = '%s'" +
+				"       AND co_id = s_co_id" +
+				"       AND ca.ad_id = co_ad_id" +
+				"       AND ea.ad_id = ex_ad_id" +
+				"       AND ex_id = s_ex_id" +
+				"       AND ca.ad_zc_code = zca.zc_code" +
+				"       AND ea.ad_zc_code = zea.zc_code", symbol);
+		Map values = dbObject.QUERY2MAP(sdf1_1);
+		String co_id = values.get("co_id").toString();
 
-        String sdf1_2 = String.format("SELECT co_name, " +
-                "       in_name " +
-                "FROM   company_competitor, " +
-                "       company, " +
-                "       industry " +
-                "WHERE  cp_co_id = %s " +
-                "       AND co_id = cp_comp_co_id " +
-                "       AND in_id = cp_in_id " +
-                "LIMIT %d", co_id, valRand);
+		String sdf1_2 = String.format("SELECT co_name, " +
+				"       in_name " +
+				"FROM   company_competitor, " +
+				"       company, " +
+				"       industry " +
+				"WHERE  cp_co_id = %s " +
+				"       AND co_id = cp_comp_co_id " +
+				"       AND in_id = cp_in_id " +
+				"LIMIT %d", co_id, valRand);
 
-        String sdf1_3 = String.format("SELECT   fi_year," +
-                "         fi_qtr," +
-                "         fi_qtr_start_date," +
-                "         fi_revenue," +
-                "         fi_net_earn," +
-                "         fi_basic_eps," +
-                "         fi_dilut_eps," +
-                "         fi_margin," +
-                "         fi_inventory," +
-                "         fi_assets," +
-                "         fi_liability," +
-                "         fi_out_basic," +
-                "         fi_out_dilut" +
-                "FROM     financial" +
-                "WHERE    fi_co_id = %s" +
-                "ORDER BY fi_year ASC," +
-                "         fi_qtr" +
-                "LIMIT %d", co_id, valRand);
+		String sdf1_3 = String.format("SELECT   fi_year," +
+				"         fi_qtr," +
+				"         fi_qtr_start_date," +
+				"         fi_revenue," +
+				"         fi_net_earn," +
+				"         fi_basic_eps," +
+				"         fi_dilut_eps," +
+				"         fi_margin," +
+				"         fi_inventory," +
+				"         fi_assets," +
+				"         fi_liability," +
+				"         fi_out_basic," +
+				"         fi_out_dilut" +
+				"FROM     financial" +
+				"WHERE    fi_co_id = %s" +
+				"ORDER BY fi_year ASC," +
+				"         fi_qtr" +
+				"LIMIT %d", co_id, valRand);
 
-        String sdf1_4 = String.format("SELECT   dm_date," +
-                "         dm_close," +
-                "         dm_high," +
-                "         dm_low," +
-                "         dm_vol" +
-                "FROM     daily_market" +
-                "WHERE    dm_s_symb = '%s'" +
-                "         AND dm_date >= '%s'" +
-                "ORDER BY dm_date ASC" +
-                "LIMIT %d", symbol, date, valRand);
+		String sdf1_4 = String.format("SELECT   dm_date," +
+				"         dm_close," +
+				"         dm_high," +
+				"         dm_low," +
+				"         dm_vol" +
+				"FROM     daily_market" +
+				"WHERE    dm_s_symb = '%s'" +
+				"         AND dm_date >= '%s'" +
+				"ORDER BY dm_date ASC" +
+				"LIMIT %d", symbol, date, valRand);
 
-        String sdf1_5 = String.format("SELECT lt_price," +
-                "       lt_open_price," +
-                "       lt_vol" +
-                "FROM   last_trade" +
-                "WHERE  lt_s_symb = '%s'", symbol);
+		String sdf1_5 = String.format("SELECT lt_price," +
+				"       lt_open_price," +
+				"       lt_vol" +
+				"FROM   last_trade" +
+				"WHERE  lt_s_symb = '%s'", symbol);
 
-        String sdf1_7 = String.format("SELECT ''," +
-                "       ni_dts," +
-                "       ni_source," +
-                "       ni_author," +
-                "       ni_headline," +
-                "       ni_summary" +
-                "FROM   news_xref," +
-                "       news_item" +
-                "WHERE  ni_id = nx_ni_id" +
-                "       AND nx_co_id = %s" +
-                "LIMIT %d", co_id, valRand);
+		String sdf1_7 = String.format("SELECT ''," +
+				"       ni_dts," +
+				"       ni_source," +
+				"       ni_author," +
+				"       ni_headline," +
+				"       ni_summary" +
+				"FROM   news_xref," +
+				"       news_item" +
+				"WHERE  ni_id = nx_ni_id" +
+				"       AND nx_co_id = %s" +
+				"LIMIT %d", co_id, valRand);
 
-        dbObject.QUERY(sdf1_2);
-        dbObject.QUERY(sdf1_3);
-        dbObject.QUERY(sdf1_4);
-        dbObject.QUERY(sdf1_5);
-        dbObject.QUERY(sdf1_7);
-        s.insertTime(11, System.currentTimeMillis() - t);
-    }
+		dbObject.QUERY(sdf1_2);
+		dbObject.QUERY(sdf1_3);
+		dbObject.QUERY(sdf1_4);
+		dbObject.QUERY(sdf1_5);
+		dbObject.QUERY(sdf1_7);
+		s.insertTime(11, System.currentTimeMillis() - t);
+	}
 
     /*
 	private static void tradeUpdate(arisDemo dbObject) {
@@ -1887,58 +1821,118 @@ public class arisDemo {
 		MarketSim(arisDemo dd){
 			this.db=dd;
 		}
-		public arisDemo db;
+		private arisDemo db;
 
 		private volatile boolean closeMarket = false;
 
 		//private volatile List<Pair> listTR = new ArrayList<Pair>();
-		private volatile List listMF = new ArrayList();
-		/*
-		public void queTR(Double t_price, String t_id){
+		//private volatile List listMF = new ArrayList();
+		private  List transQue = new ArrayList();
+
+		public void runTradeResult(Double t_price, String t_id){
 			Pair p = new Pair();
 			p.tr_id=t_id;
 			p.tr_price=t_price;
-			listTR.add(p);
-		}*/
-
+			//listTR.add(p);
+			transQue.add(p);
+		}
+		public void runMarketFeed(){
+			//listMF.add(1);
+			transQue.add(1);
+		}
 		public void setCloseMarket() throws IOException{
 			closeMarket = true;
-			db.DISCONNECT();
-            Thread.currentThread().interrupt();
+			db.DISCONNECT();                                     ///put Back
+			Thread.currentThread().interrupt();
 		}
 
-		public void runMarketFeed(){
-			listMF.add(1);
-		}
 		@Override
 		public void  run() {
 			System.out.println(db.CONNECT());						///put Back
-			//Thread.currentThread().setPriority(10);
+			Thread.currentThread().setPriority(10);
 			db.setConsistency(MODE);								///put Back
 			while(!closeMarket){
-				if (!listMF.isEmpty()) {
+				if (!transQue.isEmpty()) {
 					//arisDemo cdb = new arisDemo(); 					///new
 					//cdb.CONNECT();									///new
 					//cdb.setConsistency(MODE);						///new
-					marketFeedFrame(db, stats);
+					if (transQue.get(0)==1) {
+						marketFeedFrame(db, stats);                    /// don't forget to change this!!!
+					}
+					else if (transQue.get(0) instanceof Pair){
+						tradeResult(db, stats, ((Pair) transQue.get(0)).tr_id, ((Pair) transQue.get(0)).tr_price);
+					}
 					//cdb.DISCONNECT();								///new
-					listMF.remove(0);
-					//System.out.println("MF Transactions in queue: " + listMF.size());
+					transQue.remove(0);
 				}
 			}
-            if (Thread.currentThread().isInterrupted()){
-                db.DISCONNECT();
-            }
+			if (Thread.currentThread().isInterrupted()){
+				transQue.clear();
+				db.DISCONNECT();                                  ///put Back
+				System.out.println("Market Killed");
+			}
 			System.out.println(db.DISCONNECT());					///put Back
 			System.out.println("Disconnect MarketSEE thread.");
 		}
 	}
 
+	private static class MarketSim2 implements Runnable{
+		MarketSim2(arisDemo dd){
+			this.db=dd;
+		}
+		private arisDemo db;
+
+		private volatile boolean closeMarket = false;
+
+		private List<Pair> listTR = new ArrayList<Pair>();
+
+		public void runTradeResult(Double t_price, String t_id){
+			Pair p = new Pair();
+			p.tr_id=t_id;
+			p.tr_price=t_price;
+			listTR.add(p);
+		}
+
+		public void setCloseMarket() throws IOException{
+			closeMarket = true;
+			db.DISCONNECT();                                     ///put Back
+			Thread.currentThread().interrupt();
+		}
+
+		@Override
+		public void  run() {
+			System.out.println(db.CONNECT());						///put Back
+			Thread.currentThread().setPriority(10);
+			db.setConsistency(MODE);								///put Back
+			while(!closeMarket){
+				if (!listTR.isEmpty()) {
+					tradeResult(db, stats, listTR.get(0).tr_id, listTR.get(0).tr_price);
+				}
+				listTR.remove(0);
+				}
+
+			if (Thread.currentThread().isInterrupted()){
+				db.DISCONNECT();                                  ///put Back
+				System.out.println("Market2 Killed");
+			}
+			System.out.println(db.DISCONNECT());					///put Back
+			System.out.println("Disconnect MarketSEE2 thread.");
+		}
+	}
+
 	private static class SimTest implements Callable<String>{
-		private Statistics s;
+
+        private Statistics s;
 		public arisDemo d;
-		private MarketSim ms;
-        SimTest(Statistics stats, arisDemo db, MarketSim ms){this.s = stats; this.d = db; this.ms = ms;}
+		public int name;
+        private TransactionTicket tt;
+
+        SimTest(Statistics stats, arisDemo db, int name, TransactionTicket trT){
+            this.s = stats;
+            this.d = db;
+            this.name=name;
+            this.tt = trT;
+        }
 
 		private volatile boolean cancelled = false;
 		public void onCancel() throws IOException{
@@ -1947,31 +1941,23 @@ public class arisDemo {
 			Thread.currentThread().interrupt();
 		}
 
-        @Override
-        //Changed returned type from Object to String
-        public String call() throws Exception{
-            if (!BYPASS){
+		@Override
+		//Changed returned type from Object to String
+		public String call() throws Exception{
+			if (!BYPASS){
 				//System.out.println(d.CONNECT());
 				d.CONNECT();
-                d.setConsistency(MODE);
-            }
-
+				d.setConsistency(MODE);
+			}
+			Thread.currentThread().setPriority(1);
 			//long lStartTime = System.currentTimeMillis();
-			int i =0;
-
-            List txnsToRun  = new Vector<String>();
-			txnsToRun = workloadMix(MIXSELECTOR);
 			while (!cancelled){
-				//generateTxn(d, txnsToRun.get(i).toString(), stats, ms);
-				generateTxn(d, txnsToRun.get(i).toString(), s, ms);
-				i++;
-				if (i >= txnsToRun.size() - 1) {i = 0;}
+				generateTxn(d, tt.getNextTransaction(), s);
 			}
 			if (Thread.currentThread().isInterrupted()){
 				d.DISCONNECT();
 			}
 			return "Session complete";
 		}
-    }
+	}
 }
-
