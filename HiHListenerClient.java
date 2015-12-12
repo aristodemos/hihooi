@@ -525,9 +525,9 @@ public class HiHListenerClient
 		{
 			try
 			{
-				this.out.close();
-				this.in.close();
-				/*out.println("End");
+				//this.out.close();
+				//this.in.close();
+				out.println("End");
 				serverResponse= in.readLine();
 				if (serverResponse.equalsIgnoreCase("Bye")){
 					this.out.close();
@@ -538,7 +538,7 @@ public class HiHListenerClient
 					this.out.close();
 					this.in.close();
 					exit_code="No Response from server.";
-				}*/
+				}
 			}
 			catch(Exception e)
 			{

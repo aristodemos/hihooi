@@ -27,9 +27,10 @@ public class TransactionTicket {
     }
 
     public Integer getNextTransaction(int name){
-        /*if (name == 0 && !delayedTransactions.empty()){
+        if (!delayedTransactions.empty() && !txnWindow.contains(2)){
+            txnWindow.add(name, 2);
             return delayedTransactions.pop();
-        }*/
+        }
 
         txnWindow.add(name, -1);
 
