@@ -47,8 +47,8 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="54.213.94.189";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="54.213.94.189";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -88,7 +88,7 @@ public class arisDemo {
 
 	//public static int trxnsPerSession   = 10;
 	public static int       SESSIONS        = 16; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 5; //in minutes
+	public static int       TIMETORUN       = 24; //in minutes
 	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
 	private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
 	private static String   LAST_T_ID       = "200000000290880";
@@ -290,7 +290,7 @@ public class arisDemo {
 		ExecutorService pool = Executors.newFixedThreadPool(SESSIONS);
 
 
-        TransactionTicket trT = new TransactionTicket(workloadMix(MIXSELECTOR));
+        TransactionTicket trT = new TransactionTicket(workloadMix(MIXSELECTOR), SESSIONS);  //
 
 		Collection<SimTest> collection = new ArrayList<>();
 		for(int i=0; i< SESSIONS; i++){
@@ -461,36 +461,36 @@ public class arisDemo {
 				}
 				return randomSample(pool, pool.size());
 			case "b":
-				for (int i=0; i<25;i++){
+				for (int i=0; i<250;i++){
 					pool.add(0);
 				}
-				for (int i=25; i<50;i++){
+				for (int i=250; i<500;i++){
 					pool.add(1);
 				}
-				for (int i=50;i<95;i++){
+				for (int i=500;i<950;i++){
 					pool.add(5);
 				}
-				for (int i=95;i<96;i++){
+				for (int i=950;i<960;i++){
 					pool.add(2);
 				}
-				for (int i=96;i<98;i++){
+				for (int i=960;i<980;i++){
 					pool.add(3);
 				}
 				return randomSample(pool, pool.size());
 			case "c":
-				for (int i=0; i<20;i++){
+				for (int i=0; i<200;i++){
 					pool.add(0);
 				}
-				for (int i=20; i<45;i++){
+				for (int i=200; i<450;i++){
 					pool.add(1);
 				}
-				for (int i=45;i<90;i++){
+				for (int i=450;i<900;i++){
 					pool.add(5);
 				}
-				for (int i=90;i<94;i++){
+				for (int i=900;i<940;i++){
 					pool.add(2);
 				}
-				for (int i=94;i<97;i++){
+				for (int i=940;i<970;i++){
 					pool.add(3);
 				}
 				return randomSample(pool, pool.size());
@@ -1812,120 +1812,13 @@ public class arisDemo {
 	}
 	*/
 
-	public static class Pair{
-		private Double tr_price;
-		private String tr_id;
-	}
-
-	private static class MarketSim implements Runnable{
-		MarketSim(arisDemo dd){
-			this.db=dd;
-		}
-		private arisDemo db;
-
-		private volatile boolean closeMarket = false;
-
-		//private volatile List<Pair> listTR = new ArrayList<Pair>();
-		//private volatile List listMF = new ArrayList();
-		private  List transQue = new ArrayList();
-
-		public void runTradeResult(Double t_price, String t_id){
-			Pair p = new Pair();
-			p.tr_id=t_id;
-			p.tr_price=t_price;
-			//listTR.add(p);
-			transQue.add(p);
-		}
-		public void runMarketFeed(){
-			//listMF.add(1);
-			transQue.add(1);
-		}
-		public void setCloseMarket() throws IOException{
-			closeMarket = true;
-			db.DISCONNECT();                                     ///put Back
-			Thread.currentThread().interrupt();
-		}
-
-		@Override
-		public void  run() {
-			System.out.println(db.CONNECT());						///put Back
-			Thread.currentThread().setPriority(10);
-			db.setConsistency(MODE);								///put Back
-			while(!closeMarket){
-				if (!transQue.isEmpty()) {
-					//arisDemo cdb = new arisDemo(); 					///new
-					//cdb.CONNECT();									///new
-					//cdb.setConsistency(MODE);						///new
-					if (transQue.get(0)==1) {
-						marketFeedFrame(db, stats);                    /// don't forget to change this!!!
-					}
-					else if (transQue.get(0) instanceof Pair){
-						tradeResult(db, stats, ((Pair) transQue.get(0)).tr_id, ((Pair) transQue.get(0)).tr_price);
-					}
-					//cdb.DISCONNECT();								///new
-					transQue.remove(0);
-				}
-			}
-			if (Thread.currentThread().isInterrupted()){
-				transQue.clear();
-				db.DISCONNECT();                                  ///put Back
-				System.out.println("Market Killed");
-			}
-			System.out.println(db.DISCONNECT());					///put Back
-			System.out.println("Disconnect MarketSEE thread.");
-		}
-	}
-
-	private static class MarketSim2 implements Runnable{
-		MarketSim2(arisDemo dd){
-			this.db=dd;
-		}
-		private arisDemo db;
-
-		private volatile boolean closeMarket = false;
-
-		private List<Pair> listTR = new ArrayList<Pair>();
-
-		public void runTradeResult(Double t_price, String t_id){
-			Pair p = new Pair();
-			p.tr_id=t_id;
-			p.tr_price=t_price;
-			listTR.add(p);
-		}
-
-		public void setCloseMarket() throws IOException{
-			closeMarket = true;
-			db.DISCONNECT();                                     ///put Back
-			Thread.currentThread().interrupt();
-		}
-
-		@Override
-		public void  run() {
-			System.out.println(db.CONNECT());						///put Back
-			Thread.currentThread().setPriority(10);
-			db.setConsistency(MODE);								///put Back
-			while(!closeMarket){
-				if (!listTR.isEmpty()) {
-					tradeResult(db, stats, listTR.get(0).tr_id, listTR.get(0).tr_price);
-				}
-				listTR.remove(0);
-				}
-
-			if (Thread.currentThread().isInterrupted()){
-				db.DISCONNECT();                                  ///put Back
-				System.out.println("Market2 Killed");
-			}
-			System.out.println(db.DISCONNECT());					///put Back
-			System.out.println("Disconnect MarketSEE2 thread.");
-		}
-	}
-
 	private static class SimTest implements Callable<String>{
 
         private Statistics s;
 		public arisDemo d;
 		public int name;
         private TransactionTicket tt;
+        private List<Integer> temp;
 
         SimTest(Statistics stats, arisDemo db, int name, TransactionTicket trT){
             this.s = stats;
@@ -1942,17 +1835,18 @@ public class arisDemo {
 		}
 
 		@Override
-		//Changed returned type from Object to String
 		public String call() throws Exception{
 			if (!BYPASS){
-				//System.out.println(d.CONNECT());
 				d.CONNECT();
 				d.setConsistency(MODE);
 			}
-			Thread.currentThread().setPriority(1);
-			//long lStartTime = System.currentTimeMillis();
+            //TransactionTicket ttt = new TransactionTicket(workloadMix(MIXSELECTOR), SESSIONS);
 			while (!cancelled){
 				generateTxn(d, tt.getNextTransaction(name), s);
+                /*temp = tt.getNexTransactionSet(name, 20);
+                for (int j=0;j<20;j++){
+                    generateTxn(d, temp.get(j), s);
+                }*/
 			}
 			if (Thread.currentThread().isInterrupted()){
 				d.DISCONNECT();

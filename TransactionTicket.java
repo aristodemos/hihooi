@@ -1,5 +1,8 @@
 package hih;
 
+import sun.jvm.hotspot.utilities.*;
+import sun.jvm.hotspot.utilities.Hashtable;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -7,44 +10,52 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by mariosp on 11/12/15.
  */
 public class TransactionTicket {
-    private final List<Integer> txnsToRun;
-    private LinkedList<Integer> txnWindow;
+    private static List<Integer> txnsToRun;
+    private static List<Integer> txnWindow;
+    //private java.util.Hashtable<Integer, Integer> txnHashWindow;
     private Stack<Integer> delayedTransactions;
     private int x;
+    //private int NCONST;
 
-    public TransactionTicket (List<Integer> ls) {
+    public TransactionTicket (List<Integer> ls, int sessions) {
         txnsToRun = ls;
         x = 0;
-        txnWindow = new LinkedList<Integer>(Collections.nCopies(arisDemo.SESSIONS, -1));
+        //NCONST = arisDemo.SESSIONS;
+        txnWindow = new ArrayList<>(Collections.nCopies(sessions, -1));
         delayedTransactions = new Stack<>();
-    }
-    private void putInWindow(int c){
-        txnWindow.addLast(c);
-    }
-    public Integer getNextTransaction(int name){
-        if (name == 0 && !delayedTransactions.empty()){
-            return delayedTransactions.pop();
-        }
-        if (x == 900){x = 0;}
-        txnWindow.removeFirst();
 
-        //εάν το επόμενο στη σειρά τρανσαψτιονς είναι το MarketFeedFrame,
+    }
+
+    public Integer getNextTransaction(int name){
+        /*if (name == 0 && !delayedTransactions.empty()){
+            return delayedTransactions.pop();
+        }*/
+
+        txnWindow.add(name, -1);
+
+        //εάν το επόμενο στη σειρά τρανσαψτιον είναι το MarketFeedFrame,
         //λάβε μέτρα ούτως ώστε να αποφύγουμε conflicts
-        int a = txnsToRun.get(x+1);
+        int a;
+        try{a = txnsToRun.get(x+1);}
+        catch(IndexOutOfBoundsException iobe){
+            x=0;
+            a=txnsToRun.get(0);
+        }
         if (a == 2){
-            //αν στο παράθυρο των concurrently running transactions
-            //δεν υπάρχει το MarketFeedFrame τότε στείλ'το κανονικά
-            if (!writeConflict(txnWindow, 2)){
-                putInWindow(a);
-                x++;
-                return a;
-            }else{ //We have a conflict. Next Trans is MF and a MF trxn is running already...
+            //We have a conflict. Next Trans is MF and a MF trxn is running already...
+            if (txnWindow.contains(2)){
                 //put it in the Queue
-                delayedTransactions.push(a);
+                delayedTransactions.push(a);  // SO now we have to deal with all the transactions in the Queue
                 x++;
                 //Recursion to the Rescue
                 return getNextTransaction(name);
-                // SO now we have to deal with all the transactions in the Queue
+
+            }else{
+                //αν στο παράθυρο των concurrently running transactions
+                //δεν υπάρχει το MarketFeedFrame τότε στείλ'το κανονικά
+                txnWindow.add(name, a);
+                x++;
+                return a;
             }
         }
         else { //not a MarketFeed Frame
@@ -54,13 +65,17 @@ public class TransactionTicket {
                 putInWindow(2);
                 return delayedTransactions.pop();
             }*/
-            putInWindow(a);
+            txnWindow.add(name, a);
             x++;
             return a;
         }
     }
 
-    private boolean writeConflict(List<Integer> l, int x){
-        return l.contains(x);
+    public List<Integer> getNexTransactionSet(int name, int length){
+        List<Integer> toReturn = new ArrayList<Integer>(length);
+        for(int i=0; i<length;i++){
+            toReturn.add(getNextTransaction(name));
+        }
+        return toReturn;
     }
 }
