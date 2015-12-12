@@ -2,23 +2,14 @@ package hih;
 //edit from github 2
 //import com.sun.tools.javac.code.Attribute;
 
-import org.omg.PortableServer.THREAD_POLICY_ID;
-import org.xml.sax.SAXParseException;
 
 import java.io.*;
-//import java.lang.reflect.Array;
-import java.nio.channels.InterruptedByTimeoutException;
 import java.sql.*;
-//import java.text.DateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.concurrent.*;
 import java.util.Arrays;
 import java.text.SimpleDateFormat;
-//import java.util.Calendar;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 public class arisDemo {
 
