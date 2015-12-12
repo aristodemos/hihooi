@@ -47,7 +47,7 @@ public class arisDemo {
 		}
 	}
 
-	//private String LISTENER="54.201.248.105";
+	//private String LISTENER="54.213.94.189";
 	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -87,7 +87,7 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 4; //threads to spawn (on the machine where this program is run)
+	public static int       SESSIONS        = 16; //threads to spawn (on the machine where this program is run)
 	public static int       TIMETORUN       = 5; //in minutes
 	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
 	private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
@@ -1952,7 +1952,7 @@ public class arisDemo {
 			Thread.currentThread().setPriority(1);
 			//long lStartTime = System.currentTimeMillis();
 			while (!cancelled){
-				generateTxn(d, tt.getNextTransaction(), s);
+				generateTxn(d, tt.getNextTransaction(name), s);
 			}
 			if (Thread.currentThread().isInterrupted()){
 				d.DISCONNECT();

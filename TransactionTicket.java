@@ -21,7 +21,10 @@ public class TransactionTicket {
     private void putInWindow(int c){
         txnWindow.addLast(c);
     }
-    public Integer getNextTransaction(){
+    public Integer getNextTransaction(int name){
+        if (name == 0 && !delayedTransactions.empty()){
+            return delayedTransactions.pop();
+        }
         if (x == 900){x = 0;}
         txnWindow.removeFirst();
 
@@ -40,17 +43,17 @@ public class TransactionTicket {
                 delayedTransactions.push(a);
                 x++;
                 //Recursion to the Rescue
-                return getNextTransaction();
+                return getNextTransaction(name);
                 // SO now we have to deal with all the transactions in the Queue
             }
         }
         else { //not a MarketFeed Frame
             // if there isn't a window conflict and there exists something in the queue, send from the queue
-            if(!delayedTransactions.empty() && !writeConflict(txnWindow, 2)){
+            /*if(!delayedTransactions.empty() && !writeConflict(txnWindow, 2)){
                 //sending from queue
                 putInWindow(2);
                 return delayedTransactions.pop();
-            }
+            }*/
             putInWindow(a);
             x++;
             return a;
