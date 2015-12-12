@@ -308,7 +308,7 @@ public class arisDemo {
 				}
 				catch(CancellationException ce) {
 					//ce.printStackTrace();
-					//System.out.println("A cancellation exception occurred");
+					System.out.println("A cancellation exception occurred");
 					fut.cancel(true);
 				}
 				catch (ExecutionException e) {

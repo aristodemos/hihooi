@@ -542,6 +542,9 @@ public class HiHListenerClient
 			{
 				//System.out.println(new Date()+ e.getMessage());
 			}
+			finally {
+				this.out.close();
+			}
 			return exit_code;
 		}
 		else
