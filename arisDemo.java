@@ -590,49 +590,52 @@ public class arisDemo {
 		List<String> pool = new Vector<String>();
 		switch(selector) {
 			case "a":
-				for (int i=0; i<50;i++){
+				for (int i=0; i<20;i++){
 					pool.add("BrokerVolume");
 				}
-				for (int i=50; i<80;i++){
+				for (int i=20; i<50;i++){
 					pool.add("TradeStatus");
 				}
-				for (int i=80;i<100;i++){
+				for (int i=50;i<70;i++){
 					pool.add("CustomerPosition");
 				}
+                for (int i=70;i<100;i++){
+                    pool.add("SecurityDetail");
+                }
 				return randomSample(pool, pool.size());
 			case "b":
-				for (int i=0; i<25;i++){
+				for (int i=0; i<10;i++){
 					pool.add("BrokerVolume");
 				}
-				for (int i=25; i<50;i++){
+				for (int i=10; i<35;i++){
 					pool.add("CustomerPosition");
 				}
-				for (int i=50;i<95;i++){
+				for (int i=35;i<65;i++){
 					pool.add("TradeStatus");
 				}
-				for (int i=95;i<96;i++){
-					pool.add("MarketFeed");
-				}
+                for (int i=65;i<95;i++){
+                    pool.add("SecurityDetail");
+                }
 				for (int i=96;i<98;i++){
 					pool.add("TradeOrder");
 				}
 				return randomSample(pool, pool.size());
 			case "c":
-				for (int i=0; i<20;i++){
-					pool.add("BrokerVolume");
-				}
-				for (int i=20; i<45;i++){
-					pool.add("CustomerPosition");
-				}
-				for (int i=45;i<90;i++){
-					pool.add("TradeStatus");
-				}
-				for (int i=90;i<94;i++){
-					pool.add("MarketFeed");
-				}
-				for (int i=94;i<97;i++){
-					pool.add("TradeOrder");
-				}
+                for (int i=0; i<10;i++){
+                    pool.add("BrokerVolume");
+                }
+                for (int i=10; i<35;i++){
+                    pool.add("CustomerPosition");
+                }
+                for (int i=35;i<65;i++){
+                    pool.add("TradeStatus");
+                }
+                for (int i=65;i<94;i++){
+                    pool.add("SecurityDetail");
+                }
+                for (int i=95;i<101;i++){
+                    pool.add("TradeOrder");
+                }
 				return randomSample(pool, pool.size());
 			//case 'd' is the default
 			default:
@@ -1988,8 +1991,8 @@ public class arisDemo {
 				generateTxn(d, txnsToRun.get(i).toString(), s);
 				i++;
 				if (i >= txnsToRun.size() - 1) {i = 0;}
-			}
-			if (Thread.currentThread().isInterrupted()){
+            }
+            if (Thread.currentThread().isInterrupted()){
 				d.DISCONNECT();
 			}
 			//System.out.println("Thread: " + Thread.currentThread().getName() + " finished");
