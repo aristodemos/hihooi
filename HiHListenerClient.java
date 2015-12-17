@@ -527,6 +527,7 @@ public class HiHListenerClient
 			{
 				//this.out.close();
 				//this.in.close();
+
 				out.println("End");
 				serverResponse= in.readLine();
 				if (serverResponse.equalsIgnoreCase("Bye")){
@@ -539,6 +540,7 @@ public class HiHListenerClient
 					this.in.close();
 					exit_code="No Response from server.";
 				}
+
 			}
 			catch(Exception e)
 			{
