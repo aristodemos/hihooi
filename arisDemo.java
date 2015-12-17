@@ -424,7 +424,7 @@ public class arisDemo {
 		System.out.println("Closing Connections . . .");
 		for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
 			SimTest type = (SimTest) iterator.next();
-			System.out.println(type.d);
+			//System.out.println(type.d);
 			//type.disconnectNow();
 			type.onCancel();
 		}
@@ -1990,7 +1990,7 @@ public class arisDemo {
 				if (i >= txnsToRun.size() - 1) {i = 0;}
 			}
 			if (Thread.currentThread().isInterrupted()){
-				System.out.println(d.DISCONNECT());
+				d.DISCONNECT();
 			}
 			//System.out.println("Thread: " + Thread.currentThread().getName() + " finished");
 			return "Session complete";
