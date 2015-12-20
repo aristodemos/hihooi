@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 public class arisDemo {
 
+	public static Random testRndGen = new Random();
 
 	static final class Statistics {
 		private long[] txnMix = new long[2*(txnPoolMaster.size()+1)];
@@ -60,8 +61,8 @@ public class arisDemo {
         }
 	}
 
-	//private String LISTENER="54.201.96.59";
-	private String LISTENER="172.30.0.130";
+	private String LISTENER="52.25.179.220";
+	//private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -101,12 +102,13 @@ public class arisDemo {
 
 	//public static int trxnsPerSession   = 10;
 	public static int       SESSIONS        = 32; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 15; //in minutes
+	public static int       TIMETORUN       = 7; //in minutes
 	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
 	private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
 	private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1; //1, 2, 3, 4
 	private static boolean 	BYPASS			= false; //run direclty on postgres. stopAll and start postgres normally (pg_ctl)
+	private static String 	LOG_FILENAME    = "tsts";
 
 	//The writer for the Log
 	public static PrintWriter logWriter = null;
@@ -136,27 +138,6 @@ public class arisDemo {
 	}
 	private final ExecutorService futPool = Executors.newFixedThreadPool(10);
 
-	public Future<List> QUERYF(final String SQL) {
-		return futPool.submit(new Callable<List>() {
-			@Override
-			public List call()  {
-				List<Map<String, Object>> rows = hih.executeQuery(SQL);
-				String output ="";
-				List resultOut = new Vector();
-				for( int i = rows.size() -1; i >= 0 ; i --)
-				{
-					Map<String,Object> entry = rows.get(i);
-					for (String key : entry.keySet())
-					{
-						output += entry.get(key)+" ";
-						resultOut.add(entry.get(key));
-					}
-				}
-				if (DEBUG){System.out.println(resultOut);}
-				return resultOut;
-			}
-		});
-	}
 
 	public List QUERY(String SQL) {
 		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
@@ -194,25 +175,6 @@ public class arisDemo {
 	}
 
 
-	public Future<Map> QUERYF2MAP(final String SQL) {
-		return futPool.submit(new Callable<Map>() {
-			@Override
-			public Map call()  {
-				List<Map<String, Object>> rows = hih.executeQuery(SQL);
-				Map<String, Object> results = new HashMap<>();
-				for( int i = rows.size() -1; i >= 0 ; i --) {
-					Map<String,Object> entry = rows.get(i);
-					for (String key : entry.keySet()){
-						results.put(key, entry.get(key));
-					}
-				}
-				if (DEBUG){System.out.println(results);}
-				return results;
-			}
-		});
-	}
-
-
 	public Map QUERY2MAP(String SQL){
 		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
 		List<Map<String, Object>> rows = hih.executeQuery(SQL);
@@ -227,28 +189,6 @@ public class arisDemo {
         stats.incOperation();
 		return results;
 	}
-
-
-	public Future<List> QUERYF2LST(final String SQL) {
-		return futPool.submit(new Callable<List>() {
-			@Override
-			public List call()  {
-				List<Map<String, Object>> rows = hih.executeQuery(SQL);
-				String output ="";
-				for( int i = rows.size() -1; i >= 0 ; i --)
-				{
-					Map<String,Object> entry = rows.get(i);
-					for (String key : entry.keySet())
-					{
-						output += entry.get(key);
-					}
-				}
-				if (DEBUG){System.out.println(rows);}
-				return rows;
-			}
-		});
-	}
-
 
 	public List QUERY2LST(String SQL){
 		if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
@@ -314,6 +254,9 @@ public class arisDemo {
 				if (args[i].equalsIgnoreCase("-bypass") || args[i].equalsIgnoreCase("-b")) {
 					BYPASS = true;
 				}
+				if (args[i].equalsIgnoreCase("-filelog") || args[i].equalsIgnoreCase("-f")) {
+					LOG_FILENAME = args[i + 1];
+				}
 			}
 		}
 		if (BYPASS){
@@ -325,7 +268,7 @@ public class arisDemo {
 		//Remember to close it
 		String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
 		try{
-			logWriter = new PrintWriter(timeStamp+"_"+MIXSELECTOR+"_"+MODE+".txt", "UTF-8");
+			logWriter = new PrintWriter(LOG_FILENAME+"_"+timeStamp+".txt", "UTF-8");
 
 		}catch (FileNotFoundException |UnsupportedEncodingException err){
 			System.out.println("FileNOTfound" + err.getMessage());
@@ -334,37 +277,24 @@ public class arisDemo {
 		Locale.setDefault(Locale.US);
 		System.out.println("****************** Test Run Parameters *********************");
 		System.out.println("************************************************************");
-		System.out.println("Number of Sessions: "+SESSIONS);
-		System.out.println("Test Duration (in minutes): "+TIMETORUN);
-		System.out.println("Using Mix: " + MIXSELECTOR);
-		System.out.println("Debug is set to: "+DEBUG);
-		System.out.println("Bypass is set to: "+BYPASS);
-		//System.out.println("Last Trade Id "+LAST_T_ID);
-		System.out.println("Mode = " +MODE);
+		System.out.println("Number of Sessions: "			+SESSIONS);
+		System.out.println("Test Duration (in minutes): "	+TIMETORUN);
+		System.out.println("Using Mix: " 					+MIXSELECTOR);
+		System.out.println("Debug is set to: "				+DEBUG);
+		System.out.println("Bypass is set to: "				+BYPASS);
+		System.out.println("Mode = " 						+MODE);
+		System.out.println("Log File will be saved to: "	+LOG_FILENAME);
 
 		//init Statistics
 		//final Statistics stats = new Statistics();
 
 		System.out.println("*************** Initializing the Test Run ******************");
-		//arisDemo d = new arisDemo();
-		//System.out.println(d.CONNECT());
-		//System.out.println("Connection Established");
-
-		//System.out.println("Cleaning Up database");
-		//preInitRun(d);
-
 		//Gather necessary data from the initialized database;
 		System.out.println("Initializing Parameters");
 		initParams();
-		//System.out.println("Disconnecting after initialization...");
-		//System.out.println(d.DISCONNECT());
 
 		System.out.println("Starting Sessions");
 		System.out.println("Number of threads (sessions):  "+ SESSIONS);
-		//System.out.println("Txns per Session :  " + trxnsPerSession);
-		//KEEP LOGWRITER CLEAN TO EASE CALCULATIONS
-		//logWriter.printf("Number of threads (sessions):  " + SESSIONS + "\r\n");
-		//logWriter.printf("Txns per Session :  " + trxnsPerSession+"\r\n");
 
 		ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 		exec.scheduleAtFixedRate(new Runnable() {
@@ -638,22 +568,47 @@ public class arisDemo {
                 }
 				return randomSample(pool, pool.size());
 			//case 'd' is the default
-			default:
-				for (int i=0; i<20;i++){
-					pool.add("BrokerVolume");
-				}
-				for (int i=20; i<35;i++){
-					pool.add("CustomerPosition");
-				}
-				for (int i=35;i<67;i++){
-					pool.add("TradeStatus");
-				}
-				for (int i=67;i<90;i++){
-					pool.add("SecurityDetail");
-				}
-				for (int i=90;i<100;i++){
+			case "f":
+				for (int i=0; i<1;i++){
 					pool.add("TradeOrder");
 				}
+				for (int i=1; i<2;i++){
+					pool.add("MarketFeed");
+				}
+				for (int i=2;i<4;i++){
+					pool.add("SecurityDetail");
+				}
+				return randomSample(pool, pool.size());
+
+			default:
+				for (int i=0; i<5;i++){
+					pool.add("BrokerVolume");
+				}
+				for (int i=5; i<18;i++){
+					pool.add("CustomerPosition");
+				}
+				for (int i=18; i<19;i++){
+					pool.add("MarketFeed");
+				}
+				for (int i=19;i<33;i++){
+					pool.add("SecurityDetail");
+				}
+				for (int i=33;i<43;i++){
+					pool.add("TradeOrder");
+				}
+				for (int i=43;i<62;i++){
+					pool.add("TradeStatus");
+				}
+				for (int i=62;i<70;i++){
+					pool.add("TradeStatus");
+				}
+				for (int i=70;i<80;i++){
+					pool.add("CustomerPosition");
+				}
+				for (int i=80;i<90;i++){
+					pool.add("BrokerVolume");
+				}
+
 				return randomSample(pool, pool.size());
 
 		}
@@ -747,7 +702,8 @@ public class arisDemo {
 	//taken from https://eyalsch.wordpress.com/2010/04/01/random-sample/
 	public static <T> List<T> randomSample(List<T> items, int m){
 		for(int i=0;i<m;i++){
-			int pos = i + ThreadLocalRandom.current().nextInt(items.size() - i);
+			//int pos = i + ThreadLocalRandom.current().nextInt(items.size() - i);
+			int pos = i + testRndGen.nextInt(items.size() - i);
 			T tmp = items.get(pos);
 			items.set(pos, items.get(i));
 			items.set(i, tmp);
@@ -756,9 +712,9 @@ public class arisDemo {
 	}
 
 	private static void brokerVolumeFrame(arisDemo dbObject, Statistics s) {
-		int number_of_brokers = ThreadLocalRandom.current().nextInt(all_brokers.size());
+		int number_of_brokers = testRndGen.nextInt(all_brokers.size()); //ThreadLocalRandom.current().nextInt(all_brokers.size());
 		List active_brokers = randomSample(all_brokers, number_of_brokers);
-		String sector_name = all_sectors.get(ThreadLocalRandom.current().nextInt(0, all_sectors.size()));
+		String sector_name = all_sectors.get(testRndGen.nextInt(all_sectors.size()));
 		Long t;
 		//convert active_brokers list to string seperated by commas
 		String activeBrokersStr = org.apache.commons.lang3.StringUtils.join(active_brokers, ',');
@@ -792,7 +748,7 @@ public class arisDemo {
 	private static void customerPositionFrame(final arisDemo dbObject, Statistics s) {
 		Long t = System.currentTimeMillis();
 		//Customer Position Frame 1 of 2
-		String cust_id = all_customers.get(ThreadLocalRandom.current().nextInt(0, all_customers.size()));
+		String cust_id = all_customers.get(testRndGen.nextInt(all_customers.size()));
 		final String query1 = String.format(
 				"SELECT CA_ID, CA_BAL, sum(HS_QTY * LT_PRICE) as soma " +
 						"FROM CUSTOMER_ACCOUNT left outer join " +
@@ -871,7 +827,8 @@ public class arisDemo {
 		for (int i=0; i<numberOfSymbols; i++){
 			double low 	= pricesDM.get(activeSymbolsSet.get(i)).get(0);
 			double high = pricesDM.get(activeSymbolsSet.get(i)).get(1);
-			priceQuote.add(i, ThreadLocalRandom.current().nextDouble(low, high));
+			double randInt = Math.abs(testRndGen.nextDouble());
+			priceQuote.add(i, 0.7*low + randInt*(1.3*high-low) );
 		}
 
 		//trade quantity[]
@@ -885,18 +842,20 @@ public class arisDemo {
 				return;
 			}
 		}
-		Long t2;
-		dbObject.START_TX();
+		//Long t2;
+
 		for (int i=0; i<numberOfSymbols; i++) {
-			t2 = System.currentTimeMillis();
+			dbObject.START_TX();
+			//t2 = System.currentTimeMillis();
 			String query1 = String.format(
 					"UPDATE LAST_TRADE " +
 							"SET LT_PRICE = %f, " +
 							"LT_VOL = LT_VOL + %s, " +
 							"LT_DTS = now() " +
 							"WHERE LT_S_SYMB = '%s'", priceQuote.get(i), tradeQuantity.get(i), activeSymbolsSet.get(i));
-			while (System.currentTimeMillis() < t2 + 15*1000){
+			//while (System.currentTimeMillis() < t2 + 15*1000){
 			dbObject.DML(query1);
+			dbObject.TCL("commit");
 
 			//store trade_id in request_list
 			String query2 = String.format(
@@ -928,13 +887,13 @@ public class arisDemo {
 				dbObject.DML(query5);
 				break;
 			}
-			}//end while timeout here
-			System.out.println("Market Feed Time out");
-			dbObject.DML("update zip_code set zc_div='HL' where zc_code='10001'");
-			dbObject.TCL("rollback");
-			return;
+			// } //end while timeout here
+			//System.out.println("Market Feed Time out");
+			//dbObject.DML("update zip_code set zc_div='HL' where zc_code='10001'");
+			//dbObject.TCL("rollback");
+			//return;
 		}
-		dbObject.TCL("commit");
+
 		s.insertTime(9, System.currentTimeMillis() - t);
 		s.increment(2);
 	}
@@ -947,12 +906,15 @@ public class arisDemo {
 		//Frame Inputs: account_id, symbol of the security (stock), trade_quantity
 		//bools: type_is_market, type_is_sell, use LIFO or FILO traversal
 
-		String acct_id =  all_acct_ids.get(ThreadLocalRandom.current().nextInt(0, all_acct_ids.size())).toString();
-		String symbol = all_symbols.get(ThreadLocalRandom.current().nextInt(0, all_symbols.size()));
+		String acct_id =  all_acct_ids.get(testRndGen.nextInt(all_acct_ids.size())).toString();
+		String symbol = all_symbols.get(testRndGen.nextInt(all_symbols.size()));
 
-		int trade_qty = ThreadLocalRandom.current().nextInt(100, 800);
-		boolean type_is_market 	= ThreadLocalRandom.current().nextBoolean();
-		boolean type_is_sell	= ThreadLocalRandom.current().nextBoolean();
+		//int trade_qty = ThreadLocalRandom.current().nextInt(100, 800);
+		//int randInt = testRndGen.nextInt(800);
+		int trade_qty = testRndGen.nextInt(800)+100;
+
+		boolean type_is_market 	= testRndGen.nextBoolean();
+		boolean type_is_sell	= testRndGen.nextBoolean();
 
 		String t_tt_id = "";
 		if (type_is_market){
@@ -963,8 +925,8 @@ public class arisDemo {
 			if (type_is_sell) {t_tt_id = "TLS";}
 			else {t_tt_id = "TLB";}
 		}
-		boolean is_lifo	= ThreadLocalRandom.current().nextBoolean();
-		boolean t_is_cash	= ThreadLocalRandom.current().nextBoolean();
+		boolean is_lifo		= testRndGen.nextBoolean();
+		boolean t_is_cash	= testRndGen.nextBoolean();
 
 		// Get account, customer, and broker information into a Map
 		String  sqlTOF1_1 = String.format(
@@ -1211,9 +1173,7 @@ public class arisDemo {
 						"        %d, %s, %s, '%s', NULL, %s, %s, 0, %s) ", trade_id,
 				status_id, t_tt_id, t_is_cash, symbol, trade_qty, tradePriceStr, acct_id,
 				exec_name, charge_amount, comm_amount, is_lifo);
-
 		dbObject.DML(sqlTOF4_1);
-
 
 		String  sqlTOF4_2 = String.format(
 				"INSERT INTO trade_request(tr_t_id, tr_tt_id, tr_s_symb, tr_qty, " +
@@ -1591,7 +1551,7 @@ public class arisDemo {
 
 		//END OF FRAME 5
 		//GO FOR FRAME 6
-		boolean cash_type = ThreadLocalRandom.current().nextBoolean();
+		boolean cash_type = testRndGen.nextBoolean();
 		Date due_txn_date = org.apache.commons.lang3.time.DateUtils.addDays(trade_date, 2);
 		String due_date = due_txn_date.toString();
 		double se_amount = 0.0;
@@ -1648,7 +1608,7 @@ public class arisDemo {
 	}
 
 	private static void tradeStatus(final arisDemo dbObject, Statistics s) {
-		String acct_id =  all_acct_ids.get(ThreadLocalRandom.current().nextInt(0, all_acct_ids.size())).toString();
+		String acct_id =  all_acct_ids.get(testRndGen.nextInt(all_acct_ids.size())).toString();
 		Long t = System.currentTimeMillis();
 		final String  sqlTSF1_1 = String.format(
 				"SELECT t_id, t_dts, st_name, tt_name, t_s_symb, t_qty, " +
@@ -1689,9 +1649,9 @@ public class arisDemo {
 	}
 
 	private static void securityDetail(arisDemo dbObject, Statistics s) {
-		String symbol = all_symbols.get(ThreadLocalRandom.current().nextInt(0, all_symbols.size()));
+		String symbol = all_symbols.get(testRndGen.nextInt(all_symbols.size()));
 
-		int valRand = ThreadLocalRandom.current().nextInt(5, 21);
+		int valRand = 5 + testRndGen.nextInt(21 - 5);
 		long beginTime;
 		long endTime;
 		beginTime = Timestamp.valueOf("2000-01-01 00:00:00").getTime();
@@ -1954,7 +1914,11 @@ public class arisDemo {
 	private static class SimTest implements Callable<String>{
 		private Statistics s;
 		public arisDemo d;
-		SimTest(Statistics stats, arisDemo db){this.s = stats; this.d = db;}
+
+		SimTest(Statistics stats, arisDemo db){
+			this.s = stats;
+			this.d = db;
+		}
 
 		public void disconnectNow(){
 			System.out.println(d.DISCONNECT());
