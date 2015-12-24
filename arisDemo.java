@@ -61,8 +61,8 @@ public class arisDemo {
         }
 	}
 
-	private String LISTENER="52.25.179.220";
-	//private String LISTENER="172.30.0.130";
+	//private String LISTENER="52.25.179.220";
+	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
 	public String CONNECT()
@@ -534,38 +534,62 @@ public class arisDemo {
                 }
 				return randomSample(pool, pool.size());
 			case "b":
-				for (int i=0; i<10;i++){
+				for (int i=0; i<5;i++){
 					pool.add("BrokerVolume");
 				}
-				for (int i=10; i<35;i++){
+				for (int i=5; i<18;i++){
 					pool.add("CustomerPosition");
 				}
-				for (int i=35;i<65;i++){
+				for (int i=18; i<19;i++){
+					pool.add("MarketFeed");
+				}
+				for (int i=19;i<33;i++){
+					pool.add("SecurityDetail");
+				}
+				for (int i=33;i<36;i++){
+					pool.add("TradeOrder");
+				}
+				for (int i=36;i<62;i++){
 					pool.add("TradeStatus");
 				}
-                for (int i=65;i<95;i++){
-                    pool.add("SecurityDetail");
-                }
-				for (int i=96;i<98;i++){
-					pool.add("TradeOrder");
+				for (int i=62;i<70;i++){
+					pool.add("TradeStatus");
+				}
+				for (int i=70;i<80;i++){
+					pool.add("CustomerPosition");
+				}
+				for (int i=80;i<90;i++){
+					pool.add("BrokerVolume");
 				}
 				return randomSample(pool, pool.size());
 			case "c":
-                for (int i=0; i<10;i++){
-                    pool.add("BrokerVolume");
-                }
-                for (int i=10; i<35;i++){
-                    pool.add("CustomerPosition");
-                }
-                for (int i=35;i<65;i++){
-                    pool.add("TradeStatus");
-                }
-                for (int i=65;i<94;i++){
-                    pool.add("SecurityDetail");
-                }
-                for (int i=95;i<101;i++){
-                    pool.add("TradeOrder");
-                }
+				for (int i=0; i<5;i++){
+					pool.add("BrokerVolume");
+				}
+				for (int i=5; i<18;i++){
+					pool.add("CustomerPosition");
+				}
+				for (int i=18; i<19;i++){
+					pool.add("MarketFeed");
+				}
+				for (int i=19;i<33;i++){
+					pool.add("SecurityDetail");
+				}
+				for (int i=33;i<38;i++){
+					pool.add("TradeOrder");
+				}
+				for (int i=38;i<62;i++){
+					pool.add("TradeStatus");
+				}
+				for (int i=62;i<70;i++){
+					pool.add("TradeStatus");
+				}
+				for (int i=70;i<80;i++){
+					pool.add("CustomerPosition");
+				}
+				for (int i=80;i<90;i++){
+					pool.add("BrokerVolume");
+				}
 				return randomSample(pool, pool.size());
 			//case 'd' is the default
 			case "f":
@@ -608,7 +632,6 @@ public class arisDemo {
 				for (int i=80;i<90;i++){
 					pool.add("BrokerVolume");
 				}
-
 				return randomSample(pool, pool.size());
 
 		}
