@@ -41,7 +41,6 @@ public class arisDemo {
         public void incWriteOp(){
             writeOps++;
             totalOps++;
-
         }
 
 		public void insertTime(int i, long timeInterval){
@@ -215,7 +214,7 @@ public class arisDemo {
 	}
 
 	public String START_TX() {
-        stats.incWriteOp();
+        //stats.incWriteOp();
 		return hih.startTransaction();
 	}
 	//TRANSACTION CONTROL LANGUAGE: COMMIT, ROLLBACK;
