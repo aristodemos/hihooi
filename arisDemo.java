@@ -558,7 +558,7 @@ public class arisDemo {
 				for (int i=70;i<80;i++){
 					pool.add("CustomerPosition");
 				}
-				for (int i=80;i<90;i++){
+				for (int i=80;i<100;i++){
 					pool.add("BrokerVolume");
 				}
 				return randomSample(pool, pool.size());
@@ -587,7 +587,7 @@ public class arisDemo {
 				for (int i=70;i<80;i++){
 					pool.add("CustomerPosition");
 				}
-				for (int i=80;i<90;i++){
+				for (int i=80;i<100;i++){
 					pool.add("BrokerVolume");
 				}
 				return randomSample(pool, pool.size());
