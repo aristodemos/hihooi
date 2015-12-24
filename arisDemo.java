@@ -836,7 +836,7 @@ public class arisDemo {
 	private static void marketFeedFrame(arisDemo dbObject, Statistics s) {
 		Long t = System.currentTimeMillis();
 
-		activeSymbols = dbObject.QUERY("select distinct(TR_S_SYMB) from TRADE_REQUEST order by TR_S_SYMB ASC");
+		activeSymbols = dbObject.QUERY("select (TR_S_SYMB) from TRADE_REQUEST");
 		//int numberOfSymbols = ThreadLocalRandom.current().nextInt(0, activeSymbols.size());
 		//the previous line is commented out because the spec states that the number of symbols must be 20;
 		int numberOfSymbols = 20;
