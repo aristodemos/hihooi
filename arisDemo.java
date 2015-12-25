@@ -60,7 +60,7 @@ public class arisDemo {
         }
 	}
 
-	//private String LISTENER="52.25.179.220";
+	//private String LISTENER="52.27.159.172";
 	private String LISTENER="172.30.0.130";
 	private HiHListenerClient hih = new HiHListenerClient();
 
@@ -100,9 +100,9 @@ public class arisDemo {
 	public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
 	//public static int trxnsPerSession   = 10;
-	public static int       SESSIONS        = 32; //threads to spawn (on the machine where this program is run)
-	public static int       TIMETORUN       = 7; //in minutes
-	public static String    MIXSELECTOR   	= "d"; // a,b,c,d    default: all transactions (d)
+	public static int       SESSIONS        = 8; //threads to spawn (on the machine where this program is run)
+	public static int       TIMETORUN       = 2; //in minutes
+	public static String    MIXSELECTOR   	= "f"; // a,b,c,d    default: all transactions (d)
 	private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
 	private static String   LAST_T_ID       = "200000000290880";
 	private static int 	    MODE		    = 1; //1, 2, 3, 4
@@ -539,16 +539,13 @@ public class arisDemo {
 				for (int i=5; i<18;i++){
 					pool.add("CustomerPosition");
 				}
-				for (int i=18; i<19;i++){
-					pool.add("MarketFeed");
-				}
-				for (int i=19;i<33;i++){
+				for (int i=18;i<33;i++){
 					pool.add("SecurityDetail");
 				}
-				for (int i=33;i<36;i++){
+				for (int i=33;i<34;i++){
 					pool.add("TradeOrder");
 				}
-				for (int i=36;i<62;i++){
+				for (int i=34;i<62;i++){
 					pool.add("TradeStatus");
 				}
 				for (int i=62;i<70;i++){
@@ -568,16 +565,13 @@ public class arisDemo {
 				for (int i=5; i<18;i++){
 					pool.add("CustomerPosition");
 				}
-				for (int i=18; i<19;i++){
-					pool.add("MarketFeed");
-				}
-				for (int i=19;i<33;i++){
+				for (int i=18;i<33;i++){
 					pool.add("SecurityDetail");
 				}
-				for (int i=33;i<38;i++){
+				for (int i=33;i<36;i++){
 					pool.add("TradeOrder");
 				}
-				for (int i=38;i<62;i++){
+				for (int i=36;i<62;i++){
 					pool.add("TradeStatus");
 				}
 				for (int i=62;i<70;i++){
@@ -592,14 +586,29 @@ public class arisDemo {
 				return randomSample(pool, pool.size());
 			//case 'd' is the default
 			case "f":
-				for (int i=0; i<1;i++){
+				for (int i=0; i<5;i++){
+					pool.add("BrokerVolume");
+				}
+				for (int i=5; i<18;i++){
+					pool.add("CustomerPosition");
+				}
+				for (int i=18;i<33;i++){
+					pool.add("SecurityDetail");
+				}
+				for (int i=33;i<34;i++){
 					pool.add("TradeOrder");
 				}
-				for (int i=1; i<2;i++){
-					pool.add("MarketFeed");
+				for (int i=34;i<62;i++){
+					pool.add("TradeStatus");
 				}
-				for (int i=2;i<4;i++){
-					pool.add("SecurityDetail");
+				for (int i=62;i<70;i++){
+					pool.add("TradeStatus");
+				}
+				for (int i=70;i<80;i++){
+					pool.add("CustomerPosition");
+				}
+				for (int i=80;i<100;i++){
+					pool.add("BrokerVolume");
 				}
 				return randomSample(pool, pool.size());
 
