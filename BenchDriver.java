@@ -27,8 +27,8 @@ public class BenchDriver {
     private static long TIME_TO_RUN     = 20L;
     static Connection s_conn = null;
     static  boolean   share_connection = false;
-    static String url = "jdbc:postgresql://localhost/dbt5";
-    static String user = "mariosp";
+    static String url = "jdbc:postgresql://localhost/tpce";
+    static String user = "postgres";
     static String pass = "";
 
     static Transactions transactions = new Transactions();
