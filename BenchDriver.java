@@ -1,6 +1,5 @@
 package hih;
 
-import sun.org.mozilla.javascript.internal.ObjToIntMap;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
