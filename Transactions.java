@@ -1251,12 +1251,12 @@ public class Transactions {
                     break;
                 default: type_name = "Stop-Loss";
             }
-
+            s_name = s_name.replace("'","");
             String trFrame6_3 = String.format(
                     "INSERT INTO cash_transaction(ct_dts, ct_t_id, ct_amt, ct_name) " +
                             "VALUES ('%s', %s, %f, e'%s %s shared of %s')", trade_dts, trade_id, se_amount, type_name,
                     trade_qty, s_name);
-            System.out.println(trFrame6_3);
+            //System.out.println(trFrame6_3);
             st.executeUpdate(trFrame6_3);
             hStats.incWriteOp();
 
