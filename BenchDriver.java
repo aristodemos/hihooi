@@ -35,7 +35,7 @@ public class BenchDriver {
     static Transactions transactions = new Transactions();
 
     public static void main (String args[]){
-        transactions.helper.initParams();
+        hihSerializedData.initParams();
         Long startTime = System.currentTimeMillis();
 
         //TODO: Create Market Thread

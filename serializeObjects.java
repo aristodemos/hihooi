@@ -1,6 +1,10 @@
 package hih;
 
+import java.sql.Statement;
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.util.*;
 import java.io.ObjectOutputStream;
 
@@ -20,40 +24,95 @@ public class serializeObjects {
 
     public static Map<String, List<Double>> s_pricesDM 	= new HashMap<String, List<Double>>();
 
+    static Connection s_conn = null;
+    static String url = "jdbc:postgresql://localhost/tpce";
+    static String user = "postgres";
+    static String pass = "";
+
     public static void main(String [] args) {
 
-        arisDemo dbObject = new arisDemo();
+        //arisDemo dbObject = new arisDemo();
         //arisDemo.initParams(dbObject);
-        System.out.println(dbObject.CONNECT());
+        //System.out.println(dbObject.CONNECT());
 
-        //all_brokers
-        all_brokers = dbObject.QUERY("select b_name from broker");
+        String brokers      = "select b_name from broker";
+        String sectors      = "select sc_name from sector";
+        String customers    = "select c_id from customer";
+        String symbols      = "select s_symb from security";
+        String acct_ids     = "select ca_id from customer_account";
+
+        //all_brokers = dbObject.QUERY("select b_name from broker");
         //all_sectors
-        all_sectors = dbObject.QUERY("select sc_name from sector");
+        //all_sectors = dbObject.QUERY("select sc_name from sector");
         //all_customers
-        all_customers = dbObject.QUERY("select c_id from customer");
+        //all_customers = dbObject.QUERY("select c_id from customer");
         //all_symbols
-        all_symbols = dbObject.QUERY("select s_symb from security");
+        //all_symbols = dbObject.QUERY("select s_symb from security");
         //account_id
-        all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
+        //all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
 
+        ResultSet rs = null;
+        Statement st = null;
+        try{
 
-        symbols = dbObject.QUERY("select s_symb from security");
+            s_conn = DriverManager.getConnection(url, user, pass);
+            st = s_conn.createStatement();
 
-        for (String symbol : symbols){
-            List<Double> values = new ArrayList<Double>();
-            String basePriceHigh = String.format("select AVG(dm_high) from daily_market where dm_s_symb = '%s'",
-                    symbol);
-            double high = Double.parseDouble(dbObject.QUERY2MAP(basePriceHigh).get("avg").toString());
-            String basePriceLow = String.format("select AVG(dm_low) from daily_market where dm_s_symb = '%s'",
-                    symbol);
-            double low = Double.parseDouble(dbObject.QUERY2MAP(basePriceLow).get("avg").toString());
-            values.add(low);
-            values.add(high);
-            s_pricesDM.put(symbol, values);
+            rs = st.executeQuery(brokers);
+            int i=0;
+            while (rs.next()){
+                all_brokers.add(i,rs.getString("b_name"));
+                i++;
+            }
+
+            rs = st.executeQuery(sectors);
+            i=0;
+            while (rs.next()){
+                all_sectors.add(i,rs.getString("sc_name"));
+                i++;
+            }
+
+            rs = st.executeQuery(customers);
+            i=0;
+            while (rs.next()){
+                all_customers.add(i,rs.getString("c_id"));
+                i++;
+            }
+
+            rs = st.executeQuery(symbols);
+            i=0;
+            while (rs.next()){
+                all_symbols.add(i,rs.getString("s_symb"));
+                i++;
+            }
+            rs = st.executeQuery(acct_ids);
+            i=0;
+            while (rs.next()){
+                all_acct_ids.add(i,rs.getString("ca_id"));
+                i++;
+            }
+
+            for (String symbol : all_symbols){
+                List<Double> values = new ArrayList<Double>();
+                String basePriceHigh = String.format("select AVG(dm_high) from daily_market where dm_s_symb = '%s'", symbol);
+                rs = st.executeQuery(basePriceHigh);
+                double high = 0;
+                if (rs.next()) {high = rs.getDouble("avg");}
+                String basePriceLow = String.format("select AVG(dm_low) from daily_market where dm_s_symb = '%s'", symbol);
+                rs = st.executeQuery(basePriceLow);
+                double low = 0;
+                if (rs.next()) {low = rs.getDouble("avg");}
+                values.add(low);
+                values.add(high);
+                s_pricesDM.put(symbol, values);
+            }
+            rs.close(); rs= null;
+            st.close(); st = null;
+
+        }catch(Exception e){
+            e.printStackTrace();
         }
 
-        System.out.println(dbObject.DISCONNECT());
 
         SerializeThings("all_brokers.ser", all_brokers);
         SerializeThings("all_sectors.ser", all_sectors);

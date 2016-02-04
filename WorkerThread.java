@@ -43,7 +43,7 @@ public class WorkerThread implements Callable<String>{
 
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
-            txnsToRun = transactions.helper.workloadMix("d");
+            txnsToRun = hihUtil.workloadMix("d");
             int i=0;
             int numberOfTxns = txnsToRun.size();
             while(running){//while(i < numberOfTxns){
