@@ -24,7 +24,7 @@ public class BenchDriver {
     //select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', 200000000070836);
     // Default no of threads to 10
     private static int  NUM_OF_THREADS  = 16;
-    private static long TIME_TO_RUN     = 20L;
+    private static long TIME_TO_RUN     = 1L;
     static Connection s_conn = null;
     static  boolean   share_connection = false;
     static String url = "jdbc:postgresql://localhost/tpce";
