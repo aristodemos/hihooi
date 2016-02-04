@@ -1263,7 +1263,7 @@ public class Transactions {
                     "SELECT ca_bal " +
                             "FROM customer_account " +
                             "WHERE ca_id = %s", acct_id);
-            st.executeUpdate(trFrame6_4);
+            st.executeQuery(trFrame6_4);
             hStats.incWriteOp();
 
 
