@@ -85,25 +85,25 @@ public class BenchDriver {
         System.out.println("#############################################################");
         System.out.println("####################   Test Results   #######################");
         System.out.println("#");
-        System.out.println("#\tNumber of Worker Threads: \t\t\t"+NUM_OF_THREADS);
+        System.out.println("#\tNumber of Worker Threads: \t\t"+NUM_OF_THREADS);
         System.out.println("#\tTotal Number of Transactions ran: \t" + transactions.hStats.totalTxns());
-        System.out.println("#\tTotal Time (in seconds): \t\t\t" + duration/1000.0);
-        String result = String.format("#\tTransactions Per Second: \t\t\t%.3f tps",transactions.hStats.totalTxns() /
+        System.out.println("#\tTotal Time (in seconds): \t\t" + duration/1000.0);
+        String result = String.format("#\tTransactions Per Second: \t\t%.3f tps",transactions.hStats.totalTxns() /
                 (duration / 1000.0));
         System.out.println(result);
         System.out.println("#\tTotal Number of Operations: \t\t" + transactions.hStats.totalOps());
-        System.out.println("#\tTotal Number Writes : \t\t\t\t" + transactions.hStats.totalWriteOps());
+        System.out.println("#\tTotal Number Writes : \t\t\t" + transactions.hStats.totalWriteOps());
         /////
         System.out.println("*********************Test Run statistics********************");
         System.out.println("************************************************************");
         System.out.println("*Txn Mix:");
         System.out.println("*BrokerVolume Txn was run: \t\t"+    transactions.hStats.txnMix[0] + " times;");
-        System.out.println("*CustomerPosition Txn was run: \t"+  transactions.hStats.txnMix[1] + " times;");
+        System.out.println("*CustomerPosition Txn was run: \t\t"+  transactions.hStats.txnMix[1] + " times;");
         System.out.println("*MarketFeed Txn was run: \t\t"+    transactions.hStats.txnMix[2] + " times;");
         System.out.println("*TradeOrder Txn was run: \t\t"+      transactions.hStats.txnMix[3] + " times;");
         System.out.println("*TradeResult Txn was run: \t\t"+     transactions.hStats.txnMix[4] + " times;");
         System.out.println("*TradeStatus Txn was run: \t\t"+     transactions.hStats.txnMix[5] + " times;");
-        System.out.println("*SecurityDetail Txn was run: \t"+  transactions.hStats.txnMix[6] + " times;");
+        System.out.println("*SecurityDetail Txn was run: \t\t"+  transactions.hStats.txnMix[6] + " times;");
 
         System.out.println("\n\n****************** Txn Duration (in msec) ******************");
         System.out.println("************************************************************");

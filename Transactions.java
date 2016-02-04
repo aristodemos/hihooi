@@ -1256,6 +1256,7 @@ public class Transactions {
                     "INSERT INTO cash_transaction(ct_dts, ct_t_id, ct_amt, ct_name) " +
                             "VALUES ('%s', %s, %f, e'%s %s shared of %s')", trade_dts, trade_id, se_amount, type_name,
                     trade_qty, s_name);
+            System.out.println(trFrame6_3);
             st.executeUpdate(trFrame6_3);
             hStats.incWriteOp();
 
