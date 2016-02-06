@@ -16,7 +16,7 @@ public class hihUtil {
     private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
 
     //private String LISTENER="52.27.159.172";
-    private String LISTENER="172.30.0.130";
+    private String LISTENER="dicl09.cut.ac.cy";
     private static HiHListenerClient hih = new HiHListenerClient();
 
     public String CONNECT() {

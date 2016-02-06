@@ -15,7 +15,7 @@ public class hBenchDriver {
 
     private static int  NUM_OF_THREADS  = 16;
     private static long TIME_TO_RUN     = 1L;
-    private static int  MODE            = 1;
+    private static int  CONSISTENCY_MODE = 1;
 
     static hihTransactions transactions = new hihTransactions();
 
@@ -36,14 +36,14 @@ public class hBenchDriver {
             System.out.println("Number of Threads: " + NUM_OF_THREADS);
             TIME_TO_RUN = Long.parseLong(args[1]);
             System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
-            MODE = Integer.parseInt(args[2]);
-            System.out.println("Consistency mode : " + MODE);
+            CONSISTENCY_MODE = Integer.parseInt(args[2]);
+            System.out.println("Consistency mode : " + CONSISTENCY_MODE);
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
             System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
         }
 
-        hMarketThread marketThread = new hMarketThread(transactions, MODE);
+        hMarketThread marketThread = new hMarketThread(transactions, CONSISTENCY_MODE);
 
         try{
             //Start Market Thread
@@ -53,7 +53,7 @@ public class hBenchDriver {
             // Create Worker threads
             Collection<hWorkerThread> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new hWorkerThread(transactions, marketThread, MODE));
+                workerThreadsList.add(new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE));
             }
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
