@@ -50,7 +50,7 @@ public class BenchDriver {
             if (args.length > 2)
             {
                 System.out.println("Error: Invalid Syntax. ");
-                System.out.println("java JdbcMTSample [NoOfThreads] [TimeToRun]");
+                System.out.println("java BenchDriver [NoOfThreads] [TimeToRun]");
                 System.exit(0);
             }
 
@@ -58,6 +58,8 @@ public class BenchDriver {
             if (args.length > 0) {
                 NUM_OF_THREADS = Integer.parseInt(args[0]);
                 System.out.println("Number of Threads: " + NUM_OF_THREADS);
+                TIME_TO_RUN = Long.parseLong(args[1]);
+                System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
             }
 
             // Create Worker threads
