@@ -42,7 +42,7 @@ public class WorkerThread implements Callable<String>{
             //TODO
             //Run tradeCleanup from a single thread.
             //Run trade Cleanup
-            //DoTxn(stmt, "TradeCleanup");
+            DoTxn(stmt, "TradeCleanup");
 
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
