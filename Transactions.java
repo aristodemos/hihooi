@@ -929,7 +929,18 @@ public class Transactions {
                             Map entry = (Map) holdList.get(i);
                             if ( Integer.parseInt(entry.get("h_qty").toString()) > needed_qty){
                                 //Selling some of the holdings
-                                String trFrame2_4a = String.format(
+
+
+                                String trFrame2_4a=String.format("UPDATE holding_history SET  " +
+                                        "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
+                                        " IF NOT FOUND THEN " +
+                                        " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
+                                        "hh_after_qty) VALUES(%s, %s, %s, %d)",entry.get("h_qty"), (hold_qty -
+                                                needed_qty), entry.get("h_t_id"), trade_id,  entry.get("h_t_id"),
+                                        trade_id, entry.get("h_qty"),
+                                        (hold_qty - needed_qty));
+
+                                String trFrame2_4aa = String.format(
                                         "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
                                                 "                            hh_after_qty) " +
                                                 "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"),
@@ -952,11 +963,17 @@ public class Transactions {
                             }
                             else {
                                 //selling all holdings
-                                String trFrame2_4b = String.format(
+                                String trFrame2_4ba = String.format(
                                         "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
                                                 "                            hh_after_qty) " +
                                                 "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0);
                                 //dbObject.DML(trFrame2_4a);
+                                String trFrame2_4b=String.format("UPDATE holding_history SET  " +
+                                                "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
+                                                " IF NOT FOUND THEN " +
+                                                " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
+                                                "hh_after_qty) VALUES(%s, %s, %s, %d)",entry.get("h_qty"), 0, entry
+                                                .get("h_t_id"), trade_id,  entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0 );
                                 st.executeUpdate(trFrame2_4b);
                                 hStats.incWriteOp();
                                 String trFrame2_5b = String.format(
@@ -1047,10 +1064,18 @@ public class Transactions {
                         Map entry = (Map) holdList.get(i);
                         if (Integer.parseInt(entry.get("h_qty").toString()) + needed_qty < 0) {
                             //Bying back some of the short sell
-                            String trFrame2_4a = String.format(
+                            String trFrame2_4aa = String.format(
                                     "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
                                             "                            hh_after_qty) " +
                                             "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, 0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty);
+
+                            String trFrame2_4a=String.format("UPDATE holding_history SET  " +
+                                    "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
+                                    " IF NOT FOUND THEN " +
+                                    " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
+                                    "hh_after_qty) VALUES(%s, %s, %s, %d)",0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty, entry
+                                    .get("h_t_id"), trade_id,  entry.get("h_t_id"), trade_id, 0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty );
+
                             st.executeUpdate(trFrame2_4a);
                             hStats.incWriteOp();
                             String trFrame2_5a = String.format(
@@ -1065,9 +1090,17 @@ public class Transactions {
                             continue;
                         }
                         else { //buying back all of the short sell
-                            String trFrame2_4a = String.format(
+                            String trFrame2_4aa = String.format(
                                     "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
                                             "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0);
+
+                            String trFrame2_4a=String.format("UPDATE holding_history SET  " +
+                                    "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
+                                    " IF NOT FOUND THEN " +
+                                    " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
+                                    "hh_after_qty) VALUES(%s, %s, %s, %d)",entry.get("h_qty"), 0, entry
+                                    .get("h_t_id"), trade_id,  entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0 );
+
                             st.executeUpdate(trFrame2_4a);
                             hStats.incWriteOp();
                             String trFrame2_5b = String.format(
@@ -1299,7 +1332,7 @@ public class Transactions {
         PreparedStatement ps = null;
         try{
             rs = st.executeQuery("select min(tr_t_id) from trade_request");
-            Long tr_t_id= 0L;
+            Long tr_t_id = 0L;
             if (rs.next()){
                 tr_t_id = rs.getLong("min");
             }
