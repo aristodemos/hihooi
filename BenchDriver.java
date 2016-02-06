@@ -66,7 +66,7 @@ public class BenchDriver {
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
             for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
-                WorkerThread wt = (WorkerThread) iterator.next().;
+                WorkerThread wt = (WorkerThread) iterator.next();
                 wt.terminate();
                 System.out.println("Terminating worker thread ... " + iterator.toString());
             }
