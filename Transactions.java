@@ -931,14 +931,25 @@ public class Transactions {
                                 //Selling some of the holdings
 
 
-                                String trFrame2_4a=String.format("UPDATE holding_history SET  " +
-                                        "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
-                                        " IF NOT FOUND THEN " +
-                                        " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
-                                        "hh_after_qty) VALUES(%s, %s, %s, %d)",entry.get("h_qty"), (hold_qty -
-                                                needed_qty), entry.get("h_t_id"), trade_id,  entry.get("h_t_id"),
-                                        trade_id, entry.get("h_qty"),
-                                        (hold_qty - needed_qty));
+                                String trFrame2_4ai=String.format(
+                                        "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                                "hh_h_t_id=%s AND hh_t_id=%s ",
+                                        entry.get("h_qty"),
+                                        (hold_qty-needed_qty),
+                                        entry.get("h_t_id"),
+                                        trade_id);
+
+                                String trFrame2_4aii=String.format(
+                                        "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                                " SELECT  %s, %s, %s, %d " +
+                                                " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                        entry.get("h_t_id"),
+                                        trade_id,
+                                        entry.get("h_qty"),
+                                        (hold_qty - needed_qty),
+                                        entry.get("h_t_id")
+                                        );
+
 
                                 String trFrame2_4aa = String.format(
                                         "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
@@ -946,7 +957,8 @@ public class Transactions {
                                                 "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"),
                                         (hold_qty - needed_qty));
                                 //dbObject.DML(trFrame2_4a);
-                                st.executeUpdate(trFrame2_4a);
+                                st.executeUpdate(trFrame2_4ai);
+                                st.executeUpdate(trFrame2_4aii);
                                 hStats.incWriteOp();
 
                                 String trFrame2_5a = String.format(
@@ -968,13 +980,26 @@ public class Transactions {
                                                 "                            hh_after_qty) " +
                                                 "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0);
                                 //dbObject.DML(trFrame2_4a);
-                                String trFrame2_4b=String.format("UPDATE holding_history SET  " +
-                                                "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
-                                                " IF NOT FOUND THEN " +
-                                                " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
-                                                "hh_after_qty) VALUES(%s, %s, %s, %d)",entry.get("h_qty"), 0, entry
-                                                .get("h_t_id"), trade_id,  entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0 );
-                                st.executeUpdate(trFrame2_4b);
+                                String trFrame2_4bi=String.format(
+                                        "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                                "hh_h_t_id=%s AND hh_t_id=%s ",
+                                        entry.get("h_qty"),
+                                        0,
+                                        entry.get("h_t_id"),
+                                        trade_id);
+
+                                String trFrame2_4bii=String.format(
+                                        "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                                " SELECT  %s, %s, %s, %d " +
+                                                " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                        entry.get("h_t_id"),
+                                        trade_id,
+                                        entry.get("h_qty"),
+                                        0,
+                                        entry.get("h_t_id")
+                                );
+                                st.executeUpdate(trFrame2_4bi);
+                                st.executeUpdate(trFrame2_4bii);
                                 hStats.incWriteOp();
                                 String trFrame2_5b = String.format(
                                         "DELETE FROM holding " +
@@ -1069,14 +1094,27 @@ public class Transactions {
                                             "                            hh_after_qty) " +
                                             "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, 0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty);
 
-                            String trFrame2_4a=String.format("UPDATE holding_history SET  " +
-                                    "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
-                                    " IF NOT FOUND THEN " +
-                                    " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
-                                    "hh_after_qty) VALUES(%s, %s, %s, %d)",0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty, entry
-                                    .get("h_t_id"), trade_id,  entry.get("h_t_id"), trade_id, 0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty );
+                            String trFrame2_4ai=String.format(
+                                    "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                            "hh_h_t_id=%s AND hh_t_id=%s ",
+                                    0,
+                                    Integer.parseInt(entry.get("h_qty").toString()) + needed_qty,
+                                    entry.get("h_t_id"),
+                                    trade_id);
 
-                            st.executeUpdate(trFrame2_4a);
+                            String trFrame2_4aii=String.format(
+                                    "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                            " SELECT  %s, %s, %s, %d " +
+                                            " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                    entry.get("h_t_id"),
+                                    trade_id,
+                                    0,
+                                    Integer.parseInt(entry.get("h_qty").toString()) + needed_qty,
+                                    entry.get("h_t_id")
+                            );
+
+                            st.executeUpdate(trFrame2_4ai);
+                            st.executeUpdate(trFrame2_4ai);
                             hStats.incWriteOp();
                             String trFrame2_5a = String.format(
                                     "UPDATE holding " +
@@ -1094,14 +1132,27 @@ public class Transactions {
                                     "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
                                             "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0);
 
-                            String trFrame2_4a=String.format("UPDATE holding_history SET  " +
-                                    "hh_before_qty=%s, hh_after_qty=%s WHERE hh_h_t_id=%s AND  hh_t_id=%s;  " +
-                                    " IF NOT FOUND THEN " +
-                                    " INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
-                                    "hh_after_qty) VALUES(%s, %s, %s, %d)",entry.get("h_qty"), 0, entry
-                                    .get("h_t_id"), trade_id,  entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0 );
+                            String trFrame2_4bi=String.format(
+                                    "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                            "hh_h_t_id=%s AND hh_t_id=%s ",
+                                    entry.get("h_qty"),
+                                    0,
+                                    entry.get("h_t_id"),
+                                    trade_id);
 
-                            st.executeUpdate(trFrame2_4a);
+                            String trFrame2_4bii=String.format(
+                                    "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                            " SELECT  %s, %s, %s, %d " +
+                                            " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                    entry.get("h_t_id"),
+                                    trade_id,
+                                    entry.get("h_qty"),
+                                    0,
+                                    entry.get("h_t_id")
+                            );
+
+                            st.executeUpdate(trFrame2_4bi);
+                            st.executeUpdate(trFrame2_4bii);
                             hStats.incWriteOp();
                             String trFrame2_5b = String.format(
                                     "DELETE FROM holding " +
