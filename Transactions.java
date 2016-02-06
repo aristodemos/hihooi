@@ -1299,13 +1299,13 @@ public class Transactions {
         PreparedStatement ps = null;
         try{
             rs = st.executeQuery("select min(tr_t_id) from trade_request");
-            String tr_t_id="";
+            Long tr_t_id= 0L;
             if (rs.next()){
-                tr_t_id = rs.getString("min");
+                tr_t_id = rs.getLong("min");
             }
             String clean =  "select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', ?)";
             ps = st.getConnection().prepareStatement(clean);
-            ps.setString(1, tr_t_id);
+            ps.setLong(1, tr_t_id);
             ps.execute();
             ////////////
             ps.close();
