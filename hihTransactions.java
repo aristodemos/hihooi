@@ -6,17 +6,11 @@ import java.util.*;
 /**
  * Created by mariosp on 31/1/16.
  */
-public class hihTransactions {
+public class hihTransactions{
 
-    BenStatistics hStats = new BenStatistics();
-    hihUtil util;
+    static BenStatistics hStats = new BenStatistics();
 
-    hihTransactions(hihUtil util){
-        this.util = util;
-        util.CONNECT();
-    }
-
-    public void brokerVolumeFrame() {
+    public void brokerVolumeFrame(hihUtil util) {
         int number_of_brokers = hihUtil.testRndGen.nextInt(hihSerializedData.all_brokers.size()); //ThreadLocalRandom
         // .current().nextInt
         // (all_brokers.size());
@@ -42,7 +36,7 @@ public class hihTransactions {
         hStats.insertTime(0, endTime - startTime);
     }
 
-    public void customerPositionFrame() {
+    public void customerPositionFrame(hihUtil util) {
         //Customer Position Frame 1 of 2
         String cust_id = hihSerializedData.all_customers.get(hihUtil.testRndGen.nextInt(hihSerializedData.all_customers.size()));
         String query1 = String.format(
@@ -82,7 +76,7 @@ public class hihTransactions {
         hStats.increment(1);
     }
 
-    public void marketFeedFrame() {
+    public void marketFeedFrame(hihUtil util) {
 
         String qSymbSet = "select distinct tr_s_symb, random() from TRADE_REQUEST order by random() limit 20";
         String tradeQtQuery = "select tr_qty from trade_request where tr_s_symb = %1$s limit 1";
@@ -172,7 +166,7 @@ public class hihTransactions {
         hStats.increment(2);
     }
 
-    public void tradeStatus() {
+    public void tradeStatus(hihUtil util) {
 
         String acct_id =  hihSerializedData.all_acct_ids.get(util.testRndGen.nextInt(hihSerializedData.all_acct_ids.size()))
                 .toString();
@@ -209,7 +203,7 @@ public class hihTransactions {
         hStats.increment(5);
     }
 
-    public  void securityDetail() {
+    public  void securityDetail(hihUtil util) {
         String symbol = hihSerializedData.all_symbols.get(util.testRndGen.nextInt(hihSerializedData.all_symbols.size()));
         int valRand = 5 + util.testRndGen.nextInt(21 - 5);
         long beginTime;
@@ -366,7 +360,7 @@ public class hihTransactions {
         hStats.increment(6);
     }
 
-    public String[] tradeOrder() {
+    public String[] tradeOrder(hihUtil util) {
 
         String toResult[] = new String[2];
 
@@ -600,7 +594,7 @@ public class hihTransactions {
         return toResult;
     }
 
-    public void tradeResult(String trade_id, double trade_price){
+    public void tradeResult(hihUtil util, String trade_id, double trade_price){
 
         long startTime = System.currentTimeMillis();
         try{
@@ -691,12 +685,31 @@ public class hihTransactions {
                             Map entry = (Map) holdList.get(i);
                             if ( Integer.parseInt(entry.get("h_qty").toString()) > needed_qty){
                                 //Selling some of the holdings
-                                String trFrame2_4a = String.format(
+                                String trFrame2_4ai=String.format(
+                                        "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                                "hh_h_t_id=%s AND hh_t_id=%s ",
+                                        entry.get("h_qty"),
+                                        (hold_qty-needed_qty),
+                                        entry.get("h_t_id"),
+                                        trade_id);
+
+                                String trFrame2_4aii=String.format(
+                                        "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                                " SELECT  %s, %s, %s, %d " +
+                                                " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                        entry.get("h_t_id"),
+                                        trade_id,
+                                        entry.get("h_qty"),
+                                        (hold_qty - needed_qty),
+                                        entry.get("h_t_id")
+                                );
+                                String trFrame2_4aa = String.format(
                                         "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
                                                 "                            hh_after_qty) " +
                                                 "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"),
                                         (hold_qty - needed_qty));
-                                util.DML(trFrame2_4a);
+                                util.DML(trFrame2_4ai);
+                                util.DML(trFrame2_4aii);
 
                                 String trFrame2_5a = String.format(
                                         "UPDATE holding " +
@@ -711,11 +724,31 @@ public class hihTransactions {
                             }
                             else {
                                 //selling all holdings
-                                String trFrame2_4b = String.format(
+                                String trFrame2_4ba = String.format(
                                         "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
                                                 "                            hh_after_qty) " +
                                                 "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0);
-                                util.DML(trFrame2_4b);
+                                String trFrame2_4bi=String.format(
+                                        "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                                "hh_h_t_id=%s AND hh_t_id=%s ",
+                                        entry.get("h_qty"),
+                                        0,
+                                        entry.get("h_t_id"),
+                                        trade_id);
+
+                                String trFrame2_4bii=String.format(
+                                        "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                                " SELECT  %s, %s, %s, %d " +
+                                                " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                        entry.get("h_t_id"),
+                                        trade_id,
+                                        entry.get("h_qty"),
+                                        0,
+                                        entry.get("h_t_id")
+                                );
+
+                                util.DML(trFrame2_4bi);
+                                util.DML(trFrame2_4bii);
                                 String trFrame2_5b = String.format(
                                         "DELETE FROM holding " +
                                                 "WHERE h_t_id = %s", entry.get("h_t_id"));
@@ -780,11 +813,32 @@ public class hihTransactions {
                         Map entry = (Map) holdList.get(i);
                         if (Integer.parseInt(entry.get("h_qty").toString()) + needed_qty < 0) {
                             //Bying back some of the short sell
-                            String trFrame2_4a = String.format(
+                            String trFrame2_4aa = String.format(
                                     "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, " +
                                             "                            hh_after_qty) " +
                                             "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, 0, Integer.parseInt(entry.get("h_qty").toString()) + needed_qty);
-                            util.DML(trFrame2_4a);
+
+                            String trFrame2_4ai=String.format(
+                                    "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                            "hh_h_t_id=%s AND hh_t_id=%s ",
+                                    0,
+                                    Integer.parseInt(entry.get("h_qty").toString()) + needed_qty,
+                                    entry.get("h_t_id"),
+                                    trade_id);
+
+                            String trFrame2_4aii=String.format(
+                                    "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                            " SELECT  %s, %s, %s, %d " +
+                                            " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                    entry.get("h_t_id"),
+                                    trade_id,
+                                    0,
+                                    Integer.parseInt(entry.get("h_qty").toString()) + needed_qty,
+                                    entry.get("h_t_id")
+                            );
+
+                            util.DML(trFrame2_4ai);
+                            util.DML(trFrame2_4aii);
                             String trFrame2_5a = String.format(
                                     "UPDATE holding " +
                                             "SET h_qty = %d " +
@@ -796,10 +850,30 @@ public class hihTransactions {
                             continue;
                         }
                         else { //buying back all of the short sell
-                            String trFrame2_4a = String.format(
+                            String trFrame2_4aa = String.format(
                                     "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
                                             "VALUES(%s, %s, %s, %d)", entry.get("h_t_id"), trade_id, entry.get("h_qty"), 0);
-                            util.DML(trFrame2_4a);
+
+                            String trFrame2_4bi=String.format(
+                                    "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
+                                            "hh_h_t_id=%s AND hh_t_id=%s ",
+                                    entry.get("h_qty"),
+                                    0,
+                                    entry.get("h_t_id"),
+                                    trade_id);
+
+                            String trFrame2_4bii=String.format(
+                                    "INSERT INTO holding_history(hh_h_t_id, hh_t_id, hh_before_qty, hh_after_qty) " +
+                                            " SELECT  %s, %s, %s, %d " +
+                                            " WHERE NOT EXISTS (SELECT 1 FROM holding_history WHERE hh_h_t_id=%s)",
+                                    entry.get("h_t_id"),
+                                    trade_id,
+                                    entry.get("h_qty"),
+                                    0,
+                                    entry.get("h_t_id")
+                            );
+                            util.DML(trFrame2_4bi);
+                            util.DML(trFrame2_4bii);
                             String trFrame2_5b = String.format(
                                     "DELETE FROM holding " +
                                             "WHERE h_t_id = %s", entry.get("h_t_id"));
@@ -852,7 +926,8 @@ public class hihTransactions {
                             "                FROM customer_taxrate " +
                             "                WHERE cx_c_id = %s) ", cust_id);
             double tax_rates = Double.parseDouble(util.QUERY2MAP(trFrame3_1).get("sum").toString());
-            tax_amount = (sell_value - buy_value) * tax_rates;
+
+            tax_amount = Math.abs(sell_value - buy_value) * tax_rates;
 
             String trFrame3_2 = String.format(
                     "UPDATE trade " +

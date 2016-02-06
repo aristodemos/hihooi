@@ -1,39 +1,22 @@
 package hih;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-/**
- * Created by mariosp on 23/1/16.
- */
-public class MarketThread extends Thread {
 
+/**
+ * Created by mariosp on 6/2/16.
+ */
+public class hMarketThread extends Thread{
     //List<String> objs = new ArrayList<String>();//init it
     public BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
 
-    String url, pass, user;
-    Transactions transactions;
-    hihTransactions htransactions;
-    Connection conn;
-    Statement statement;
+    hihTransactions transactions;
+    private hihUtil util = new hihUtil();
 
-    MarketThread(String url ,String user, String pass, Transactions trans){
-        this.setName("Market Thread");
+    hMarketThread(hihTransactions trans, int consistency_mode){
         this.transactions = trans;
-        this.url = url;
-        this.pass = pass;
-        this.user = user;
-        try{
-            conn = DriverManager.getConnection(url,user, pass);
-            this.statement = conn.createStatement();
-        }
-        catch (SQLException e){e.printStackTrace();}
-
+        util.CONNECT();
+        util.setConsistency(consistency_mode);
     }
 
     private volatile boolean running = true;
@@ -52,14 +35,14 @@ public class MarketThread extends Thread {
         }
     }
 
-     void DoMarketTxn(String txnFrame){
+    void DoMarketTxn(String txnFrame){
         String[] parts = txnFrame.split("\\|");
-         switch (parts[0]){
+        switch (parts[0]){
             case "MarketFeed":
-                transactions.marketFeedFrame(statement);
+                transactions.marketFeedFrame(util);
                 break;
             case "TradeResult":
-                transactions.tradeResult(statement, parts[1], Double.parseDouble(parts[2]));
+                transactions.tradeResult(util, parts[1], Double.parseDouble(parts[2]));
                 break;
             default:
                 System.out.println("Wrong Market Txn type");

@@ -1,28 +1,25 @@
 package hih;
 
-import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 
 /**
- * Created by mariosp on 23/1/16.
+ * Created by mariosp on 6/2/16.
  */
-public class WorkerThread implements Callable<String>{
+public class hWorkerThread implements Callable<String> {
 
-    private String url, user, pass;
-    private static Transactions transactions;
-    private static MarketThread market;
-    WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market ){
-        this.url = url;
-        this.pass = pass;
-        this.user = user;
+    private static hihTransactions transactions;
+    private static hMarketThread market;
+
+    private hihUtil util = new hihUtil();
+    private int consistency_mode;
+
+    hWorkerThread(hihTransactions transactions, hMarketThread market, int const_mode ){
         this.transactions = transactions;
         this.market = market;
+        this.consistency_mode = const_mode;
     }
+
 
     private volatile boolean running = true;
 
@@ -32,22 +29,9 @@ public class WorkerThread implements Callable<String>{
 
     //@Override
     public String call() throws Exception{
-        Connection conn    = null;
-        Statement stmt    = null;
+        util.CONNECT();
+        util.setConsistency(consistency_mode);
         try{
-            // Get the connection
-            conn = DriverManager.getConnection(url, user, pass);
-            stmt = conn.createStatement(); // Create a Statement
-
-            //TODO: Run tradeCleanup from a single thread.
-            /*
-            if (Thread.currentThread().getName() == "pool-1-thread-1"){
-                System.out.println("Calling trade cleanup from thread" + Thread.currentThread().getName());
-                DoTxn(stmt, "TradeCleanup");
-            }
-            */
-
-
 
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
@@ -55,31 +39,31 @@ public class WorkerThread implements Callable<String>{
             int i=0;
             int numberOfTxns = txnsToRun.size();
             while(running){//while(i < numberOfTxns){
-                DoTxn(stmt, txnsToRun.get(i).toString());
+                DoTxn(util, txnsToRun.get(i).toString());
                 i++;
                 if (i==numberOfTxns)i=0;
             }
 
             // Close the statement
-            stmt.close();
-            stmt = null;
+            util.DISCONNECT();
 
             //System.out.println("Thread " + Thread.currentThread().getName()+  " is finished. ");
             return "Thread " + Thread.currentThread().getName()+  " is finished. ";
         }
         catch(Exception e){
             e.printStackTrace();
+            util.DISCONNECT();
             return "Thread " + Thread.currentThread().getName()+ " got Exception: " + e;
         }
     }
 
-    static void DoTxn(Statement st, String txnFrame){
+    static void DoTxn(hihUtil util, String txnFrame){
         switch (txnFrame){
             case "BrokerVolume":
-                transactions.brokerVolumeFrame(st);
+                transactions.brokerVolumeFrame(util);
                 break;
             case "CustomerPosition":
-                transactions.customerPositionFrame(st);
+                transactions.customerPositionFrame(util);
                 break;
             case "MarketFeed":
                 //transactions.marketFeedFrame(st);
@@ -90,14 +74,14 @@ public class WorkerThread implements Callable<String>{
                 }
                 break;
             case "TradeStatus":
-                transactions.tradeStatus(st);
+                transactions.tradeStatus(util);
                 break;
             case "SecurityDetail":
-                transactions.securityDetail(st);
+                transactions.securityDetail(util);
                 break;
             case "TradeOrder":
                 String trInput[] = new String[2];
-                trInput = transactions.tradeOrder(st);
+                trInput = transactions.tradeOrder(util);
                 if(trInput[0]!="" && trInput[1]!=""){
                     try {
                         market.queue.put("TradeResult|"+trInput[0]+"|"+trInput[1]);
@@ -111,5 +95,4 @@ public class WorkerThread implements Callable<String>{
                 break;
         }
     }
-
 }

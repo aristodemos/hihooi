@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by mariosp on 23/1/16.
  */
-public class Transactions {
+public class Transactions{
 
     static BenStatistics hStats = new BenStatistics();
 
@@ -929,8 +929,6 @@ public class Transactions {
                             Map entry = (Map) holdList.get(i);
                             if ( Integer.parseInt(entry.get("h_qty").toString()) > needed_qty){
                                 //Selling some of the holdings
-
-
                                 String trFrame2_4ai=String.format(
                                         "UPDATE holding_history SET hh_before_qty=%s, hh_after_qty=%s WHERE " +
                                                 "hh_h_t_id=%s AND hh_t_id=%s ",
@@ -958,6 +956,7 @@ public class Transactions {
                                         (hold_qty - needed_qty));
                                 //dbObject.DML(trFrame2_4a);
                                 st.executeUpdate(trFrame2_4ai);
+                                hStats.incWriteOp();
                                 st.executeUpdate(trFrame2_4aii);
                                 hStats.incWriteOp();
 
@@ -999,6 +998,7 @@ public class Transactions {
                                         entry.get("h_t_id")
                                 );
                                 st.executeUpdate(trFrame2_4bi);
+                                hStats.incWriteOp();
                                 st.executeUpdate(trFrame2_4bii);
                                 hStats.incWriteOp();
                                 String trFrame2_5b = String.format(
@@ -1114,7 +1114,8 @@ public class Transactions {
                             );
 
                             st.executeUpdate(trFrame2_4ai);
-                            st.executeUpdate(trFrame2_4ai);
+                            hStats.incWriteOp();
+                            st.executeUpdate(trFrame2_4aii);
                             hStats.incWriteOp();
                             String trFrame2_5a = String.format(
                                     "UPDATE holding " +
@@ -1152,6 +1153,7 @@ public class Transactions {
                             );
 
                             st.executeUpdate(trFrame2_4bi);
+                            hStats.incWriteOp();
                             st.executeUpdate(trFrame2_4bii);
                             hStats.incWriteOp();
                             String trFrame2_5b = String.format(
@@ -1372,38 +1374,6 @@ public class Transactions {
         long endTime = System.currentTimeMillis();
         hStats.insertTime(4, endTime-startTime);
         hStats.increment(4);
-    }
-
-    public static void tradeCleanup(Statement st){
-        //:TODO
-        //RUN TRADE CLEANUP FRAME AS SHOWN BELOW TO CLEAN TRADE_REQUEST TABLE
-        //USING: select min(tr_t_id) from trade_request;
-        //select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', 200000000070836);
-        ResultSet rs =null;
-        PreparedStatement ps = null;
-        try{
-            rs = st.executeQuery("select min(tr_t_id) from trade_request");
-            Long tr_t_id = 0L;
-            if (rs.next()){
-                tr_t_id = rs.getLong("min");
-            }
-            String clean =  "select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', ?)";
-            ps = st.getConnection().prepareStatement(clean);
-            ps.setLong(1, tr_t_id);
-            ps.execute();
-            ////////////
-            ps.close();
-            rs.close();
-        }catch(Exception e){
-            e.printStackTrace();
-            try{
-                ps.close();
-                rs.close();
-            }catch(SQLException se){
-                se.printStackTrace();
-            }
-        }
-        System.out.println("Database Cleaned");
     }
 
 }
