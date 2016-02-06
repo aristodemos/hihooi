@@ -106,7 +106,7 @@ public class Transactions {
             return;
         }
         long endTime = System.currentTimeMillis();
-        hStats.insertTime(1, endTime-startTime);
+        hStats.insertTime(1, endTime - startTime);
         hStats.increment(1);
     }
 
@@ -799,7 +799,7 @@ public class Transactions {
         }
         hStats.increment(3);
         long endTime = System.currentTimeMillis();
-        hStats.insertTime(3, endTime-startTime);
+        hStats.insertTime(3, endTime - startTime);
         return toResult;
     }
 
@@ -1288,6 +1288,38 @@ public class Transactions {
         long endTime = System.currentTimeMillis();
         hStats.insertTime(4, endTime-startTime);
         hStats.increment(4);
+    }
+
+    public static void tradeCleanup(Statement st){
+        //:TODO
+        //RUN TRADE CLEANUP FRAME AS SHOWN BELOW TO CLEAN TRADE_REQUEST TABLE
+        //USING: select min(tr_t_id) from trade_request;
+        //select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', 200000000070836);
+        ResultSet rs =null;
+        PreparedStatement ps = null;
+        try{
+            rs = st.executeQuery("select min(tr_t_id) from trade_request");
+            String tr_t_id="";
+            if (rs.next()){
+                tr_t_id = rs.getString("tr_t_id");
+            }
+            String clean =  "select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', ?)";
+            ps = st.getConnection().prepareStatement(clean);
+            ps.setString(1, tr_t_id);
+            ps.execute();
+            ////////////
+            ps.close();
+            rs.close();
+        }catch(Exception e){
+            e.printStackTrace();
+            try{
+                ps.close();
+                rs.close();
+            }catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Database Cleaned");
     }
 
 }

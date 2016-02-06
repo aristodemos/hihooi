@@ -18,11 +18,6 @@ import java.util.Iterator;
  */
 public class BenchDriver {
 
-    //:TODO
-    //RUN TRADE CLEANUP FRAME AS SHOWN BELOW TO CLEAN TRADE_REQUEST TABLE
-    //USING: select min(tr_t_id) from trade_request;
-    //select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', 200000000070836);
-    // Default no of threads to 10
     private static int  NUM_OF_THREADS  = 16;
     private static long TIME_TO_RUN     = 1L;
     static Connection s_conn = null;

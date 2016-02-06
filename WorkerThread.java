@@ -36,10 +36,13 @@ public class WorkerThread implements Callable<String>{
 
         try{
             // Get the connection
-
             conn = DriverManager.getConnection(url, user, pass);
             stmt = conn.createStatement(); // Create a Statement
 
+            //TODO
+            //Run tradeCleanup from a single thread.
+            //Run trade Cleanup
+            //DoTxn(stmt, "TradeCleanup");
 
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
@@ -97,6 +100,9 @@ public class WorkerThread implements Callable<String>{
                         e.printStackTrace();
                     }
                 }
+                break;
+            case "TradeCleanup":
+                transactions.tradeCleanup(st);
                 break;
             default:
                 System.out.println("Wrong txn type");
