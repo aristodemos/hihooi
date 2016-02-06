@@ -20,11 +20,13 @@ public class hihSerializedData {
     public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
     public static void initParams() {
-        //all_brokers = dbObject.QUERY("select b_name from broker");
-        //all_sectors = dbObject.QUERY("select sc_name from sector");
-        //all_customers = dbObject.QUERY("select c_id from customer");
-        //all_symbols = dbObject.QUERY("select s_symb from security");
-        //all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
+        /*
+        all_brokers = dbObject.QUERY("select b_name from broker");
+        all_sectors = dbObject.QUERY("select sc_name from sector");
+        all_customers = dbObject.QUERY("select c_id from customer");
+        all_symbols = dbObject.QUERY("select s_symb from security");
+        all_acct_ids = dbObject.QUERY("select ca_id from customer_account");
+        */
 
         all_brokers =   DeseriaizeThings("all_brokers.ser", all_brokers);
         all_sectors =   DeseriaizeThings("all_sectors.ser", all_sectors);
