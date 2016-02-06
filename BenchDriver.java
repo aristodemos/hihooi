@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by mariosp on 23/1/16.
@@ -55,6 +58,9 @@ public class BenchDriver {
                 System.out.println("Number of Threads: " + NUM_OF_THREADS);
                 TIME_TO_RUN = Long.parseLong(args[1]);
                 System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+                System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
             }
 
             // Create Worker threads
