@@ -34,18 +34,18 @@ public class WorkerThread implements Callable<String>{
     public String call() throws Exception{
         Connection conn    = null;
         Statement stmt    = null;
-        System.out.println("current thread name: " + Thread.currentThread().getName());
         try{
             // Get the connection
             conn = DriverManager.getConnection(url, user, pass);
             stmt = conn.createStatement(); // Create a Statement
 
-            //Run tradeCleanup from a single thread.
-
+            //TODO: Run tradeCleanup from a single thread.
+            /*
             if (Thread.currentThread().getName() == "pool-1-thread-1"){
                 System.out.println("Calling trade cleanup from thread" + Thread.currentThread().getName());
                 DoTxn(stmt, "TradeCleanup");
             }
+            */
 
 
 
