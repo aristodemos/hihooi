@@ -42,7 +42,7 @@ public class WorkerThread implements Callable<String>{
 
             //Run tradeCleanup from a single thread.
             if (Thread.currentThread().getName() == "worker_1"){
-                assert Thread.currentThread().getName() == "worker_1";
+                //assert Thread.currentThread().getName() == "worker_1";
                 DoTxn(stmt, "TradeCleanup");
             }
 
