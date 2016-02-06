@@ -1315,8 +1315,8 @@ public class Transactions {
             try{
                 ps.close();
                 rs.close();
-            }catch(SQLException e){
-                e.printStackTrace();
+            }catch(SQLException se){
+                se.printStackTrace();
             }
         }
         System.out.println("Database Cleaned");
