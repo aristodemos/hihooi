@@ -1211,7 +1211,7 @@ public class Transactions {
             if (rs.next()){
                 tax_rates = rs.getDouble("sum");
             }
-            tax_amount = (sell_value - buy_value) * tax_rates;
+            tax_amount = Math.abs(sell_value - buy_value) * tax_rates;
 
             String trFrame3_2 = String.format(
                     "UPDATE trade " +
