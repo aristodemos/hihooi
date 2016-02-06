@@ -1,5 +1,6 @@
 package hih;
 
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -34,17 +35,19 @@ public class WorkerThread implements Callable<String>{
     public String call() throws Exception{
         Connection conn    = null;
         Statement stmt    = null;
-
+        System.out.println("current thread name: " + Thread.currentThread().getName());
         try{
             // Get the connection
             conn = DriverManager.getConnection(url, user, pass);
             stmt = conn.createStatement(); // Create a Statement
 
             //Run tradeCleanup from a single thread.
+            /*
             if (Thread.currentThread().getName() == "worker_1"){
                 //assert Thread.currentThread().getName() == "worker_1";
                 DoTxn(stmt, "TradeCleanup");
             }
+            */
 
 
             //Do Transaction
