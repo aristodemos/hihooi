@@ -16,13 +16,12 @@ public class WorkerThread implements Callable<String>{
     private String url, user, pass;
     private static Transactions transactions;
     private static MarketThread market;
-    WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market, int name ){
+    WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market ){
         this.url = url;
         this.pass = pass;
         this.user = user;
         this.transactions = transactions;
         this.market = market;
-        Thread.currentThread().setName("worker_"+name);
     }
 
     private volatile boolean running = true;
@@ -42,12 +41,12 @@ public class WorkerThread implements Callable<String>{
             stmt = conn.createStatement(); // Create a Statement
 
             //Run tradeCleanup from a single thread.
-            /*
-            if (Thread.currentThread().getName() == "worker_1"){
-                //assert Thread.currentThread().getName() == "worker_1";
+
+            if (Thread.currentThread().getName() == "pool-1-thread-1"){
+                System.out.println("Calling trade cleanup from thread" + Thread.currentThread().getName());
                 DoTxn(stmt, "TradeCleanup");
             }
-            */
+
 
 
             //Do Transaction

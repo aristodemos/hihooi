@@ -60,7 +60,7 @@ public class BenchDriver {
             // Create Worker threads
             Collection<WorkerThread> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, marketThread, i));
+                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, marketThread));
             }
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
