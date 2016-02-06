@@ -1301,7 +1301,7 @@ public class Transactions {
             rs = st.executeQuery("select min(tr_t_id) from trade_request");
             String tr_t_id="";
             if (rs.next()){
-                tr_t_id = rs.getString("tr_t_id");
+                tr_t_id = rs.getString("min");
             }
             String clean =  "select * from TradeCleanupFrame1('CNCL', 'PNDG', 'SBMT', ?)";
             ps = st.getConnection().prepareStatement(clean);
