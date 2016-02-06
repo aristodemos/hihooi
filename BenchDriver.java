@@ -60,13 +60,13 @@ public class BenchDriver {
             // Create Worker threads
             Collection<WorkerThread> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, marketThread));
+                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, marketThread, i));
             }
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
             for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
-                WorkerThread wt = (WorkerThread) iterator.next();
+                WorkerThread wt = (WorkerThread) iterator.next().;
                 wt.terminate();
                 System.out.println("Terminating worker thread ... " + iterator.toString());
             }

@@ -15,12 +15,13 @@ public class WorkerThread implements Callable<String>{
     private String url, user, pass;
     private static Transactions transactions;
     private static MarketThread market;
-    WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market){
+    WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market, int name ){
         this.url = url;
         this.pass = pass;
         this.user = user;
         this.transactions = transactions;
         this.market = market;
+        Thread.currentThread().setName("worker_"+name);
     }
 
     private volatile boolean running = true;
@@ -39,10 +40,12 @@ public class WorkerThread implements Callable<String>{
             conn = DriverManager.getConnection(url, user, pass);
             stmt = conn.createStatement(); // Create a Statement
 
-            //TODO
             //Run tradeCleanup from a single thread.
-            //Run trade Cleanup
-            DoTxn(stmt, "TradeCleanup");
+            if (Thread.currentThread().getName() == "worker_1"){
+                assert Thread.currentThread().getName() == "worker_1";
+                DoTxn(stmt, "TradeCleanup");
+            }
+
 
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
