@@ -477,6 +477,7 @@ public class hihTransactions{
 
             //get hold_qty
             Map to3_5 = util.QUERY2MAP(sqlTOF3_5);
+            System.out.println(sqlTOF3_5);
             hStats.incOperation();
             hold_qty = Integer.parseInt(to3_5.get("hs_qty").toString());
             //--------------------------------------//
