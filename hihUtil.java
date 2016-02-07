@@ -46,8 +46,8 @@ public class hihUtil {
         return hih.connect(p);   /// Retun SESSION-ID e.g  21703567-1ed7-4f59-aeac-39686ea9c2b1
     }
 
-    public String DISCONNECT()
-    {
+    public String DISCONNECT() {
+        logWriter.close();
         return hih.disconnect();  //Returns "Disconnect Successfuly"
     }
 

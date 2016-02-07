@@ -454,7 +454,6 @@ public class hihTransactions{
             if (!to3_5.isEmpty()){
                 hold_qty = Integer.parseInt(to3_5.get("hs_qty").toString());
             }
-            hStats.incOperation();
 
             //--------------------------------------//
             List holdList =new ArrayList<Map<String, Object>>();
@@ -522,6 +521,7 @@ public class hihTransactions{
 
             util.START_TX();
             String trade_id = util.EXEC_QUERY("SELECT NEXTVAL('SEQ_TRADE_ID')");
+
             String  sqlTOF4_1 = String.format(
                     "INSERT INTO trade(t_id, t_dts, t_st_id, t_tt_id, t_is_cash, " +
                             "                  t_s_symb, t_qty, t_bid_price, t_ca_id, " +
