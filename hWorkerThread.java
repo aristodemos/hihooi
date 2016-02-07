@@ -11,13 +11,14 @@ public class hWorkerThread implements Callable<String> {
     private static hihTransactions transactions;
     private static hMarketThread market;
 
-    private hihUtil util = new hihUtil();
+    private hihUtil util;
     private int consistency_mode;
 
-    hWorkerThread(hihTransactions transactions, hMarketThread market, int const_mode ){
+    hWorkerThread(hihTransactions transactions, hMarketThread market, int const_mode, BenStatistics stats ){
         this.transactions = transactions;
         this.market = market;
         this.consistency_mode = const_mode;
+        this.util = new hihUtil(stats);
     }
 
 
@@ -32,7 +33,6 @@ public class hWorkerThread implements Callable<String> {
         System.out.println(util.CONNECT());
         util.setConsistency(consistency_mode);
         try{
-
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
             txnsToRun = hihUtil.workloadMix("d");

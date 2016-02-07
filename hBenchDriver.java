@@ -18,6 +18,7 @@ public class hBenchDriver {
     private static int  CONSISTENCY_MODE = 1;
 
     static hihTransactions transactions = new hihTransactions();
+    static BenStatistics statistics = new BenStatistics();
 
     public static void main (String args[]){
         hihSerializedData.initParams();
@@ -53,7 +54,7 @@ public class hBenchDriver {
             // Create Worker threads
             Collection<hWorkerThread> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE));
+                workerThreadsList.add(new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE, statistics));
             }
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);

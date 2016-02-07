@@ -9,7 +9,11 @@ import hih.BenStatistics;
  */
 public class hihUtil {
 
-    static  BenStatistics stats;// = new BenStatistics();
+    BenStatistics stats;// = new BenStatistics();
+    hihUtil(BenStatistics s){
+        this.stats = s;
+    }
+
 
     public static Random testRndGen = new Random();
 
