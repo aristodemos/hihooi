@@ -29,7 +29,7 @@ public class hWorkerThread implements Callable<String> {
 
     //@Override
     public String call() throws Exception{
-        util.CONNECT();
+        System.out.println(util.CONNECT());
         util.setConsistency(consistency_mode);
         try{
 
