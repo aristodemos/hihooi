@@ -17,7 +17,7 @@ public class hihUtil {
 
     //private String LISTENER="52.27.159.172";
     private String LISTENER="dicl09.cut.ac.cy";
-    private static HiHListenerClient hih = new HiHListenerClient();
+    private HiHListenerClient hih = new HiHListenerClient();
 
     public String CONNECT() {
         Properties p = new Properties();
@@ -30,7 +30,7 @@ public class hihUtil {
         return hih.connect(p);   /// Retun SESSION-ID e.g  21703567-1ed7-4f59-aeac-39686ea9c2b1
     }
 
-    public static String DISCONNECT()
+    public String DISCONNECT()
     {
         return hih.disconnect();  //Returns "Disconnect Successfuly"
     }
@@ -60,7 +60,7 @@ public class hihUtil {
         return output;
     }
 
-    public static List QUERY(String SQL) {
+    public List QUERY(String SQL) {
         //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
