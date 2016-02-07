@@ -44,7 +44,7 @@ public class hBenchDriver {
             System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
         }
 
-        hMarketThread marketThread = new hMarketThread(transactions, CONSISTENCY_MODE);
+        hMarketThread marketThread = new hMarketThread(transactions, CONSISTENCY_MODE, statistics);
 
         try{
             //Start Market Thread

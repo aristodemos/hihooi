@@ -11,12 +11,13 @@ public class hMarketThread extends Thread{
     public BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
 
     hihTransactions transactions;
-    private hihUtil util = new hihUtil();
+    private hihUtil util;// = new hihUtil();
 
-    hMarketThread(hihTransactions trans, int consistency_mode){
+    hMarketThread(hihTransactions trans, int consistency_mode, BenStatistics stats){
         this.transactions = trans;
         util.CONNECT();
         util.setConsistency(consistency_mode);
+        this.util = new hihUtil(stats);
     }
 
     private volatile boolean running = true;
