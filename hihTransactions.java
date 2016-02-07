@@ -607,6 +607,7 @@ public class hihTransactions{
                             "FROM trade " +
                             "WHERE t_id = %s", trade_id);
             Map tr1_1 = util.QUERY2MAP(trFrame1_1);
+            System.out.println(trFrame1_1);
             hStats.incOperation();
 
             String acct_id 		= tr1_1.get("t_ca_id").toString();
