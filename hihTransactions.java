@@ -563,6 +563,7 @@ public class hihTransactions{
                             "        %d, %s, %s, '%s', NULL, %s, %s, 0, %s) ",
                     trade_id, status_id, t_tt_id, t_is_cash, symbol, trade_qty, tradePriceStr, acct_id,
                     exec_name, charge_amount, comm_amount, is_lifo);
+            System.out.println(sqlTOF4_1);
             util.DML(sqlTOF4_1);
             hStats.incWriteOp();
 
