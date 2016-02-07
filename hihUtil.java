@@ -1,5 +1,9 @@
 package hih;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import hih.BenStatistics;
@@ -10,14 +14,22 @@ import hih.BenStatistics;
 public class hihUtil {
 
     BenStatistics stats;// = new BenStatistics();
+    public static PrintWriter logWriter = null;
+
     hihUtil(BenStatistics s){
         this.stats = s;
-    }
+        String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
+        try{
+            logWriter = new PrintWriter("LOG_"+timeStamp+".txt", "UTF-8");
 
+        }catch (FileNotFoundException |UnsupportedEncodingException err){
+            System.out.println("FileNOTfound" + err.getMessage());
+        }
+    }
 
     public static Random testRndGen = new Random();
 
-    private static boolean  DEBUG           = false; //print transactions to file and other msgs on system.out
+    private static boolean  DEBUG   = true; //print transactions to file and other msgs on system.out
 
     //private String LISTENER="52.27.159.172";
     private String LISTENER="dicl09.cut.ac.cy";
@@ -50,7 +62,7 @@ public class hihUtil {
     }
 
     public String EXEC_QUERY(String SQL) {
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -59,13 +71,13 @@ public class hihUtil {
                 output = ""+entry.get(key);
             }
         }
-        if (DEBUG){System.out.println(output);}
+        //if (DEBUG){System.out.println(output);}
         stats.incOperation();
         return output;
     }
 
     public List QUERY(String SQL) {
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         List resultOut = new Vector();
@@ -78,13 +90,13 @@ public class hihUtil {
                 resultOut.add(entry.get(key));
             }
         }
-        if (DEBUG){System.out.println(resultOut);}
+        //if (DEBUG){System.out.println(resultOut);}
         stats.incOperation();
         return resultOut;
     }
 
     public Map QUERY2MAP(String SQL){
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         Map<String, Object> results = new HashMap<>();
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -93,13 +105,13 @@ public class hihUtil {
                 results.put(key, entry.get(key));
             }
         }
-        if (DEBUG){System.out.println(results);}
+        //if (DEBUG){System.out.println(results);}
         stats.incOperation();
         return results;
     }
 
     public List QUERY2LST(String SQL){
-        //if (DEBUG ){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --)
@@ -110,24 +122,26 @@ public class hihUtil {
                 output += entry.get(key);
             }
         }
-        if (DEBUG){System.out.println(rows);}
+        //if (DEBUG){System.out.println(rows);}
         stats.incOperation();
         return rows;
     }
 
     public String DML(String SQL) {
-        //if (DEBUG){logWriter.printf("%s : %d \n", SQL, System.currentTimeMillis());}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         stats.incWriteOp();
         return hih.executeUpdate(SQL);
     }
 
     public String START_TX() {
         //stats.incWriteOp();
+        if (DEBUG ){logWriter.printf("START_TRANSACTION \n");}
         return hih.startTransaction();
     }
 
     //TRANSACTION CONTROL LANGUAGE: COMMIT, ROLLBACK;
     public String TCL(String tcl_cmd) {
+        if (DEBUG ){logWriter.printf("%s \n", tcl_cmd);}
         if (tcl_cmd.equalsIgnoreCase("commit")) {
             stats.incOperation();
             return hih.commitTransaction();
