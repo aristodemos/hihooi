@@ -564,8 +564,7 @@ public class hihTransactions{
                     trade_id, status_id, t_tt_id, t_is_cash, symbol, trade_qty, tradePriceStr, acct_id,
                     exec_name, charge_amount, comm_amount, is_lifo);
             System.out.println(sqlTOF4_1);
-            util.DML(sqlTOF4_1);
-            hStats.incWriteOp();
+            System.out.println(util.DML(sqlTOF4_1));
 
             String  sqlTOF4_2 = String.format(
                     "INSERT INTO trade_request(tr_t_id, tr_tt_id, tr_s_symb, tr_qty, " +
