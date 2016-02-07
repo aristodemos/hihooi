@@ -328,7 +328,7 @@ public class hihTransactions{
                 "       news_item " +
                 "WHERE  ni_id = nx_ni_id" +
                 "       AND nx_co_id = %1$s " +
-                "LIMIT %1$d";//, co_id, valRand);
+                "LIMIT %2$d ";//, co_id, valRand);
         //dbObject.QUERY(sdf1_7);
 
         long startTime = System.currentTimeMillis();
