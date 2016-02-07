@@ -465,7 +465,7 @@ public class hihTransactions{
 
             Map to3_1 = util.QUERY2MAP(sqlTOF3_1b);
             hStats.incOperation();
-            String s_co_id        = to3_1.get("c_tax_id").toString();
+            String s_co_id        = to3_1.get("s_co_id").toString();
 
             util.EXEC_QUERY(String.format(sqlTOF3_2b, s_co_id));
             hStats.incOperation();
