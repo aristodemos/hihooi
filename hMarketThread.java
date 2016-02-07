@@ -15,9 +15,9 @@ public class hMarketThread extends Thread{
 
     hMarketThread(hihTransactions trans, int consistency_mode, BenStatistics stats){
         this.transactions = trans;
+        this.util = new hihUtil(stats);
         util.CONNECT();
         util.setConsistency(consistency_mode);
-        this.util = new hihUtil(stats);
     }
 
     private volatile boolean running = true;
