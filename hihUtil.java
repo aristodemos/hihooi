@@ -62,7 +62,7 @@ public class hihUtil {
     }
 
     public String EXEC_QUERY(String SQL) {
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -77,7 +77,7 @@ public class hihUtil {
     }
 
     public List QUERY(String SQL) {
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         List resultOut = new Vector();
@@ -96,7 +96,7 @@ public class hihUtil {
     }
 
     public Map QUERY2MAP(String SQL){
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         Map<String, Object> results = new HashMap<>();
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -111,7 +111,7 @@ public class hihUtil {
     }
 
     public List QUERY2LST(String SQL){
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --)
@@ -135,13 +135,13 @@ public class hihUtil {
 
     public String START_TX() {
         //stats.incWriteOp();
-        if (DEBUG ){logWriter.printf("START_TRANSACTION \n");}
+        //if (DEBUG ){logWriter.printf("START_TRANSACTION \n");}
         return hih.startTransaction();
     }
 
     //TRANSACTION CONTROL LANGUAGE: COMMIT, ROLLBACK;
     public String TCL(String tcl_cmd) {
-        if (DEBUG ){logWriter.printf("%s \n", tcl_cmd);}
+        //if (DEBUG ){logWriter.printf("%s \n", tcl_cmd);}
         if (tcl_cmd.equalsIgnoreCase("commit")) {
             stats.incOperation();
             return hih.commitTransaction();
