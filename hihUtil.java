@@ -32,8 +32,8 @@ public class hihUtil {
 
     private static boolean  DEBUG   = true; //print transactions to file and other msgs on system.out
 
-    private String LISTENER="dicl";
-    //private String LISTENER="dicl09.cut.ac.cy";
+    //private String LISTENER="dicl";
+    private String LISTENER="dicl09.cut.ac.cy";
     private HiHListenerClient hih = new HiHListenerClient();
 
     public String CONNECT() {
