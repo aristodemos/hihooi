@@ -590,7 +590,7 @@ public class hihTransactions{
             trade_qty   = tr1_1.get("t_qty").toString();
             charge      = tr1_1.get("t_chrg").toString();
             }else{
-                System.out.println("Query did not return any rows;");
+                //System.out.println("Query did not return any rows;");
                 return;
             }
 
