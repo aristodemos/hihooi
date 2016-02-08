@@ -69,7 +69,7 @@ public class hBenchDriver {
                 //System.out.println("Terminating worker thread ... " + name);
             }
             pool.shutdownNow();
-            while (marketThread.queue.size() > 0){}
+            //while (marketThread.queue.size() > 0){}
             marketThread.terminate();
             marketThread.join();
         }

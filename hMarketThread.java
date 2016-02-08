@@ -35,7 +35,7 @@ public class hMarketThread extends Thread{
             if (queue.size() < 1){Thread.currentThread().setPriority(Thread.NORM_PRIORITY);}
             while ((msg = queue.poll()) != null){
                 //System.out.println("_"+Thread.currentThread().getName() +  "received msg: " + msg);
-                Thread.currentThread().setPriority(Thread.NORM_PRIORITY+2);
+                Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                 DoMarketTxn(msg);
             }
         }
