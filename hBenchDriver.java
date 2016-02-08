@@ -64,9 +64,9 @@ public class hBenchDriver {
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
             for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
                 hWorkerThread wt = (hWorkerThread) iterator.next();
-                String name = wt.toString();
+                //String name = wt.toString();
                 wt.terminate();
-                System.out.println("Terminating worker thread ... " + name);
+                //System.out.println("Terminating worker thread ... " + name);
             }
             pool.shutdownNow();
             while (marketThread.queue.size() > 0){}
