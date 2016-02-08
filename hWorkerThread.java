@@ -28,11 +28,12 @@ public class hWorkerThread implements Callable<String> {
 
     public void terminate() {
         running = false;
+        System.out.println("terminating wThread");
     }
 
     //@Override
     public String call() {
-        System.out.println(util.CONNECT());
+        util.CONNECT(); //System.out.println(util.CONNECT());
         util.setConsistency(consistency_mode);
         try{
             //Do Transaction
