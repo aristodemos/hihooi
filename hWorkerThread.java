@@ -83,11 +83,7 @@ public class hWorkerThread implements Callable<String> {
                 String trInput[] = new String[2];
                 trInput = transactions.tradeOrder(util);
                 if(trInput[0]!="" && trInput[1]!=""){
-                    try {
-                        market.queue.put("TradeResult|"+trInput[0]+"|"+trInput[1]);
-                    }catch(InterruptedException e){
-                        e.printStackTrace();
-                    }
+                    market.queue.add("TradeResult|"+trInput[0]+"|"+trInput[1]);
                 }
                 break;
             default:
