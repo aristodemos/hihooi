@@ -26,10 +26,10 @@ public class hBenchDriver {
         hihSerializedData.initParams();
         Long startTime = System.currentTimeMillis();
 
-        if (args.length > 3)
+        if (args.length > 4)
         {
             System.out.println("Error: Invalid Syntax. ");
-            System.out.println("java BenchDriver [NoOfThreads] [TimeToRun]");
+            System.out.println("java BenchDriver [NoOfThreads] [TimeToRun] [MODE] [WORKLOAD]");
             System.exit(0);
         }
 
