@@ -13,12 +13,14 @@ public class hWorkerThread implements Callable<String> {
 
     private hihUtil util;
     private int consistency_mode;
+    private String workload_mix;
 
-    hWorkerThread(hihTransactions transactions, hMarketThread market, int const_mode, BenStatistics stats ){
+    hWorkerThread(hihTransactions transactions, hMarketThread market, int const_mode, BenStatistics stats, String mix){
         this.transactions = transactions;
         this.market = market;
         this.consistency_mode = const_mode;
         this.util = new hihUtil(stats);
+        this.workload_mix = mix;
     }
 
 
@@ -29,24 +31,22 @@ public class hWorkerThread implements Callable<String> {
     }
 
     //@Override
-    public String call() throws Exception{
+    public String call() {
         System.out.println(util.CONNECT());
         util.setConsistency(consistency_mode);
         try{
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
-            txnsToRun = hihUtil.workloadMix("d  ");
+            txnsToRun = hihUtil.workloadMix(workload_mix);
             int i=0;
             int numberOfTxns = txnsToRun.size();
-            while(i < numberOfTxns){ //while(running){     //while(i < numberOfTxns){
+            while(running){  //     //while(i < numberOfTxns){
                 DoTxn(util, txnsToRun.get(i).toString());
                 i++;
-                //if (i==numberOfTxns)i=0;
+                if (i==numberOfTxns)i=0;
             }
-
-            // Close the statement
+            //Close Session
             util.DISCONNECT();
-
             //System.out.println("Thread " + Thread.currentThread().getName()+  " is finished. ");
             return "Thread " + Thread.currentThread().getName()+  " is finished. ";
         }

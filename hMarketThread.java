@@ -16,14 +16,17 @@ public class hMarketThread extends Thread{
     hMarketThread(hihTransactions trans, int consistency_mode, BenStatistics stats){
         this.transactions = trans;
         this.util = new hihUtil(stats);
-        util.CONNECT();
+        System.out.println("Market Thread: " + util.CONNECT());
         util.setConsistency(consistency_mode);
+        util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
     }
 
     private volatile boolean running = true;
 
     public void terminate() {
         running = false;
+        util.DISCONNECT();
+        System.out.println("Market Thead Stopped");
     }
 
     public void run(){

@@ -13,12 +13,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class hBenchDriver {
 
-    private static int  NUM_OF_THREADS  = 16;
-    private static long TIME_TO_RUN     = 1L;
-    private static int  CONSISTENCY_MODE = 1;
+    private static int      NUM_OF_THREADS      = 1;
+    private static long     TIME_TO_RUN         = 5L;
+    private static int      CONSISTENCY_MODE    = 1;
+    private static String   WORKLOAD_MIX        = "d";
 
-    static hihTransactions transactions = new hihTransactions();
     static BenStatistics statistics = new BenStatistics();
+    static hihTransactions transactions = new hihTransactions(statistics);
+
 
     public static void main (String args[]){
         hihSerializedData.initParams();
@@ -38,6 +40,7 @@ public class hBenchDriver {
             TIME_TO_RUN = Long.parseLong(args[1]);
             System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
             CONSISTENCY_MODE = Integer.parseInt(args[2]);
+            WORKLOAD_MIX = args[3];
             System.out.println("Consistency mode : " + CONSISTENCY_MODE);
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
@@ -54,7 +57,7 @@ public class hBenchDriver {
             // Create Worker threads
             Collection<hWorkerThread> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE, statistics));
+                workerThreadsList.add(new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE, statistics, WORKLOAD_MIX));
             }
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
@@ -66,11 +69,13 @@ public class hBenchDriver {
                 System.out.println("Terminating worker thread ... " + name);
             }
             pool.shutdownNow();
+            while (marketThread.queue.size() > 0){}
             marketThread.terminate();
             marketThread.join();
         }
         catch(Exception e){
             e.printStackTrace();
+            marketThread.terminate();
         }
 
         Long duration = System.currentTimeMillis() - startTime;
@@ -79,8 +84,10 @@ public class hBenchDriver {
         System.out.println("#");
         System.out.println("#\tNumber of Worker Threads: \t\t"+NUM_OF_THREADS);
         System.out.println("#\tTotal Number of Transactions ran: \t" + transactions.hStats.totalTxns());
-        System.out.println("#\tTotal Time (in seconds): \t\t" + duration/1000.0);
-        String result = String.format("#\tTransactions Per Second: \t\t%.3f tps",transactions.hStats.totalTxns() /
+        System.out.println("#\tTotal Time (in seconds): \t\t" + duration / 1000.0);
+
+        String result = String.format(Locale.US, "#\tTransactions Per Second: \t\t%.3f tps",transactions.hStats
+                .totalTxns() /
                 (duration / 1000.0));
         System.out.println(result);
         System.out.println("#\tTotal Number of Operations: \t\t" + transactions.hStats.totalOps());
@@ -99,19 +106,26 @@ public class hBenchDriver {
 
         System.out.println("\n\n****************** Txn Duration (in msec) ******************");
         System.out.println("************************************************************");
-        String res = String.format("%.3f",((double)transactions.hStats.txnDuration[0])/transactions.hStats.txnMix[0]);
+        String res = String.format(Locale.US,"%.3f",((double)transactions.hStats.txnDuration[0])/transactions.hStats
+                .txnMix[0]);
         System.out.println("*Broker Volume avg time\t\t: "  +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[1])/transactions.hStats.txnMix[1]);
+        res = String.format(Locale.US, "%.3f",((double)transactions.hStats.txnDuration[1])/transactions.hStats
+                .txnMix[1]);
         System.out.println("*Customer Position avg time\t: "+res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[2])/transactions.hStats.txnMix[2]);
+        res = String.format(Locale.US, "%.3f",((double)transactions.hStats.txnDuration[2])/transactions.hStats
+                .txnMix[2]);
         System.out.println("*Market Feed avg time\t\t: "    +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[3])/transactions.hStats.txnMix[3]);
+        res = String.format(Locale.US, "%.3f",((double)transactions.hStats.txnDuration[3])/transactions.hStats
+                .txnMix[3]);
         System.out.println("*Trade Order avg time\t\t: "    +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[4])/transactions.hStats.txnMix[4]);
+        res = String.format(Locale.US, "%.3f",((double)transactions.hStats.txnDuration[4])/transactions.hStats
+                .txnMix[4]);
         System.out.println("*Trade Result avg rime\t\t: "   +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[5])/transactions.hStats.txnMix[5]);
+        res = String.format(Locale.US, "%.3f",((double)transactions.hStats.txnDuration[5])/transactions.hStats
+                .txnMix[5]);
         System.out.println("*Trade Status avg rime\t\t: "   +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[6])/transactions.hStats.txnMix[6]);
+        res = String.format(Locale.US, "%.3f",((double)transactions.hStats.txnDuration[6])/transactions.hStats
+                .txnMix[6]);
         System.out.println("*Security Detail avg rime\t: "+res);
 
     }

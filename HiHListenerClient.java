@@ -362,7 +362,6 @@ public class HiHListenerClient
 		catch (IOException | org.xml.sax.SAXException|javax.xml.parsers.ParserConfigurationException e)
 		{
 			System.out.println(e.getMessage());
-			//System.out.println("XML_DATA:" + xml_data);
 			//e.printStackTrace();
 			columns=null;
 		}
@@ -404,7 +403,10 @@ public class HiHListenerClient
 				}
 				catch(Exception e)
 				{
-					System.out.println(e.getMessage());
+					System.out.println("HiHListenerClient.parseXML");
+					System.out.println("name: "+name);
+					e.printStackTrace();
+					//System.out.println(e.getMessage());
 				}
 
 			}

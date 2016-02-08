@@ -15,6 +15,7 @@ public class hihUtil {
 
     BenStatistics stats;// = new BenStatistics();
     public static PrintWriter logWriter = null;
+    private static long nextSeq = 200000000999999L;
 
     hihUtil(BenStatistics s){
         this.stats = s;
@@ -31,8 +32,8 @@ public class hihUtil {
 
     private static boolean  DEBUG   = true; //print transactions to file and other msgs on system.out
 
-    //private String LISTENER="52.27.159.172";
-    private String LISTENER="dicl09.cut.ac.cy";
+    private String LISTENER="dicl";
+    //private String LISTENER="dicl09.cut.ac.cy";
     private HiHListenerClient hih = new HiHListenerClient();
 
     public String CONNECT() {
@@ -62,7 +63,7 @@ public class hihUtil {
     }
 
     public String EXEC_QUERY(String SQL) {
-        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -71,13 +72,13 @@ public class hihUtil {
                 output = ""+entry.get(key);
             }
         }
-        //if (DEBUG){System.out.println(output);}
+        if (DEBUG){logWriter.println(output);}
         stats.incOperation();
         return output;
     }
 
     public List QUERY(String SQL) {
-        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         List resultOut = new Vector();
@@ -90,13 +91,13 @@ public class hihUtil {
                 resultOut.add(entry.get(key));
             }
         }
-        //if (DEBUG){System.out.println(resultOut);}
+        if (DEBUG){logWriter.println(resultOut);}
         stats.incOperation();
         return resultOut;
     }
 
     public Map QUERY2MAP(String SQL){
-        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         Map<String, Object> results = new HashMap<>();
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -105,13 +106,13 @@ public class hihUtil {
                 results.put(key, entry.get(key));
             }
         }
-        //if (DEBUG){System.out.println(results);}
+        if (DEBUG){logWriter.println(results);}
         stats.incOperation();
         return results;
     }
 
     public List QUERY2LST(String SQL){
-        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --)
@@ -122,7 +123,7 @@ public class hihUtil {
                 output += entry.get(key);
             }
         }
-        //if (DEBUG){System.out.println(rows);}
+        if (DEBUG){logWriter.println(rows);}
         stats.incOperation();
         return rows;
     }
@@ -150,6 +151,15 @@ public class hihUtil {
             stats.incOperation();
             return hih.rollbackTransaction();
         }
+    }
+
+    public String getNextSeqNumber(){
+        return Long.toString(nextSeq++);
+    }
+
+    public void setNextSeq(long next){
+        nextSeq=next+1;
+        System.out.println("SET SEQUENCE NUMBER to "+nextSeq);
     }
 
     //random sampling - a bounded version of Knuth's algorithm
@@ -281,10 +291,10 @@ public class hihUtil {
                 for (int i=5; i<18;i++){
                     pool.add("CustomerPosition");
                 }
-                for (int i=18; i<19;i++){
+                for (int i=18; i<29;i++){
                     pool.add("MarketFeed");
                 }
-                for (int i=19;i<33;i++){
+                for (int i=29;i<33;i++){
                     pool.add("SecurityDetail");
                 }
                 for (int i=33;i<43;i++){

@@ -8,7 +8,10 @@ import java.util.*;
  */
 public class hihTransactions{
 
-    static BenStatistics hStats = new BenStatistics();
+    static BenStatistics hStats;
+    hihTransactions(BenStatistics stats){
+        this.hStats = stats;
+    }
 
     public void brokerVolumeFrame(hihUtil util) {
         int number_of_brokers = hihUtil.testRndGen.nextInt(hihSerializedData.all_brokers.size()); //ThreadLocalRandom
@@ -53,7 +56,7 @@ public class hihTransactions{
                 "SELECT T_ID, T_S_SYMB, T_QTY, ST_NAME, TH_DTS " +
                         "FROM (SELECT T_ID as ID " +
                         "FROM TRADE " +
-                        "WHERE T_CA_ID = %1$s " +
+                        "WHERE T_CA_ID = %1$d " +
                         "ORDER BY T_DTS desc LIMIT 10) as T, " +
                         "TRADE, TRADE_HISTORY, STATUS_TYPE " +
                         "WHERE T_ID = ID " +
@@ -63,11 +66,11 @@ public class hihTransactions{
                         "LIMIT 30";
 
         long startTime = System.currentTimeMillis();
-        try{
+        //try{
             util.QUERY(query1);
-            String c_ad_id = util.QUERY2MAP(query2a).get("c_ad_id").toString();
+            long c_ad_id = Long.parseLong(util.QUERY2MAP(query2a).get("c_ad_id").toString());
             util.QUERY(String.format(query2b, c_ad_id));
-        }catch(Exception e){e.printStackTrace();return;}
+        //}catch(Exception e){e.printStackTrace();return;}
         long endTime = System.currentTimeMillis();
         hStats.insertTime(1, endTime - startTime);
         hStats.increment(1);
@@ -76,7 +79,8 @@ public class hihTransactions{
     public void marketFeedFrame(hihUtil util) {
 
         String qSymbSet = "select distinct tr_s_symb, random() from TRADE_REQUEST order by random() limit 20";
-        String tradeQtQuery = "select tr_qty from trade_request where tr_s_symb = %1$s limit 1";
+        //String qSymbSet = "select distinct tr_s_symb from TRADE_REQUEST limit 20";
+        String tradeQtQuery = "select tr_qty from trade_request where tr_s_symb = '%1$s' limit 1";
         //String qMF1pre = "SELECT * from  LAST_TRADE WHERE LT_S_SYMB = %1$s FOR UPDATE";
         String qMF1 = "UPDATE LAST_TRADE " +
                 "SET LT_PRICE = %1$s, " +
@@ -87,7 +91,7 @@ public class hihTransactions{
 
         String qMF2 = "SELECT TR_T_ID "+
                 "FROM TRADE_REQUEST " +
-                "WHERE TR_S_SYMB = %1$s and " +
+                "WHERE TR_S_SYMB = '%1$s' and " +
                 "((TR_TT_ID = 'TSL' and TR_BID_PRICE >= %2$s) or " +
                 "(TR_TT_ID = 'TLS' and TR_BID_PRICE <= %2$s) or " +
                 "(TR_TT_ID = 'TLB' and TR_BID_PRICE >= %2$s))";
@@ -101,10 +105,11 @@ public class hihTransactions{
         //, request_list.get(j).get("tr_t_id"));
 
         int numberOfSymbols = 20;
-        List<String> activeSymbolSet = new ArrayList();
+        List<Map<String, String>> activeSymbolSet = new ArrayList();
+        //List<String> activeSymbolSet = new ArrayList();
 
         long startTime = System.currentTimeMillis();
-        try{
+        //try{
             activeSymbolSet = util.QUERY2LST(qSymbSet);
             if (activeSymbolSet.size()<1){
                 return;
@@ -114,42 +119,43 @@ public class hihTransactions{
             activeSymbolSet = hihUtil.randomSample(activeSymbolSet, numberOfSymbols);
 
             ArrayList<Double> priceQuote = new ArrayList<Double>(numberOfSymbols);
-            for (int i=0; i<numberOfSymbols; i++){
-                double low 	= hihSerializedData.pricesDM.get(activeSymbolSet.get(i)).get(0);
-                double high = hihSerializedData.pricesDM.get(activeSymbolSet.get(i)).get(1);
+            String current_symbol;
+            for (int i=0; i<numberOfSymbols-1; i++){
+                current_symbol = activeSymbolSet.get(i).get("tr_s_symb");
+                //current_symbol = activeSymbolSet.get(i);
+                double low 	= hihSerializedData.pricesDM.get(current_symbol).get(0);
+                double high = hihSerializedData.pricesDM.get(current_symbol).get(1);
                 double randInt = Math.abs(util.testRndGen.nextDouble());
                 priceQuote.add(i, 0.7*low + randInt*(1.3*high-low) );
             }
 
             ArrayList<String> tradeQuantity= new ArrayList<String>(numberOfSymbols);
             for (int i=0; i<numberOfSymbols; i++){
-                tradeQuantity.add(i, util.EXEC_QUERY(String.format(tradeQtQuery, activeSymbolSet.get(i))));
+                tradeQuantity.add(i, util.EXEC_QUERY(String.format(tradeQtQuery, activeSymbolSet.get(i).get("tr_s_symb"))));
             }
 
-            for (int i=0; i<numberOfSymbols; i++) {
+            for (int i=0; i<numberOfSymbols-1; i++) {
                 util.START_TX();
-
-                util.DML(String.format(qMF1, priceQuote.get(i), tradeQuantity.get(i), activeSymbolSet.get(i)));
+                String activeSymbol = activeSymbolSet.get(i).get("tr_s_symb");
+                util.DML(String.format(qMF1, priceQuote.get(i), tradeQuantity.get(i), activeSymbol));
 
                 List<Map<String, Object>> request_list = null;
-                request_list = util.QUERY2LST(String.format(qMF2, activeSymbolSet.get(i), priceQuote.get(i)));
+                request_list = util.QUERY2LST(String.format(qMF2, activeSymbol, priceQuote.get(i)));
 
                 for (int j=0; j<request_list.size();j++) {
-
                     util.DML(String.format(qMF3,request_list.get(j).get("tr_t_id")));
-
                     util.DML(String.format(qMF4, request_list.get(j).get("tr_t_id")));
-
                     util.DML(String.format(qMF5, request_list.get(j).get("tr_t_id")));
                 }
                 util.TCL("commit");
             }
-        }
-        catch(Exception e){
+        //try ends here
+        /*
+        }catch(Exception e){
             e.printStackTrace();
             util.TCL("rollback");
             return;
-        }
+        }*/
         long endTime = System.currentTimeMillis();
         hStats.insertTime(2, endTime - startTime);
         hStats.increment(2);
@@ -162,13 +168,13 @@ public class hihTransactions{
 
         String  sqlTSF1_1 = String.format(
                 "SELECT t_id, t_dts, st_name, tt_name, t_s_symb, t_qty, " +
-                        "       t_exec_name, t_chrg, s_name, ex_name " +
+                        "t_exec_name, t_chrg, s_name, ex_name " +
                         "FROM trade, status_type, trade_type, security, exchange " +
-                        "WHERE t_ca_id = %s " +
-                        "  AND st_id = t_st_id " +
-                        "  AND tt_id = t_tt_id " +
-                        "  AND s_symb = t_s_symb " +
-                        "  AND ex_id = s_ex_id " +
+                        "WHERE t_ca_id=%s " +
+                        "  AND st_id=t_st_id " +
+                        "  AND tt_id=t_tt_id " +
+                        "  AND s_symb=t_s_symb " +
+                        "  AND ex_id=s_ex_id " +
                         "ORDER BY t_dts DESC " +
                         "LIMIT 50", acct_id);
 
@@ -179,12 +185,10 @@ public class hihTransactions{
                         "  AND c_id = ca_c_id " +
                         "  AND b_id = ca_b_id", acct_id);
         long startTime = System.currentTimeMillis();
-        try{
+        //try{
             util.EXEC_QUERY(sqlTSF1_1);
-
             util.EXEC_QUERY(sqlTSF1_2);
-        }
-        catch(Exception e){e.printStackTrace();return;}
+        //}catch(Exception e){e.printStackTrace();return;}
         long endTime = System.currentTimeMillis();
         hStats.insertTime(5, endTime-startTime);
         hStats.increment(5);
@@ -319,23 +323,16 @@ public class hihTransactions{
         //dbObject.QUERY(sdf1_7);
 
         long startTime = System.currentTimeMillis();
-        try{
+        //try{
 
             Map values = util.QUERY2MAP(sdf1_1);
             String co_id = values.get("co_id").toString();
-
             util.QUERY(String.format(sdf1_2, co_id,valRand));
-
             util.QUERY(String.format(sdf1_3, co_id, valRand));
-
             util.QUERY(sdf1_4);
-
             util.QUERY(sdf1_5);
-
             util.QUERY(String.format(sdf1_7, co_id, valRand));
-
-        }
-        catch(Exception e){e.printStackTrace();return;}
+        //}catch(Exception e){e.printStackTrace();return;}
         long endTimer = System.currentTimeMillis();
         hStats.insertTime(6, endTimer-startTime);
         hStats.increment(6);
@@ -377,7 +374,7 @@ public class hihTransactions{
 
         String  sqlTOF1_3 = "SELECT b_name " +
                 "FROM Broker  " +
-                "WHERE b_id = %1$s";
+                "WHERE b_id = %1$s ";
         //, broker_id);
 
         String  sqlTOF2_1 = "SELECT ap_acl  " +
@@ -419,7 +416,7 @@ public class hihTransactions{
                 "ORDER BY h_dts ASC", acct_id, symbol);
 
         long startTime = System.currentTimeMillis();
-        try{
+        //try{
             Map to1_1 = util.QUERY2MAP(sqlTOF1_1);
             String exec_name    = to1_1.get("ca_name").toString();
             String ca_c_id      = to1_1.get("ca_c_id").toString();;
@@ -441,7 +438,7 @@ public class hihTransactions{
             util.EXEC_QUERY(String.format(sqlTOF2_1, acct_id, c_f_name, c_l_name, c_tax_id));
 
             Map to3_1 = util.QUERY2MAP(sqlTOF3_1b);
-            String s_co_id        = to3_1.get("s_co_id").toString();
+            String s_co_id= to3_1.get("s_co_id").toString();
 
             util.EXEC_QUERY(String.format(sqlTOF3_2b, s_co_id));
 
@@ -520,7 +517,8 @@ public class hihTransactions{
             String tradePriceStr = Double.toString(trade_price).replace(",", ".");
 
             util.START_TX();
-            String trade_id = util.EXEC_QUERY("SELECT NEXTVAL('SEQ_TRADE_ID')");
+            //String trade_id = util.EXEC_QUERY("SELECT NEXTVAL('SEQ_TRADE_ID')");
+            String trade_id = util.getNextSeqNumber();
 
             String  sqlTOF4_1 = String.format(
                     "INSERT INTO trade(t_id, t_dts, t_st_id, t_tt_id, t_is_cash, " +
@@ -531,8 +529,8 @@ public class hihTransactions{
                             "        %d, %s, %s, '%s', NULL, %s, %s, 0, %s) ",
                     trade_id, status_id, t_tt_id, t_is_cash, symbol, trade_qty, tradePriceStr, acct_id,
                     exec_name, charge_amount, comm_amount, is_lifo);
-            System.out.println(sqlTOF4_1);
-            System.out.println(util.DML(sqlTOF4_1));
+            util.DML(sqlTOF4_1);
+            //System.out.println(util.DML(sqlTOF4_1));
 
             String  sqlTOF4_2 = String.format(
                     "INSERT INTO trade_request(tr_t_id, tr_tt_id, tr_s_symb, tr_qty, " +
@@ -540,23 +538,28 @@ public class hihTransactions{
                             "VALUES (%s, '%s', '%s', %d, %s, %s)",trade_id, t_tt_id, symbol, trade_qty, tradePriceStr,
                     broker_id);
             util.DML(sqlTOF4_2);
+            //System.out.println(util.DML(sqlTOF4_2));
 
             String  sqlTOF4_3 = String.format(
                     "INSERT INTO trade_history(th_t_id, th_dts, th_st_id) " +
                             "VALUES(%s, now(), '%s')", trade_id, status_id);
             util.DML(sqlTOF4_3);
+            //System.out.println(util.DML(sqlTOF4_3));
 
-            util.TCL("commit");
+        util.TCL("commit");
+            //System.out.println(util.TCL("commit"));
             toResult[0] = trade_id;
             toResult[1] = tradePriceStr;
 
+        //try ends here
+        /*
         }catch(Exception e){
             e.printStackTrace();
             util.TCL("rollback");
             toResult[0]="";
             toResult[1]="";
             return toResult;
-        }
+        }*/
         hStats.increment(3);
         long endTime = System.currentTimeMillis();
         hStats.insertTime(3, endTime-startTime);
@@ -566,20 +569,30 @@ public class hihTransactions{
     public void tradeResult(hihUtil util, String trade_id, double trade_price){
 
         long startTime = System.currentTimeMillis();
-        try{
+        //try{
 
             String trFrame1_1 = String.format(
                     "SELECT t_ca_id, t_tt_id, t_s_symb, t_qty, t_chrg " +
                             "FROM trade " +
-                            "WHERE t_id = %s", trade_id);
+                            "WHERE t_id=%s ", trade_id);
             Map tr1_1 = util.QUERY2MAP(trFrame1_1);
-            System.out.println(trFrame1_1);
 
-            String acct_id 		= tr1_1.get("t_ca_id").toString();
-            String type_id 		= tr1_1.get("t_tt_id").toString();
-            String symbol 		= tr1_1.get("t_s_symb").toString();
-            String trade_qty 	= tr1_1.get("t_qty").toString();
-            String charge		= tr1_1.get("t_chrg").toString();
+        String acct_id = "";
+        String type_id = "";
+        String symbol = "";
+        String trade_qty = "";
+        String charge = "";
+
+        if (!tr1_1.isEmpty()) {
+            acct_id     = tr1_1.get("t_ca_id").toString();
+            type_id     = tr1_1.get("t_tt_id").toString();
+            symbol      = tr1_1.get("t_s_symb").toString();
+            trade_qty   = tr1_1.get("t_qty").toString();
+            charge      = tr1_1.get("t_chrg").toString();
+            }else{
+                System.out.println("Query did not return any rows;");
+                return;
+            }
 
             String trFrame1_2 = String.format(
                     "SELECT tt_name " +
@@ -591,10 +604,15 @@ public class hihTransactions{
                     "SELECT hs_qty " +
                             "FROM holding_summary " +
                             "WHERE hs_ca_id = %s " +
-                            "  AND hs_s_symb = '%s'", acct_id, symbol);
+                            "  AND hs_s_symb='%s' ", acct_id, symbol);
             Map tr1_3 = util.QUERY2MAP(trFrame1_3);
 
-            int hold_qty = Integer.parseInt(tr1_3.get("hs_qty").toString());
+            int hold_qty = 0;
+
+            if (!tr1_3.isEmpty()){
+                hold_qty = Integer.parseInt(tr1_3.get("hs_qty").toString());
+            }
+
 
             java.util.Date date= new java.util.Date();
             java.util.Date trade_date = new Timestamp(date.getTime());
@@ -610,12 +628,11 @@ public class hihTransactions{
                     break;
                 default: type_is_sell = false;
             }
-
+            util.START_TX();
             String trFrame2_1 = String.format(
                     "SELECT ca_b_id, ca_c_id, ca_tax_st " +
                             "FROM customer_account " +
-                            "WHERE ca_id = %s " +
-                            "FOR UPDATE", acct_id);
+                            "WHERE ca_id = %s " , acct_id);
             Map initFrame3 = util.QUERY2MAP(trFrame2_1);
 
             List holdList =new ArrayList<Map<String, Object>>();
@@ -896,7 +913,7 @@ public class hihTransactions{
 
             tax_amount = Math.abs(sell_value - buy_value) * tax_rates;
 
-            String trFrame3_2 = String.format(
+            String trFrame3_2 = String.format(Locale.ENGLISH,
                     "UPDATE trade " +
                             "SET t_tax = %f " +
                             "WHERE t_id = %s", tax_amount, trade_id);
@@ -904,7 +921,6 @@ public class hihTransactions{
 
             //Finished frame 3.
             //Go for frame 4..
-
 
             String trFrame4_1 = String.format(
                     "SELECT s_ex_id, s_name " +
@@ -1012,11 +1028,13 @@ public class hihTransactions{
             util.QUERY(trFrame6_4);
             ////////////
             util.TCL("commit");
+        //try ends here
+        /*
         }catch (Exception e){
             e.printStackTrace();
             util.TCL("rollbsck");
             return;
-        }
+        }*/
         long endTime = System.currentTimeMillis();
         hStats.insertTime(4, endTime-startTime);
         hStats.increment(4);
