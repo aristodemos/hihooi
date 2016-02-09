@@ -21,7 +21,7 @@ public class BenStatistics {
 
     public void increment(int i){
         //synchronized(lock){
-        txnMix[i].incrementAndGet(1);
+        txnMix[i].incrementAndGet();
         //}
     }
 
