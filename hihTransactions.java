@@ -28,7 +28,7 @@ public class hihTransactions{
                 "AND s_co_id = co_id " +
                 "AND co_in_id = in_id " +
                 "AND sc_id = in_sc_id " +
-                "AND b_name = ANY ('{%s}')" +			//'%s' " +//"AND b_name =
+                "AND b_name = ANY ('{%s}')" +            //'%s' " +//"AND b_name =
                 "AND sc_name = '%s' " +
                 "GROUP BY b_name " +
                 "ORDER BY 2 DESC", activeBrokersStr, sector_name);  //actoive.brokers.get(i)
@@ -68,8 +68,18 @@ public class hihTransactions{
         long startTime = System.currentTimeMillis();
         //try{
             util.QUERY(query1);
-            long c_ad_id = Long.parseLong(util.QUERY2MAP(query2a).get("c_ad_id").toString());
-            util.QUERY(String.format(query2b, c_ad_id));
+            Map temp = util.QUERY2MAP(query2a);
+            if (temp.isEmpty()){
+                long endTime = System.currentTimeMillis();
+                hStats.insertTime(1, endTime - startTime);
+                hStats.increment(1);
+                return;
+            }
+            else{
+                String tamp = temp.get("c_ad_id").toString();
+                long c_ad_id = Long.parseLong(tamp);
+                util.QUERY(String.format(query2b, c_ad_id));
+            }
         //}catch(Exception e){e.printStackTrace();return;}
         long endTime = System.currentTimeMillis();
         hStats.insertTime(1, endTime - startTime);
@@ -327,7 +337,7 @@ public class hihTransactions{
 
             Map values = util.QUERY2MAP(sdf1_1);
             String co_id = values.get("co_id").toString();
-            util.QUERY(String.format(sdf1_2, co_id,valRand));
+            util.QUERY(String.format(sdf1_2, co_id, valRand));
             util.QUERY(String.format(sdf1_3, co_id, valRand));
             util.QUERY(sdf1_4);
             util.QUERY(sdf1_5);
@@ -828,7 +838,7 @@ public class hihTransactions{
                                             "SET h_qty = %d " +
                                             "WHERE h_t_id = %s", hold_qty+needed_qty, entry.get("h_t_id"));
                             util.DML(trFrame2_5a);
-                            sell_value 	+= needed_qty*Double.parseDouble(entry.get("h_price").toString());
+                            sell_value += needed_qty * Double.parseDouble(entry.get("h_price").toString());
                             buy_value 	+= needed_qty*trade_price;
                             needed_qty 	= 0;
                             continue;
