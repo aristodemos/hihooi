@@ -9,7 +9,9 @@ import java.util.Date;
  */
 public class Transactions{
 
-    static BenStatistics hStats = new BenStatistics();
+    static BenStatistics hStats;
+
+    Transactions(BenStatistics stats){this.hStats = stats;}
 
     public static void brokerVolumeFrame(Statement st){
         int number_of_brokers = hihUtil.testRndGen.nextInt(hihSerializedData.all_brokers.size()); //ThreadLocalRandom.current()

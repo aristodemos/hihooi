@@ -30,7 +30,8 @@ public class BenchDriver {
     static String user = "postgres";
     static String pass = "";
 
-    static Transactions transactions = new Transactions();
+    static BenStatistics statistics = new BenStatistics();
+    static Transactions transactions = new Transactions(statistics);
 
     public static void main (String args[]){
         hihSerializedData.initParams();
@@ -92,40 +93,40 @@ public class BenchDriver {
         System.out.println("####################   Test Results   #######################");
         System.out.println("#");
         System.out.println("#\tNumber of Worker Threads: \t\t"+NUM_OF_THREADS);
-        System.out.println("#\tTotal Number of Transactions ran: \t" + transactions.hStats.totalTxns());
+        System.out.println("#\tTotal Number of Transactions ran: \t" + statistics.totalTxns());
         System.out.println("#\tTotal Time (in seconds): \t\t" + duration/1000.0);
-        String result = String.format("#\tTransactions Per Second: \t\t%.3f tps",transactions.hStats.totalTxns() /
+        String result = String.format("#\tTransactions Per Second: \t\t%.3f tps",statistics.totalTxns() /
                 (duration / 1000.0));
         System.out.println(result);
-        System.out.println("#\tTotal Number of Operations: \t\t" + transactions.hStats.totalOps());
-        System.out.println("#\tTotal Number Writes : \t\t\t" + transactions.hStats.totalWriteOps());
+        System.out.println("#\tTotal Number of Operations: \t\t" + statistics.totalOps());
+        System.out.println("#\tTotal Number Writes : \t\t\t" + statistics.totalWriteOps());
         /////
         System.out.println("*********************Test Run statistics********************");
         System.out.println("************************************************************");
         System.out.println("*Txn Mix:");
-        System.out.println("*BrokerVolume Txn was run: \t\t"+    transactions.hStats.txnMix[0] + " times;");
-        System.out.println("*CustomerPosition Txn was run: \t\t"+  transactions.hStats.txnMix[1] + " times;");
-        System.out.println("*MarketFeed Txn was run: \t\t"+    transactions.hStats.txnMix[2] + " times;");
-        System.out.println("*TradeOrder Txn was run: \t\t"+      transactions.hStats.txnMix[3] + " times;");
-        System.out.println("*TradeResult Txn was run: \t\t"+     transactions.hStats.txnMix[4] + " times;");
-        System.out.println("*TradeStatus Txn was run: \t\t"+     transactions.hStats.txnMix[5] + " times;");
-        System.out.println("*SecurityDetail Txn was run: \t\t"+  transactions.hStats.txnMix[6] + " times;");
+        System.out.println("*BrokerVolume Txn was run: \t\t"+    statistics.txnMix[0] + " times;");
+        System.out.println("*CustomerPosition Txn was run: \t\t"+  statistics.txnMix[1] + " times;");
+        System.out.println("*MarketFeed Txn was run: \t\t"+    statistics.txnMix[2] + " times;");
+        System.out.println("*TradeOrder Txn was run: \t\t"+      statistics.txnMix[3] + " times;");
+        System.out.println("*TradeResult Txn was run: \t\t"+     statistics.txnMix[4] + " times;");
+        System.out.println("*TradeStatus Txn was run: \t\t"+     statistics.txnMix[5] + " times;");
+        System.out.println("*SecurityDetail Txn was run: \t\t"+  statistics.txnMix[6] + " times;");
 
         System.out.println("\n\n****************** Txn Duration (in msec) ******************");
         System.out.println("************************************************************");
-        String res = String.format("%.3f",((double)transactions.hStats.txnDuration[0])/transactions.hStats.txnMix[0]);
+        String res = String.format("%.3f",((double)statistics.txnDuration[0])/statistics.txnMix[0]);
         System.out.println("*Broker Volume avg time\t\t: "  +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[1])/transactions.hStats.txnMix[1]);
+        res = String.format("%.3f",((double)statistics.txnDuration[1])/statistics.txnMix[1]);
         System.out.println("*Customer Position avg time\t: "+res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[2])/transactions.hStats.txnMix[2]);
+        res = String.format("%.3f",((double)statistics.txnDuration[2])/statistics.txnMix[2]);
         System.out.println("*Market Feed avg time\t\t: "    +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[3])/transactions.hStats.txnMix[3]);
+        res = String.format("%.3f",((double)statistics.txnDuration[3])/statistics.txnMix[3]);
         System.out.println("*Trade Order avg time\t\t: "    +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[4])/transactions.hStats.txnMix[4]);
+        res = String.format("%.3f",((double)statistics.txnDuration[4])/statistics.txnMix[4]);
         System.out.println("*Trade Result avg rime\t\t: "   +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[5])/transactions.hStats.txnMix[5]);
+        res = String.format("%.3f",((double)statistics.txnDuration[5])/statistics.txnMix[5]);
         System.out.println("*Trade Status avg rime\t\t: "   +res);
-        res = String.format("%.3f",((double)transactions.hStats.txnDuration[6])/transactions.hStats.txnMix[6]);
+        res = String.format("%.3f",((double)statistics.txnDuration[6])/statistics.txnMix[6]);
         System.out.println("*Security Detail avg rime\t: "+res);
 
     }
