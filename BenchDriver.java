@@ -23,6 +23,7 @@ public class BenchDriver {
 
     private static int  NUM_OF_THREADS  = 16;
     private static long TIME_TO_RUN     = 1L;
+    private static String WORKLOAD_MIX  = "d";
     static Connection s_conn = null;
     static  boolean   share_connection = false;
     static String url = "jdbc:postgresql://localhost/tpce";
@@ -45,10 +46,10 @@ public class BenchDriver {
         try{
             /* Load the JDBC driver */
             // If NoOfThreads is specified, then read it
-            if (args.length > 2)
+            if (args.length > 3)
             {
                 System.out.println("Error: Invalid Syntax. ");
-                System.out.println("java BenchDriver [NoOfThreads] [TimeToRun]");
+                System.out.println("java BenchDriver [NoOfThreads] [TimeToRun] [WORKLOAD_MIX]");
                 System.exit(0);
             }
 
@@ -57,6 +58,7 @@ public class BenchDriver {
                 NUM_OF_THREADS = Integer.parseInt(args[0]);
                 System.out.println("Number of Threads: " + NUM_OF_THREADS);
                 TIME_TO_RUN = Long.parseLong(args[1]);
+                WORKLOAD_MIX = args[2];
                 System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
@@ -66,7 +68,7 @@ public class BenchDriver {
             // Create Worker threads
             Collection<WorkerThread> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, marketThread));
+                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, marketThread, WORKLOAD_MIX));
             }
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);

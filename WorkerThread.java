@@ -16,12 +16,14 @@ public class WorkerThread implements Callable<String>{
     private String url, user, pass;
     private static Transactions transactions;
     private static MarketThread market;
-    WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market ){
+    private static String workload_mix;
+    WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market, String mix){
         this.url = url;
         this.pass = pass;
         this.user = user;
         this.transactions = transactions;
         this.market = market;
+        this.workload_mix = mix;
     }
 
     private volatile boolean running = true;
@@ -51,7 +53,7 @@ public class WorkerThread implements Callable<String>{
 
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
-            txnsToRun = hihUtil.workloadMix("d");
+            txnsToRun = hihUtil.workloadMix(workload_mix);
             int i=0;
             int numberOfTxns = txnsToRun.size();
             while(running){//while(i < numberOfTxns){
