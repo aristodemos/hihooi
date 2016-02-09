@@ -40,6 +40,12 @@ public class MarketThread extends Thread {
 
     public void terminate() {
         running = false;
+        System.out.println("Market Thead Stopped");
+        try{
+            conn.rollback();
+            conn.close();}
+        catch (SQLException e){e.printStackTrace();}
+
     }
 
     public void run(){
