@@ -48,7 +48,7 @@ public class hihUtil {
     }
 
     public String DISCONNECT() {
-        logWriter.close();
+        if(DEBUG)logWriter.close();
         return hih.disconnect();  //Returns "Disconnect Successfuly"
     }
 
