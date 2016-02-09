@@ -4,17 +4,13 @@ package hih;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.Collection;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by mariosp on 23/1/16.
@@ -94,8 +90,10 @@ public class BenchDriver {
         System.out.println("#");
         System.out.println("#\tNumber of Worker Threads: \t\t"+NUM_OF_THREADS);
         System.out.println("#\tTotal Number of Transactions ran: \t" + statistics.totalTxns());
-        System.out.println("#\tTotal Time (in seconds): \t\t" + duration/1000.0);
-        String result = String.format("#\tTransactions Per Second: \t\t%.3f tps",statistics.totalTxns() /
+        System.out.println("#\tTotal Time (in seconds): \t\t" + duration / 1000.0);
+
+        String result = String.format(Locale.US, "#\tTransactions Per Second: \t\t%.3f tps",statistics
+                .totalTxns() /
                 (duration / 1000.0));
         System.out.println(result);
         System.out.println("#\tTotal Number of Operations: \t\t" + statistics.totalOps());
@@ -114,19 +112,19 @@ public class BenchDriver {
 
         System.out.println("\n\n****************** Txn Duration (in msec) ******************");
         System.out.println("************************************************************");
-        String res = String.format("%.3f",((double)statistics.txnDuration[0])/statistics.txnMix[0]);
+        String res = String.format(Locale.US,"%.3f",((double)statistics.txnDuration[0])/statistics.txnMix[0]);
         System.out.println("*Broker Volume avg time\t\t: "  +res);
-        res = String.format("%.3f",((double)statistics.txnDuration[1])/statistics.txnMix[1]);
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[1])/statistics.txnMix[1]);
         System.out.println("*Customer Position avg time\t: "+res);
-        res = String.format("%.3f",((double)statistics.txnDuration[2])/statistics.txnMix[2]);
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[2])/statistics.txnMix[2]);
         System.out.println("*Market Feed avg time\t\t: "    +res);
-        res = String.format("%.3f",((double)statistics.txnDuration[3])/statistics.txnMix[3]);
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[3])/statistics.txnMix[3]);
         System.out.println("*Trade Order avg time\t\t: "    +res);
-        res = String.format("%.3f",((double)statistics.txnDuration[4])/statistics.txnMix[4]);
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[4])/statistics.txnMix[4]);
         System.out.println("*Trade Result avg rime\t\t: "   +res);
-        res = String.format("%.3f",((double)statistics.txnDuration[5])/statistics.txnMix[5]);
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[5])/statistics.txnMix[5]);
         System.out.println("*Trade Status avg rime\t\t: "   +res);
-        res = String.format("%.3f",((double)statistics.txnDuration[6])/statistics.txnMix[6]);
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[6])/statistics.txnMix[6]);
         System.out.println("*Security Detail avg rime\t: "+res);
 
     }
