@@ -12,10 +12,10 @@ public class BenStatistics {
     public static List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
             "TradeOrder", "TradeStatus", "SecurityDetail");
 
-    public long[] txnMix 		= new long[txnPoolMaster.size()+1];
+    public volatile long[] txnMix 		= new long[txnPoolMaster.size()+1];
     public long[] txnDuration 	= new long[txnPoolMaster.size()+1];
-    private long totalOps = 0;
-    private long writeOps = 0;
+    private volatile long totalOps = 0;
+    private volatile long writeOps = 0;
     //private final Object lock = new Object();
 
     public void increment(int i){
