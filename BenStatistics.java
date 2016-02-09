@@ -13,7 +13,15 @@ public class BenStatistics {
     public static List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
             "TradeOrder", "TradeStatus", "SecurityDetail");
 
-    public AtomicLong[] txnMix = new AtomicLong[txnPoolMaster.size()+1];
+    public static AtomicLong[] txnMix = new AtomicLong[txnPoolMaster.size()+1];
+
+    BenStatistics(){
+        for (int i=0; i<txnMix.length; i++){
+            txnMix[i] = new AtomicLong(0);
+        }
+    }
+
+
     public long[] txnDuration 	= new long[txnPoolMaster.size()+1];
     private long totalOps = 0;
     private long writeOps = 0;
