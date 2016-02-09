@@ -864,7 +864,7 @@ public class hihTransactions{
                             util.DML(trFrame2_5b);
                             // Make hold_qty positive for easy calculations
                             hold_qty = 0-hold_qty;
-                            sell_value += hold_qty * Integer.parseInt(entry.get("h_price").toString());
+                            sell_value += hold_qty * Double.parseDouble(entry.get("h_price").toString());
                             buy_value += hold_qty * trade_price;
                             needed_qty = needed_qty - hold_qty;
                         }
