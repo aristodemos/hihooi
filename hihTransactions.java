@@ -828,7 +828,7 @@ public class hihTransactions{
                                             "SET h_qty = %d " +
                                             "WHERE h_t_id = %s", hold_qty+needed_qty, entry.get("h_t_id"));
                             util.DML(trFrame2_5a);
-                            sell_value 	+= needed_qty*Integer.parseInt(entry.get("h_price").toString());
+                            sell_value 	+= needed_qty*Double.parseDouble(entry.get("h_price").toString());
                             buy_value 	+= needed_qty*trade_price;
                             needed_qty 	= 0;
                             continue;
