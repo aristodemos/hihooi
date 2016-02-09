@@ -47,6 +47,7 @@ public class MarketThread extends Thread {
     public void terminate() {
         running = false;
         System.out.println("Market Thead Stopped");
+        queue = null;
         try{
             conn.rollback();
             conn.close();}
