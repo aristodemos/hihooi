@@ -13,7 +13,17 @@ public class Transactions{
 
     Transactions(BenStatistics stats){this.hStats = stats;}
 
-    public static void brokerVolumeFrame(Statement st){
+    private static long nextSeq = 200000000999999L;
+    public String getNextSeqNumber(){
+        return Long.toString(nextSeq++);
+    }
+
+    public void setNextSeq(long next){
+        nextSeq=next+1;
+        System.out.println("SET SEQUENCE NUMBER to "+nextSeq);
+    }
+
+    public void brokerVolumeFrame(Statement st){
         int number_of_brokers = hihUtil.testRndGen.nextInt(hihSerializedData.all_brokers.size()); //ThreadLocalRandom.current()
         // .nextInt(all_brokers.size());
         List active_brokers = hihUtil.randomSample(hihSerializedData.all_brokers, number_of_brokers);
@@ -50,7 +60,7 @@ public class Transactions{
         hStats.insertTime(0, endTime - startTime);
     }
 
-    public static void customerPositionFrame(Statement st) {
+    public void customerPositionFrame(Statement st) {
         ResultSet rs = null;
         //Customer Position Frame 1 of 2
         String cust_id = hihSerializedData.all_customers.get(hihUtil.testRndGen.nextInt(hihSerializedData.all_customers.size()));
@@ -112,7 +122,7 @@ public class Transactions{
         hStats.increment(1);
     }
 
-    public static void marketFeedFrame(Statement st) {
+    public void marketFeedFrame(Statement st) {
         ResultSet rs = null;
         String qSymbSet = "select distinct tr_s_symb, random() from TRADE_REQUEST order by random() limit 20";
         String tradeQtQuery = "select tr_qty from trade_request where tr_s_symb = ? limit 1";
@@ -250,7 +260,7 @@ public class Transactions{
         hStats.increment(2);
     }
 
-    public static void tradeStatus(Statement st) {
+    public void tradeStatus(Statement st) {
 
         String acct_id =  hihSerializedData.all_acct_ids.get(hihUtil.testRndGen.nextInt(hihSerializedData.all_acct_ids.size()))
                 .toString();
@@ -291,7 +301,7 @@ public class Transactions{
         hStats.increment(5);
     }
 
-    public static void securityDetail(Statement st) {
+    public void securityDetail(Statement st) {
         String symbol = hihSerializedData.all_symbols.get(hihUtil.testRndGen.nextInt(hihSerializedData.all_symbols.size()));
         int valRand = 5 + hihUtil.testRndGen.nextInt(21 - 5);
         long beginTime;
@@ -479,7 +489,7 @@ public class Transactions{
         hStats.increment(6);
     }
 
-    public static String[] tradeOrder(Statement st) {
+    public String[] tradeOrder(Statement st) {
         ResultSet rs = null;
         String toResult[] = new String[2];
 
@@ -739,10 +749,11 @@ public class Transactions{
 
             //String trade_id = dbObject.EXEC_QUERY("SELECT NEXTVAL('SEQ_TRADE_ID')");
             String trade_id="";
-            rs = st.executeQuery("SELECT NEXTVAL('SEQ_TRADE_ID')");
+            /*rs = st.executeQuery("SELECT NEXTVAL('SEQ_TRADE_ID')");
             if(rs.next()){
                 trade_id = rs.getString(1);
-            }
+            }*/
+            trade_id = getNextSeqNumber();
 
             String  sqlTOF4_1 = String.format(
                     "INSERT INTO trade(t_id, t_dts, t_st_id, t_tt_id, t_is_cash, " +
@@ -805,7 +816,7 @@ public class Transactions{
         return toResult;
     }
 
-    public static void tradeResult(Statement st, String trade_id, double trade_price){
+    public void tradeResult(Statement st, String trade_id, double trade_price){
         ResultSet rs = null;
         long startTime = System.currentTimeMillis();
         try{

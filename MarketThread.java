@@ -4,6 +4,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -29,8 +30,13 @@ public class MarketThread extends Thread {
         this.pass = pass;
         this.user = user;
         try{
-            conn = DriverManager.getConnection(url,user, pass);
+            conn = DriverManager.getConnection(url, user, pass);
             this.statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery("select max(t_id) from trade");
+            if (rs.next()){
+                transactions.setNextSeq(rs.getLong("max"));
+            }
+
         }
         catch (SQLException e){e.printStackTrace();}
 
