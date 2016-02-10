@@ -113,19 +113,19 @@ public class BenchDriver {
 
         System.out.println("\n\n****************** Txn Duration (in msec) ******************");
         System.out.println("************************************************************");
-        String res = String.format(Locale.US,"%.3f",((double)statistics.txnDuration[0])/statistics.txnMix[0].get());
+        String res = String.format(Locale.US,"%.3f",((double)statistics.txnDuration[0])/statistics.txnMix[0]);
         System.out.println("*Broker Volume avg time\t\t: "  +res);
-        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[1])/statistics.txnMix[1].get());
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[1])/statistics.txnMix[1]);
         System.out.println("*Customer Position avg time\t: "+res);
-        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[2])/statistics.txnMix[2].get());
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[2])/statistics.txnMix[2]);
         System.out.println("*Market Feed avg time\t\t: "    +res);
-        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[3])/statistics.txnMix[3].get());
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[3])/statistics.txnMix[3]);
         System.out.println("*Trade Order avg time\t\t: "    +res);
-        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[4])/statistics.txnMix[4].get());
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[4])/statistics.txnMix[4]);
         System.out.println("*Trade Result avg rime\t\t: "   +res);
-        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[5])/statistics.txnMix[5].get());
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[5])/statistics.txnMix[5]);
         System.out.println("*Trade Status avg rime\t\t: "   +res);
-        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[6])/statistics.txnMix[6].get());
+        res = String.format(Locale.US, "%.3f",((double)statistics.txnDuration[6])/statistics.txnMix[6]);
         System.out.println("*Security Detail avg rime\t: "+res);
 
     }

@@ -13,13 +13,15 @@ public class BenStatistics {
     public List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
             "TradeOrder", "TradeStatus", "SecurityDetail");
 
-    public AtomicLong[] txnMix = new AtomicLong[txnPoolMaster.size()+1];
+    public long[] txnMix = new long[txnPoolMaster.size()+1];
 
+    /*
     BenStatistics(){
         for (int i=0; i<txnMix.length; i++){
             txnMix[i] = new AtomicLong(0);
         }
     }
+    */
 
 
     public long[] txnDuration 	= new long[txnPoolMaster.size()+1];
@@ -28,9 +30,8 @@ public class BenStatistics {
     //private final Object lock = new Object();
 
     public void increment(int i){
-        //synchronized(lock){
-        txnMix[i].incrementAndGet();
-        //}
+        //txnMix[i].incrementAndGet();
+        txnMix[i]++;
     }
 
     public void incOperation(){
@@ -50,8 +51,8 @@ public class BenStatistics {
     public long totalTxns(){
         //long sum =0;
         //sum = sum + txnMix[0].get();
-        return txnMix[0].get()+txnMix[1].get()+txnMix[2].get()+txnMix[3].get()+txnMix[4].get()+txnMix[5].get()
-                +txnMix[6].get();
+        //return txnMix[0].get()+txnMix[1].get()+txnMix[2].get()+txnMix[3].get()+txnMix[4].get()+txnMix[5].get()+txnMix[6].get();
+        return txnMix[0]+txnMix[1]+txnMix[2]+txnMix[3]+txnMix[4]+txnMix[5]+txnMix[6];
     }
     public long totalOps(){
         return totalOps;

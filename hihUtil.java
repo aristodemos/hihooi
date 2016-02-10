@@ -17,11 +17,14 @@ public class hihUtil {
     public static PrintWriter logWriter = null;
     private static long nextSeq = 200000000999999L;
     private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
+    private HiHListenerClient hih;
 
     hihUtil(BenStatistics s){
         this.stats = s;
-        String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
+        this.hih = new HiHListenerClient();
+
         if (DEBUG){
+            String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
             try{
                 logWriter = new PrintWriter("LOG_"+timeStamp+".txt", "UTF-8");
             }catch (FileNotFoundException |UnsupportedEncodingException err){
@@ -34,9 +37,9 @@ public class hihUtil {
 
 
 
-    //private String LISTENER="dicl";
-    private String LISTENER="dicl09.cut.ac.cy";
-    private HiHListenerClient hih = new HiHListenerClient();
+    private String LISTENER="dicl";
+    //private String LISTENER="dicl09.cut.ac.cy";
+
 
     public String CONNECT() {
         Properties p = new Properties();
@@ -274,15 +277,14 @@ public class hihUtil {
                 for (int i=0; i<5;i++){
                     pool.add("BrokerVolume");
                 }
-                for (int i=5; i<18;i++){
+                for (int i=5; i<34;i++){
                     pool.add("CustomerPosition");
                 }
-                for (int i=18;i<33;i++){
+                /*
+                for (int i=18;i<34;i++){
                     pool.add("SecurityDetail");
                 }
-                for (int i=33;i<34;i++){
-                    pool.add("TradeOrder");
-                }
+                */
                 for (int i=34;i<62;i++){
                     pool.add("TradeStatus");
                 }
