@@ -193,15 +193,26 @@ public class hihUtil {
                 }
                 return randomSample(pool, pool.size());
             case "a":
-
-                for (int i=20; i<50;i++){
-                    pool.add("TradeStatus");
+                for (int i=0; i<5;i++){
+                    pool.add("BrokerVolume");
                 }
-                for (int i=50;i<70;i++){
+                for (int i=5; i<18;i++){
                     pool.add("CustomerPosition");
                 }
-                for (int i=70;i<100;i++){
+                for (int i=18;i<34;i++){
                     pool.add("SecurityDetail");
+                }
+                for (int i=34;i<62;i++){
+                    pool.add("TradeStatus");
+                }
+                for (int i=62;i<70;i++){
+                    pool.add("TradeStatus");
+                }
+                for (int i=70;i<80;i++){
+                    pool.add("CustomerPosition");
+                }
+                for (int i=80;i<100;i++){
+                    pool.add("BrokerVolume");
                 }
                 return randomSample(pool, pool.size());
             case "b":
