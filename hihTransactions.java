@@ -336,24 +336,17 @@ public class hihTransactions{
         //dbObject.QUERY(sdf1_7);
 
         long startTime = System.currentTimeMillis();
-       // try{
-
+        try{
             Map values = util.QUERY2MAP(sdf1_1);
-            //System.out.println(values);
-            if (values.isEmpty()){
-                return;
-            }
-            else{
-                String co_id = values.get("co_id").toString();
-                util.QUERY(String.format(sdf1_2, co_id, valRand));
-                util.QUERY(String.format(sdf1_3, co_id, valRand));
-                util.QUERY(sdf1_4);
-                util.QUERY(sdf1_5);
-                util.QUERY(String.format(sdf1_7, co_id, valRand));
-            }
-       // }catch(Exception e){
+            String co_id = values.get("co_id").toString();
+            util.QUERY(String.format(sdf1_2, co_id, valRand));
+            util.QUERY(String.format(sdf1_3, co_id, valRand));
+            util.QUERY(sdf1_4);
+            util.QUERY(sdf1_5);
+            util.QUERY(String.format(sdf1_7, co_id, valRand));
+        }catch(Exception e){
             //e.printStackTrace();
-       //     return;}
+            return;}
         long endTimer = System.currentTimeMillis();
         hStats.insertTime(6, endTimer-startTime);
         hStats.increment(6);
