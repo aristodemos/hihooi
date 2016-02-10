@@ -16,25 +16,27 @@ public class hihUtil {
     BenStatistics stats;// = new BenStatistics();
     public static PrintWriter logWriter = null;
     private static long nextSeq = 200000000999999L;
+    private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
 
     hihUtil(BenStatistics s){
         this.stats = s;
         String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
-        try{
-            logWriter = new PrintWriter("LOG_"+timeStamp+".txt", "UTF-8");
-
-        }catch (FileNotFoundException |UnsupportedEncodingException err){
-            System.out.println("FileNOTfound" + err.getMessage());
+        if (DEBUG){
+            try{
+                logWriter = new PrintWriter("LOG_"+timeStamp+".txt", "UTF-8");
+            }catch (FileNotFoundException |UnsupportedEncodingException err){
+                System.out.println("FileNOTfound" + err.getMessage());
+            }
         }
     }
 
     public static Random testRndGen = new Random();
 
-    private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
+
 
     //private String LISTENER="dicl";
     private String LISTENER="dicl09.cut.ac.cy";
-    private static HiHListenerClient hih = new HiHListenerClient();
+    private HiHListenerClient hih = new HiHListenerClient();
 
     public String CONNECT() {
         Properties p = new Properties();
