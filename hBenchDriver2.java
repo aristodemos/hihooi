@@ -1,5 +1,7 @@
 package hih;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +25,29 @@ public class hBenchDriver2 {
 
         hihSerializedData.initParams();
         Long startTime = System.currentTimeMillis();
+
+
+        if (args.length > 4)
+        {
+            System.out.println("Error: Invalid Syntax. ");
+            System.out.println("java BenchDriver [NoOfThreads] [TimeToRun] [MODE] [WORKLOAD]");
+            System.exit(0);
+        }
+
+        // get the no of threads if given
+        if (args.length > 0) {
+            NUM_OF_THREADS = Integer.parseInt(args[0]);
+            System.out.println("Number of Threads: " + NUM_OF_THREADS);
+            TIME_TO_RUN = Long.parseLong(args[1]);
+            System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
+            CONSISTENCY_MODE = Integer.parseInt(args[2]);
+            WORKLOAD_MIX = args[3];
+            System.out.println("Consistency mode : " + CONSISTENCY_MODE);
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+            System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
+        }
+
 
         hMarketThread marketThread = new hMarketThread(transactions, CONSISTENCY_MODE, statistics);
         marketThread.start();

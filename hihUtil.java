@@ -16,7 +16,7 @@ public class hihUtil {
     BenStatistics stats;// = new BenStatistics();
     public static PrintWriter logWriter = null;
     private static long nextSeq = 200000000999999L;
-    private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
+    private static boolean  DEBUG   = true; //print transactions to file and other msgs on system.out
     private HiHListenerClient hih;
 
     hihUtil(BenStatistics s){
@@ -65,7 +65,7 @@ public class hihUtil {
     }
 
     public String EXEC_QUERY(String SQL) {
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -80,7 +80,7 @@ public class hihUtil {
     }
 
     public List QUERY(String SQL) {
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         List resultOut = new Vector();
@@ -99,7 +99,7 @@ public class hihUtil {
     }
 
     public Map QUERY2MAP(String SQL){
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         Map<String, Object> results = new HashMap<>();
         for( int i = rows.size() -1; i >= 0 ; i --) {
@@ -114,7 +114,7 @@ public class hihUtil {
     }
 
     public List QUERY2LST(String SQL){
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         List<Map<String, Object>> rows = hih.executeQuery(SQL);
         String output ="";
         for( int i = rows.size() -1; i >= 0 ; i --)
@@ -131,7 +131,7 @@ public class hihUtil {
     }
 
     public String DML(String SQL) {
-        if (DEBUG ){logWriter.printf("%s \n", SQL);}
+        //if (DEBUG ){logWriter.printf("%s \n", SQL);}
         stats.incWriteOp();
         return hih.executeUpdate(SQL);
     }
