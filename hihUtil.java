@@ -35,10 +35,7 @@ public class hihUtil {
 
     public static Random testRndGen = new Random();
 
-
-
-    private String LISTENER="dicl";
-    //private String LISTENER="dicl09.cut.ac.cy";
+    private String LISTENER="dicl09.cut.ac.cy";
 
 
     public String CONNECT() {
