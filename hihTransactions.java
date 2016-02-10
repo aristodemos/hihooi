@@ -80,7 +80,9 @@ public class hihTransactions{
                 long c_ad_id = Long.parseLong(tamp);
                 util.QUERY(String.format(query2b, c_ad_id));
             }
-        }catch(Exception e){e.printStackTrace();return;}
+        }catch(Exception e){
+            //e.printStackTrace();
+            return;}
         long endTime = System.currentTimeMillis();
         hStats.insertTime(1, endTime - startTime);
         hStats.increment(1);
@@ -162,7 +164,7 @@ public class hihTransactions{
         //try ends here
 
         }catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             util.TCL("rollback");
             return;
         }
@@ -198,7 +200,9 @@ public class hihTransactions{
         try{
             util.EXEC_QUERY(sqlTSF1_1);
             util.EXEC_QUERY(sqlTSF1_2);
-        }catch(Exception e){e.printStackTrace();return;}
+        }catch(Exception e){
+            //e.printStackTrace();
+            return;}
         long endTime = System.currentTimeMillis();
         hStats.insertTime(5, endTime-startTime);
         hStats.increment(5);
@@ -346,7 +350,9 @@ public class hihTransactions{
                 util.QUERY(sdf1_5);
                 util.QUERY(String.format(sdf1_7, co_id, valRand));
             }
-        }catch(Exception e){e.printStackTrace();return;}
+        }catch(Exception e){
+            //e.printStackTrace();
+            return;}
         long endTimer = System.currentTimeMillis();
         hStats.insertTime(6, endTimer-startTime);
         hStats.increment(6);
@@ -568,7 +574,7 @@ public class hihTransactions{
         //try ends here
 
         }catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             util.TCL("rollback");
             toResult[0]="";
             toResult[1]="";
@@ -1045,7 +1051,7 @@ public class hihTransactions{
         //try ends here
 
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             util.TCL("rollbsck");
             return;
         }
