@@ -34,7 +34,7 @@ public class hihUtil {
 
     //private String LISTENER="dicl";
     private String LISTENER="dicl09.cut.ac.cy";
-    private HiHListenerClient hih = new HiHListenerClient();
+    private static HiHListenerClient hih;// = new HiHListenerClient();
 
     public String CONNECT() {
         Properties p = new Properties();
