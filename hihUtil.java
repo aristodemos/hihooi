@@ -274,14 +274,14 @@ public class hihUtil {
                 for (int i=0; i<5;i++){
                     pool.add("BrokerVolume");
                 }
-                for (int i=5; i<34;i++){
+                for (int i=5; i<18;i++){
                     pool.add("CustomerPosition");
                 }
-                /*
+
                 for (int i=18;i<34;i++){
                     pool.add("SecurityDetail");
                 }
-                */
+
                 for (int i=34;i<62;i++){
                     pool.add("TradeStatus");
                 }
