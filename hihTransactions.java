@@ -66,7 +66,7 @@ public class hihTransactions{
                         "LIMIT 30";
 
         long startTime = System.currentTimeMillis();
-        //try{
+        try{
             util.QUERY(query1);
             Map temp = util.QUERY2MAP(query2a);
             if (temp.isEmpty()){
@@ -80,7 +80,7 @@ public class hihTransactions{
                 long c_ad_id = Long.parseLong(tamp);
                 util.QUERY(String.format(query2b, c_ad_id));
             }
-        //}catch(Exception e){e.printStackTrace();return;}
+        }catch(Exception e){e.printStackTrace();return;}
         long endTime = System.currentTimeMillis();
         hStats.insertTime(1, endTime - startTime);
         hStats.increment(1);
@@ -119,7 +119,7 @@ public class hihTransactions{
         //List<String> activeSymbolSet = new ArrayList();
 
         long startTime = System.currentTimeMillis();
-        //try{
+        try{
             activeSymbolSet = util.QUERY2LST(qSymbSet);
             if (activeSymbolSet.size()<1){
                 return;
@@ -160,12 +160,12 @@ public class hihTransactions{
                 util.TCL("commit");
             }
         //try ends here
-        /*
+
         }catch(Exception e){
             e.printStackTrace();
             util.TCL("rollback");
             return;
-        }*/
+        }
         long endTime = System.currentTimeMillis();
         hStats.insertTime(2, endTime - startTime);
         hStats.increment(2);
@@ -195,10 +195,10 @@ public class hihTransactions{
                         "  AND c_id = ca_c_id " +
                         "  AND b_id = ca_b_id", acct_id);
         long startTime = System.currentTimeMillis();
-        //try{
+        try{
             util.EXEC_QUERY(sqlTSF1_1);
             util.EXEC_QUERY(sqlTSF1_2);
-        //}catch(Exception e){e.printStackTrace();return;}
+        }catch(Exception e){e.printStackTrace();return;}
         long endTime = System.currentTimeMillis();
         hStats.insertTime(5, endTime-startTime);
         hStats.increment(5);
@@ -216,7 +216,6 @@ public class hihTransactions{
         java.util.Date dateRand = new java.util.Date(beginTime + (long) (Math.random() * diff));
 
         String date = dateRand.toString();
-        Long t = System.currentTimeMillis();
 
         String sdf1_1 = String.format("SELECT s_name," +
                 "       co_id," +
@@ -333,7 +332,7 @@ public class hihTransactions{
         //dbObject.QUERY(sdf1_7);
 
         long startTime = System.currentTimeMillis();
-        //try{
+        try{
 
             Map values = util.QUERY2MAP(sdf1_1);
             if (values.isEmpty()){
@@ -347,7 +346,7 @@ public class hihTransactions{
                 util.QUERY(sdf1_5);
                 util.QUERY(String.format(sdf1_7, co_id, valRand));
             }
-        //}catch(Exception e){e.printStackTrace();return;}
+        }catch(Exception e){e.printStackTrace();return;}
         long endTimer = System.currentTimeMillis();
         hStats.insertTime(6, endTimer-startTime);
         hStats.increment(6);
@@ -431,7 +430,7 @@ public class hihTransactions{
                 "ORDER BY h_dts ASC", acct_id, symbol);
 
         long startTime = System.currentTimeMillis();
-        //try{
+        try{
             Map to1_1 = util.QUERY2MAP(sqlTOF1_1);
             String exec_name    = to1_1.get("ca_name").toString();
             String ca_c_id      = to1_1.get("ca_c_id").toString();;
@@ -567,14 +566,14 @@ public class hihTransactions{
             toResult[1] = tradePriceStr;
 
         //try ends here
-        /*
+
         }catch(Exception e){
             e.printStackTrace();
             util.TCL("rollback");
             toResult[0]="";
             toResult[1]="";
             return toResult;
-        }*/
+        }
         hStats.increment(3);
         long endTime = System.currentTimeMillis();
         hStats.insertTime(3, endTime-startTime);
@@ -584,7 +583,7 @@ public class hihTransactions{
     public void tradeResult(hihUtil util, String trade_id, double trade_price){
 
         long startTime = System.currentTimeMillis();
-        //try{
+        try{
 
             String trFrame1_1 = String.format(
                     "SELECT t_ca_id, t_tt_id, t_s_symb, t_qty, t_chrg " +
@@ -1044,12 +1043,12 @@ public class hihTransactions{
             ////////////
             util.TCL("commit");
         //try ends here
-        /*
+
         }catch (Exception e){
             e.printStackTrace();
             util.TCL("rollbsck");
             return;
-        }*/
+        }
         long endTime = System.currentTimeMillis();
         hStats.insertTime(4, endTime-startTime);
         hStats.increment(4);

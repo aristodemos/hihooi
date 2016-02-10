@@ -51,6 +51,8 @@ public class hBenchDriver2 {
                 }
             }
             pool.shutdownNow();
+            marketThread.terminate();
+            marketThread.join();
             while (!pool.isTerminated()) {
                 //this can throw InterruptedException, you'll need to decide how to deal with that.
                 pool.awaitTermination(1,TimeUnit.MILLISECONDS);
