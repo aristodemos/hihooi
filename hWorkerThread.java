@@ -42,7 +42,7 @@ public class hWorkerThread implements Callable<String> {
             int i=0;
             int j=0;
             int numberOfTxns = txnsToRun.size();
-            while(j<10){  //                //while(running){   //while(i < numberOfTxns){
+            while(j<100){  //                //while(running){   //while(i < numberOfTxns){
                 DoTxn(util, txnsToRun.get(i).toString());
                 i++;
                 if (i==numberOfTxns){j++; i=0;}
