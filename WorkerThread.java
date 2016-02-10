@@ -41,16 +41,6 @@ public class WorkerThread implements Callable<String>{
             conn = DriverManager.getConnection(url, user, pass);
             stmt = conn.createStatement(); // Create a Statement
 
-            //TODO: Run tradeCleanup from a single thread.
-            /*
-            if (Thread.currentThread().getName() == "pool-1-thread-1"){
-                System.out.println("Calling trade cleanup from thread" + Thread.currentThread().getName());
-                DoTxn(stmt, "TradeCleanup");
-            }
-            */
-
-
-
             //Do Transaction
             List txnsToRun; //  = new Vector<String>();
             txnsToRun = hihUtil.workloadMix(workload_mix);
@@ -61,11 +51,9 @@ public class WorkerThread implements Callable<String>{
                 i++;
                 if (i==numberOfTxns)i=0;
             }
-
             // Close the statement
             stmt.close();
             stmt = null;
-
             //System.out.println("Thread " + Thread.currentThread().getName()+  " is finished. ");
             return "Thread " + Thread.currentThread().getName()+  " is finished. ";
         }

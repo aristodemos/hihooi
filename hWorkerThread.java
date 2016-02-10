@@ -40,11 +40,12 @@ public class hWorkerThread implements Callable<String> {
             List txnsToRun; //  = new Vector<String>();
             txnsToRun = hihUtil.workloadMix(workload_mix);
             int i=0;
+            int j=0;
             int numberOfTxns = txnsToRun.size();
-            while(running){  //     //while(i < numberOfTxns){
+            while(j<10){  //                //while(running){   //while(i < numberOfTxns){
                 DoTxn(util, txnsToRun.get(i).toString());
                 i++;
-                if (i==numberOfTxns)i=0;
+                if (i==numberOfTxns){j++; i=0;}
             }
             //Close Session
             util.DISCONNECT();

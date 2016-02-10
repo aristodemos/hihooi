@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public class BenStatistics {
 
     //The pool of transactions - we choose one at random
-    public static List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
+    public List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
             "TradeOrder", "TradeStatus", "SecurityDetail");
 
-    public static AtomicLong[] txnMix = new AtomicLong[txnPoolMaster.size()+1];
+    public AtomicLong[] txnMix = new AtomicLong[txnPoolMaster.size()+1];
 
     BenStatistics(){
         for (int i=0; i<txnMix.length; i++){

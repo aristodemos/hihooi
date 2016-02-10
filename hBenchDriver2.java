@@ -1,18 +1,16 @@
 package hih;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Created by mariosp on 6/2/16.
+ * Created by mariosp on 10/2/16.
  */
-public class hBenchDriver {
+public class hBenchDriver2 {
 
     private static int      NUM_OF_THREADS      = 1;
     private static long     TIME_TO_RUN         = 5L;
@@ -22,62 +20,44 @@ public class hBenchDriver {
     static BenStatistics statistics = new BenStatistics();
     static hihTransactions transactions = new hihTransactions(statistics);
 
-
     public static void main (String args[]){
+
         hihSerializedData.initParams();
         Long startTime = System.currentTimeMillis();
 
-        if (args.length > 4)
-        {
-            System.out.println("Error: Invalid Syntax. ");
-            System.out.println("java BenchDriver [NoOfThreads] [TimeToRun] [MODE] [WORKLOAD]");
-            System.exit(0);
-        }
-
-        // get the no of threads if given
-        if (args.length > 0) {
-            NUM_OF_THREADS = Integer.parseInt(args[0]);
-            System.out.println("Number of Threads: " + NUM_OF_THREADS);
-            TIME_TO_RUN = Long.parseLong(args[1]);
-            System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
-            CONSISTENCY_MODE = Integer.parseInt(args[2]);
-            WORKLOAD_MIX = args[3];
-            System.out.println("Consistency mode : " + CONSISTENCY_MODE);
-            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Date date = new Date();
-            System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
-        }
-
         hMarketThread marketThread = new hMarketThread(transactions, CONSISTENCY_MODE, statistics);
+        marketThread.start();
+        System.out.println("Market Thread started");
 
         try{
-            //Start Market Thread
-            marketThread.start();
-            System.out.println("Market Thread started");
-
-            // Create Worker threads
-            Collection<hWorkerThread> workerThreadsList = new ArrayList<>();
-            for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE, statistics, WORKLOAD_MIX));
-
-            }
-
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
-            List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
-            for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
-                hWorkerThread wt = (hWorkerThread) iterator.next();
-                //String name = wt.toString();
-                wt.terminate();
-                //System.out.println("Terminating worker thread ... " + name);
+            List<Future<String>> list = new ArrayList<Future<String>>();
+
+            Callable<String> callable = new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE, statistics, WORKLOAD_MIX);
+            //Callable<String> callable = new  TestHihooiDriver();
+            for(int i=0; i< NUM_OF_THREADS; i++) {
+                //submit Callable tasks to be executed by thread pool
+                Future<String> future = pool.submit(callable);
+                //add Future to the list, we can get return value using Future
+                list.add(future);
+            }
+            for(Future<String> fut : list)
+            {
+                try {
+                    System.out.println("Session response "+fut.get());
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                }
             }
             pool.shutdownNow();
-            //while (marketThread.queue.size() > 0){}
-            marketThread.terminate();
-            marketThread.join();
+            while (!pool.isTerminated()) {
+                //this can throw InterruptedException, you'll need to decide how to deal with that.
+                pool.awaitTermination(1,TimeUnit.MILLISECONDS);
+            }
         }
-        catch(Exception e){
+        catch(Exception e) {
             e.printStackTrace();
-            marketThread.terminate();
         }
 
         Long duration = System.currentTimeMillis() - startTime;
@@ -124,5 +104,4 @@ public class hBenchDriver {
         System.out.println("*Security Detail avg rime\t: "+res);
 
     }
-
 }
