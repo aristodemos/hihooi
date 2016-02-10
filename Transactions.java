@@ -44,7 +44,7 @@ public class Transactions{
         try{
             st.getConnection().setAutoCommit(true);
             PreparedStatement ps = st.getConnection().prepareStatement(query);
-            System.out.println(ps.execute());
+            ps.execute();
             hStats.incOperation();
             //rs = st.executeQuery(query);
             /*
@@ -94,7 +94,7 @@ public class Transactions{
             PreparedStatement ps2a = st.getConnection().prepareStatement(query2a);
             PreparedStatement ps2b = st.getConnection().prepareStatement(query2b);
 
-            System.out.println(ps1.execute());
+            ps1.execute();
             hStats.incOperation();
             rs = ps2a.executeQuery();
             hStats.incOperation();
