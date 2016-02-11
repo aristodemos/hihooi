@@ -20,7 +20,7 @@ public class BenchDriver {
 
     private static int  NUM_OF_THREADS  = 4;
     private static long TIME_TO_RUN     = 1L;
-    private static String WORKLOAD_MIX  = "d";
+    private static String WORKLOAD_MIX  = "f";
     static Connection s_conn = null;
     static  boolean   share_connection = false;
     static String url = "jdbc:postgresql://dicl09.cut.ac.cy/tpce";
@@ -71,6 +71,16 @@ public class BenchDriver {
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
+
+            for (Future<String> f: listFut){
+                try {
+                    System.out.println("Session response "+f.get());
+                }
+                catch(Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+
             for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
                 WorkerThread wt = (WorkerThread) iterator.next();
                 String name = wt.toString();

@@ -15,8 +15,8 @@ public class hWorkerThread implements Callable<String> {
     private int consistency_mode;
     private String workload_mix;
 
-    hWorkerThread(hihTransactions transactions, hMarketThread market, int const_mode, BenStatistics stats, String mix){
-        this.transactions = transactions;
+    hWorkerThread (hMarketThread market, int const_mode, BenStatistics stats, String mix){
+        this.transactions = new hihTransactions(stats);
         this.market = market;
         this.consistency_mode = const_mode;
         this.util = new hihUtil(stats);
@@ -54,6 +54,7 @@ public class hWorkerThread implements Callable<String> {
         }
         catch(Exception e){
             e.printStackTrace();
+            this.terminate();
             util.DISCONNECT();
             return "Thread " + Thread.currentThread().getName()+ " got Exception: " + e;
         }

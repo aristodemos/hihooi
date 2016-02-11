@@ -13,8 +13,8 @@ public class hMarketThread extends Thread{
     hihTransactions transactions;
     private hihUtil util;// = new hihUtil();
 
-    hMarketThread(hihTransactions trans, int consistency_mode, BenStatistics stats){
-        this.transactions = trans;
+    hMarketThread(int consistency_mode, BenStatistics stats){
+        this.transactions = new hihTransactions(stats);
         this.util = new hihUtil(stats);
         System.out.println("Market Thread: " + util.CONNECT());
         util.setConsistency(consistency_mode);

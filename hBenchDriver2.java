@@ -17,7 +17,7 @@ public class hBenchDriver2 {
     private static int      NUM_OF_THREADS      = 4;
     private static long     TIME_TO_RUN         = 5L;
     private static int      CONSISTENCY_MODE    = 1;
-    private static String   WORKLOAD_MIX        = "f";
+    private static String   WORKLOAD_MIX        = "z";
     static BenStatistics statistics = new BenStatistics();
     static hihTransactions transactions = new hihTransactions(statistics);
 
@@ -49,7 +49,7 @@ public class hBenchDriver2 {
         }
 
 
-        hMarketThread marketThread = new hMarketThread(transactions, CONSISTENCY_MODE, statistics);
+        hMarketThread marketThread = new hMarketThread(CONSISTENCY_MODE, statistics);
         marketThread.start();
         System.out.println("Market Thread started");
 
@@ -58,7 +58,7 @@ public class hBenchDriver2 {
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
             List<Future<String>> list = new ArrayList<Future<String>>();
 
-            Callable<String> callable = new hWorkerThread(transactions, marketThread, CONSISTENCY_MODE, statistics, WORKLOAD_MIX);
+            Callable<String> callable = new hWorkerThread(marketThread, CONSISTENCY_MODE, statistics, WORKLOAD_MIX);
             //Callable<String> callable = new  TestHihooiDriver();
             for(int i=0; i< NUM_OF_THREADS; i++) {
                 //submit Callable tasks to be executed by thread pool
