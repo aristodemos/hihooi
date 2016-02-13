@@ -11,10 +11,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class hBenchDriver {
 
-    private static int      NUM_OF_THREADS      = 4;
+    private static int      NUM_OF_THREADS      = 8;
     private static long     TIME_TO_RUN         = 1L;
     private static int      CONSISTENCY_MODE    = 1;
-    private static String   WORKLOAD_MIX        = "f";
+    private static String   WORKLOAD_MIX        = "a";
 
     static BenStatistics statistics = new BenStatistics();
     //hihTransactions transactions = new hihTransactions(statistics);

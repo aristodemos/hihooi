@@ -17,7 +17,7 @@ public class hihUtil {
     public static PrintWriter logWriter = null;
     private static long nextSeq = 200000000999999L;
     private static boolean  DEBUG   = true; //print transactions to file and other msgs on system.out
-    private HiHListenerClient2 hih;
+    public HiHListenerClient2 hih;
 
     hihUtil(BenStatistics s){
         this.stats = s;

@@ -18,7 +18,7 @@ public class hMarketThread extends Thread{
         this.util = new hihUtil(stats);
         System.out.println("Market Thread: " + util.CONNECT());
         util.setConsistency(consistency_mode);
-        util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
+        //util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
     }
 
     private volatile boolean running = true;

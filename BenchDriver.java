@@ -18,9 +18,9 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class BenchDriver {
 
-    private static int  NUM_OF_THREADS  = 4;
+    private static int  NUM_OF_THREADS  = 8;
     private static long TIME_TO_RUN     = 1L;
-    private static String WORKLOAD_MIX  = "f";
+    private static String WORKLOAD_MIX  = "a";
     static Connection s_conn = null;
     static  boolean   share_connection = false;
     static String url = "jdbc:postgresql://dicl09.cut.ac.cy/tpce";
@@ -29,6 +29,7 @@ public class BenchDriver {
 
     static BenStatistics statistics = new BenStatistics();
     static Transactions transactions = new Transactions(statistics);
+    static testTransj trans = new testTransj(statistics);
 
     public static void main (String args[]){
         hihSerializedData.initParams();
@@ -66,7 +67,7 @@ public class BenchDriver {
             // Create Worker threads
             Collection<WorkerThread> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, marketThread, WORKLOAD_MIX));
+                workerThreadsList.add(new WorkerThread(url, user, pass, trans, marketThread, WORKLOAD_MIX));
             }
 
             ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);

@@ -8,7 +8,8 @@ import java.util.concurrent.Callable;
  */
 public class hWorkerThread implements Callable<String> {
 
-    private static hihTransactions transactions;
+    //private static hihTransactions transactions;
+    private  testTrans transactions;
     private static hMarketThread market;
 
     private hihUtil util;
@@ -16,7 +17,8 @@ public class hWorkerThread implements Callable<String> {
     private String workload_mix;
 
     hWorkerThread (hMarketThread market, int const_mode, BenStatistics stats, String mix){
-        this.transactions = new hihTransactions(stats);
+        //this.transactions = new hihTransactions(stats);
+        this.transactions = new testTrans(stats);
         this.market = market;
         this.consistency_mode = const_mode;
         this.util = new hihUtil(stats);
@@ -60,7 +62,7 @@ public class hWorkerThread implements Callable<String> {
         }
     }
 
-    static void DoTxn(hihUtil util, String txnFrame){
+     void DoTxn(hihUtil util, String txnFrame){
         switch (txnFrame){
             case "BrokerVolume":
                 transactions.brokerVolumeFrame(util);
@@ -84,7 +86,7 @@ public class hWorkerThread implements Callable<String> {
                 break;
             case "TradeOrder":
                 String trInput[] = new String[2];
-                trInput = transactions.tradeOrder(util);
+                //trInput = transactions.tradeOrder(util);
                 if(trInput[0]!="" && trInput[1]!=""){
                     market.queue.add("TradeResult|"+trInput[0]+"|"+trInput[1]);
                 }

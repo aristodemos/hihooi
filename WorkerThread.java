@@ -14,10 +14,20 @@ import java.util.concurrent.Callable;
 public class WorkerThread implements Callable<String>{
 
     private String url, user, pass;
-    private static Transactions transactions;
+    private static Transactions transactions_original;
+    private static testTransj transactions;
     private static MarketThread market;
     private static String workload_mix;
     WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market, String mix){
+        this.url = url;
+        this.pass = pass;
+        this.user = user;
+        this.transactions_original = transactions;
+        this.market = market;
+        this.workload_mix = mix;
+    }
+
+    WorkerThread(String url, String user, String pass, testTransj transactions, MarketThread market, String mix){
         this.url = url;
         this.pass = pass;
         this.user = user;
@@ -87,7 +97,7 @@ public class WorkerThread implements Callable<String>{
                 break;
             case "TradeOrder":
                 String trInput[] = new String[2];
-                trInput = transactions.tradeOrder(st);
+               // trInput = transactions.tradeOrder(st);
                 if(trInput[0]!="" && trInput[1]!=""){
                     try {
                         market.queue.put("TradeResult|"+trInput[0]+"|"+trInput[1]);
