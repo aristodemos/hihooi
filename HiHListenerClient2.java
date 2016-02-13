@@ -327,19 +327,22 @@ public class HiHListenerClient2
         else
         {
 
-            String xml_create_session =""+
-                    "<?xml version=\"1.0\"?>" +
-                    "<root>" +
-                    "<RequestType>Execute Query</RequestType>" +
-                    "<query>" +
-                    "	<service-name>"+this.SERVICE_NAME+"</service-name>" +
-                    "	<session-id>"+this.SESSION_ID+"</session-id>" +
-                    "	<statement>"+XMLEscapeConverter(query)+"</statement>" +
-                    "</query>"+
-                    "</root>";
+            String message="SELECT"+"::"+query;
+				/*
+				String xml_create_session =""+
+	         			"<?xml version=\"1.0\"?>" +
+	     				"<root>" +
+	     				"<RequestType>Execute Query</RequestType>" +
+        				"<query>" +
+         				"	<service-name>"+this.SERVICE_NAME+"</service-name>" +
+         				"	<session-id>"+this.SESSION_ID+"</session-id>" +
+         				"	<statement>"+XMLEscapeConverter(query)+"</statement>" +
+          				"</query>"+
+	     				"</root>";
+	     		  */
             try
             {
-                out.println(xml_create_session);
+                out.println(message);
                 serverResponse=in.readLine();
                 if (serverResponse.equalsIgnoreCase("START DATA"))
                 {
@@ -351,8 +354,11 @@ public class HiHListenerClient2
                         /////System.out.println("serverResponse: "+serverResponse);////
                         if (!serverResponse.startsWith("END DATA"))
                         {
+                            System.out.println(serverResponse);
+
                             Map<String, Object> columns = parseXML(serverResponse,"row");
                             rows.add(columns);
+
                         }
                     }
                 }
@@ -369,6 +375,46 @@ public class HiHListenerClient2
 
     //####################################################################################################################################################
     //####################################################################################################################################################
+    public void OnlineExecuteQuery(String query)
+    {
+        String serverResponse="";
+        if (!CONNECTED)
+        {
+            System.out.println("You are no connected");
+        }
+        else
+        {
+
+            String message="SELECT"+"::"+query;
+            try
+            {
+                out.println(message);
+                serverResponse=in.readLine();
+                if (serverResponse.equalsIgnoreCase("START DATA"))
+                {
+                    int i=0;
+                    while (!serverResponse.equalsIgnoreCase("END DATA"))
+                    {
+                        i++;
+                        serverResponse=in.readLine();
+                        if (!serverResponse.startsWith("END DATA"))
+                        {
+                            System.out.println(serverResponse);
+                        }
+                    }
+                }
+
+            }
+            catch(Exception e)
+            {
+                System.out.println(new Date()+ e.getMessage());
+            }
+
+        }
+
+    }
+    //####################################################################################################################################################
+//####################################################################################################################################################
     private Vector getColumnList(String xml_data,String elementTag)
     {
         //System.out.println(xml_data);
@@ -740,3 +786,4 @@ public class HiHListenerClient2
         //###########################################################################################################
     }
 }
+
