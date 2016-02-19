@@ -399,7 +399,7 @@ public class HiHListenerClient2
                         serverResponse=in.readLine();
                         if (!serverResponse.startsWith("END DATA"))
                         {
-                            System.out.println(serverResponse);
+                            //System.out.println(serverResponse);
                         }
                     }
                 }
