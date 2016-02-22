@@ -4,7 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
+
+
 
 /**
  * Created by mariosp on 6/2/16.
@@ -17,12 +18,15 @@ public class hBenchDriver {
     private static String   WORKLOAD_MIX        = "a";
 
     static BenStatistics statistics = new BenStatistics();
-    //hihTransactions transactions = new hihTransactions(statistics);
+    static hihTransactions transactions = new hihTransactions(statistics);
 
 
     public static void main (String args[]){
+        //initialize system metrics
         hihSerializedData.initParams();
         Long startTime = System.currentTimeMillis();
+
+
 
         if (args.length > 4)
         {
@@ -35,17 +39,23 @@ public class hBenchDriver {
         if (args.length > 0) {
             NUM_OF_THREADS = Integer.parseInt(args[0]);
             System.out.println("Number of Threads: " + NUM_OF_THREADS);
+
             TIME_TO_RUN = Long.parseLong(args[1]);
             System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
+
             CONSISTENCY_MODE = Integer.parseInt(args[2]);
+            System.out.println("Consistency Mode: " + CONSISTENCY_MODE);
+
             WORKLOAD_MIX = args[3];
             System.out.println("Consistency mode : " + CONSISTENCY_MODE);
+
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             Date date = new Date();
             System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
         }
 
         hMarketThread marketThread = new hMarketThread(CONSISTENCY_MODE, statistics);
+        //hMarketThread marketThread = null;
 
         try{
             //Start Market Thread
@@ -58,7 +68,8 @@ public class hBenchDriver {
             Collection<hWorkerThread> workerThreadsList = new ArrayList<>();
 
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new hWorkerThread(marketThread, CONSISTENCY_MODE, statistics, WORKLOAD_MIX));
+                workerThreadsList.add(new hWorkerThread(marketThread, transactions, statistics, CONSISTENCY_MODE,
+                        WORKLOAD_MIX));
             }
 
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
@@ -66,12 +77,9 @@ public class hBenchDriver {
             for (Future<String> f: listFut){
                 try {
                     System.out.println("Session response "+f.get());
-                }
-                catch(Exception e) {
-                    //e.printStackTrace();
-                }
+                }catch(Exception e) {//e.printStackTrace();
+                     }
             }
-
             for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
                 hWorkerThread wt = (hWorkerThread) iterator.next();
                 //String name = wt.toString();

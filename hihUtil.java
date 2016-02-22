@@ -16,7 +16,7 @@ public class hihUtil {
     BenStatistics stats;// = new BenStatistics();
     public static PrintWriter logWriter = null;
     private static long nextSeq = 200000000999999L;
-    private static boolean  DEBUG   = true; //print transactions to file and other msgs on system.out
+    private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
     public HiHListenerClient2 hih;
 
     hihUtil(BenStatistics s){
