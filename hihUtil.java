@@ -17,11 +17,11 @@ public class hihUtil {
     public static PrintWriter logWriter = null;
     private static long nextSeq = 200000000999999L;
     private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
-    public HiHListenerClient2 hih;
+    public HiHListenerClient hih;
 
     hihUtil(BenStatistics s){
         this.stats = s;
-        this.hih = new HiHListenerClient2();
+        this.hih = new HiHListenerClient();
 
         if (DEBUG){
             String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
