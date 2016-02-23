@@ -17,11 +17,11 @@ public class hihUtil {
     public static PrintWriter logWriter = null;
     private static long nextSeq = 200000000999999L;
     private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
-    public HiHListenerClient hih;
+    public HiHListenerClient2 hih;
 
     hihUtil(BenStatistics s){
         this.stats = s;
-        this.hih = new HiHListenerClient();
+        this.hih = new HiHListenerClient2();
 
         if (DEBUG){
             String timeStamp = new SimpleDateFormat("yy.MM.dd.HH.mm.ss").format(new java.util.Date());
@@ -76,6 +76,7 @@ public class hihUtil {
         }
         if (DEBUG){logWriter.println(output);}
         stats.incOperation();
+        //System.out.println("EXEC_QUERY: +"+SQL + output);
         return output;
     }
 
@@ -95,6 +96,7 @@ public class hihUtil {
         }
         if (DEBUG){logWriter.println(resultOut);}
         stats.incOperation();
+        //System.out.println("QUERY: +"+SQL+output);
         return resultOut;
     }
 
@@ -110,6 +112,7 @@ public class hihUtil {
         }
         if (DEBUG){logWriter.println(results);}
         stats.incOperation();
+        //System.out.println("QUERY 2 MAP :+"+SQL + results);
         return results;
     }
 
@@ -127,6 +130,7 @@ public class hihUtil {
         }
         if (DEBUG){logWriter.println(rows);}
         stats.incOperation();
+        //System.out.println("QUERY 2 LIST: +"+ SQL +rows);
         return rows;
     }
 

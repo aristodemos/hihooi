@@ -18,8 +18,16 @@ public class hMarketThread extends Thread{
         this.util = new hihUtil(stats);
         System.out.println("Market Thread: " + util.CONNECT());
         util.setConsistency(consistency_mode);
-        util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade") + "L"));
+        util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
     }
+
+    /*public static String displayCharValues(String s) {
+            StringBuilder sb = new StringBuilder();
+            for (char c : s.toCharArray()) {
+                sb.append((int) c).append(",");
+            }
+            return sb.toString();
+        }*/
 
     private volatile boolean running = true;
 

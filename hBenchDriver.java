@@ -12,7 +12,7 @@ import java.util.concurrent.*;
  */
 public class hBenchDriver {
 
-    private static int      NUM_OF_THREADS      = 8;
+    private static int      NUM_OF_THREADS      = 1;
     private static long     TIME_TO_RUN         = 1L;
     private static int      CONSISTENCY_MODE    = 1;
     private static String   WORKLOAD_MIX        = "a";

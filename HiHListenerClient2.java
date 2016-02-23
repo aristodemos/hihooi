@@ -2,13 +2,7 @@ package hih;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -346,7 +340,9 @@ public class HiHListenerClient2
                 serverResponse=in.readLine();
                 if (serverResponse.equalsIgnoreCase("START DATA"))
                 {
-                    int i=0;
+                    int i=-1;
+                    Map<String, Object> columns = new HashMap<>();
+                    List<String> cols = new ArrayList<String>();
                     while (!serverResponse.equalsIgnoreCase("END DATA"))
                     {
                         i++;
@@ -354,11 +350,28 @@ public class HiHListenerClient2
                         /////System.out.println("serverResponse: "+serverResponse);////
                         if (!serverResponse.startsWith("END DATA"))
                         {
-                            System.out.println(serverResponse);
+                            //System.out.println(serverResponse);
+                            //Map<String, Object> columns = parseXML(serverResponse,"row");
+                            //rows.add(columns);
 
-                            Map<String, Object> columns = parseXML(serverResponse,"row");
-                            rows.add(columns);
+                            //Aris edit:
 
+
+                            if (serverResponse.startsWith("COLUMN")){
+                                cols.add(i, serverResponse.split("::")[1]);
+                                //columns.put(serverResponse.split("::")[1], null);
+                                /*cols.add(i,serverResponse.split("::")[1]);
+                                //cols = parseLine(serverResponse);
+                                for (String column_name : cols){
+                                    columns.put(column_name, null);
+                                }*/
+                            }
+                            else{
+                                for (int j=0;j<cols.size();j++){
+                                    columns.put(cols.get(j),serverResponse.split("::")[j+1]);
+                                    rows.add(columns);
+                                }
+                            }
                         }
                     }
                 }
@@ -371,6 +384,13 @@ public class HiHListenerClient2
 
         }
         return rows;
+    }
+
+    public List<String> parseLine(String s){
+        //List<String> items = Arrays.asList(s.split("\\s*,\\s*"));
+        List<String> items = Arrays.asList(s.split("::"));
+        items.remove(0);
+        return items;
     }
 
     //####################################################################################################################################################
