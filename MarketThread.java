@@ -15,11 +15,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class MarketThread extends Thread {
 
     //List<String> objs = new ArrayList<String>();//init it
-    public BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
 
+    BlockingQueue<String> queue ;//= new LinkedBlockingQueue<String>();
     String url, pass, user;
     Transactions transactions;
-    hihTransactions htransactions;
     Connection conn;
     Statement statement;
 
@@ -29,6 +28,26 @@ public class MarketThread extends Thread {
         this.url = url;
         this.pass = pass;
         this.user = user;
+        //this.queue = new LinkedBlockingQueue<String>();
+        try{
+            conn = DriverManager.getConnection(url, user, pass);
+            this.statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery("select max(t_id) from trade");
+            if (rs.next()){
+                transactions.setNextSeq(rs.getLong("max"));
+            }
+
+        }
+        catch (SQLException e){e.printStackTrace();}
+
+    }
+    MarketThread(String url ,String user, String pass, Transactions trans, BlockingQueue<String> bq){
+        this.setName("Market Thread");
+        this.transactions = trans;
+        this.url = url;
+        this.pass = pass;
+        this.user = user;
+        this.queue = bq;
         try{
             conn = DriverManager.getConnection(url, user, pass);
             this.statement = conn.createStatement();
@@ -46,8 +65,8 @@ public class MarketThread extends Thread {
 
     public void terminate() {
         running = false;
-        System.out.println("Market Thead Stopped");
-        queue = null;
+        System.out.println("Market Thread Stopped");
+        BenchDriver.queue = null;
         try{
             conn.rollback();
             conn.close();}

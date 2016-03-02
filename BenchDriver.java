@@ -5,13 +5,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.concurrent.atomic.AtomicLong;
+import java.io.*;
+//import java.io.FileNotFoundException;
+//import java.io.UnsupportedEncodingException;
+import java.io.PrintWriter;
 
 /**
  * Created by mariosp on 23/1/16.
@@ -19,28 +19,34 @@ import java.util.concurrent.atomic.AtomicLong;
 public class BenchDriver {
 
     private static int  NUM_OF_THREADS  = 8;
-    private static long TIME_TO_RUN     = 1L;
-    private static String WORKLOAD_MIX  = "a";
+    private static long TIME_TO_RUN     = 20L;
+    private static String WORKLOAD_MIX  = "d";
     static Connection s_conn = null;
     static  boolean   share_connection = false;
-    static String url = "jdbc:postgresql://dicl09.cut.ac.cy/tpce";
-    static String user = "postgres";
+    //static String url = "jdbc:postgresql://dicl09.cut.ac.cy/tpce";
+    static String url = "jdbc:postgresql://localhost/tpce";
+    static String user = "mariosp";
     static String pass = "";
 
     static BenStatistics statistics = new BenStatistics();
     static Transactions transactions = new Transactions(statistics);
-    static testTransj trans = new testTransj(statistics);
+    //static testTransj trans = new testTransj(statistics);
+
+    static BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+
+    public static PrintWriter tpsLog = null;
+    public static PrintWriter delaysLog = null;
 
     public static void main (String args[]){
         hihSerializedData.initParams();
         Long startTime = System.currentTimeMillis();
 
+        File tps = new File ("tpsLog.txt");
+        File delays = new File ("delays.txt");
         //TODO: Create Market Thread
-        //Market Threads executed all MarketFeed and TradeResult Transactions;
-        //The rest are handled by the WorkerThreads
-        MarketThread marketThread = new MarketThread(url, user, pass, transactions);
-        System.out.println("Market Thread started");
-        marketThread.start();
+        //Market Threads are now in the same pool as the worker threads
+        //just remember to extend BenchThread class
+
 
         try{
             /* Load the JDBC driver */
@@ -59,18 +65,38 @@ public class BenchDriver {
                 TIME_TO_RUN = Long.parseLong(args[1]);
                 WORKLOAD_MIX = args[2];
                 System.out.println("Test will run for: " + TIME_TO_RUN + " minutes.");
-                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                Date date = new Date();
-                System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
             }
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            Date date = new Date();
+            System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
+
+            //TODO: Create Directory to save results
+            //Create transaction Log File
+            //Remember to close it
+            String timeStamp = dateFormat.format(date);
+            try{
+                delaysLog   = new PrintWriter(delays);
+                tpsLog      = new PrintWriter(tps);
+            }catch (FileNotFoundException err){
+                err.printStackTrace();
+                System.out.println("FileNOTfound " + err.getMessage());
+            }
+            ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+            exec.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {tpsLog.print(statistics.totalTxns() + "\r\n");}
+            }, 0, 5, TimeUnit.SECONDS);
 
             // Create Worker threads
-            Collection<WorkerThread> workerThreadsList = new ArrayList<>();
+            Collection<Callable<String>> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new WorkerThread(url, user, pass, trans, marketThread, WORKLOAD_MIX));
+                workerThreadsList.add(new WorkerThread(url, user, pass, transactions, queue, WORKLOAD_MIX));
+            }
+            for (int i = 0; i < 2; i++) {
+                workerThreadsList.add(new MarketThreadC(url, user, pass, transactions, queue));
             }
 
-            ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+            ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS+2);
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
 
             for (Future<String> f: listFut){
@@ -78,23 +104,59 @@ public class BenchDriver {
                     System.out.println("Session response "+f.get());
                 }
                 catch(Exception e) {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
 
+
             for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
-                WorkerThread wt = (WorkerThread) iterator.next();
+                BenchThread wt = (BenchThread) iterator.next();
                 String name = wt.toString();
                 wt.terminate();
                 System.out.println("Terminating worker thread ... " + name);
             }
+
             pool.shutdownNow();
-            marketThread.terminate();
-            marketThread.join();
+            exec.shutdownNow();
+            while (!exec.isShutdown()){
+                exec.awaitTermination(10L, TimeUnit.MILLISECONDS);
+            }
+            //TODO: Single Market Thread
+            //marketThread.terminate();
+            //marketThread.join();
         }
         catch(Exception e){
             e.printStackTrace();
+            //marketThread.terminate();
         }
+
+        //Close the transaction Log File
+        System.out.println("Closing Print Writers...");
+
+        try {
+            for (int k=0;k<statistics.groupSize;k++){
+                delaysLog.print(statistics.txnPoolMaster.get(k).toString());
+                delaysLog.println(statistics.groupDelays.get(k));
+            }
+            /*
+            delaysLog.print(statistics.txnPoolMaster.get(1).toString());
+            delaysLog.println(statistics.groupDelays.get(1));
+            delaysLog.print(statistics.txnPoolMaster.get(2).toString());
+            delaysLog.println(statistics.groupDelays.get(2));
+            delaysLog.print(statistics.txnPoolMaster.get(3).toString());
+            delaysLog.println(statistics.groupDelays.get(3));
+            delaysLog.print(statistics.txnPoolMaster.get(0).toString());
+            delaysLog.println(statistics.groupDelays.get(0));
+            delaysLog.print(statistics.txnPoolMaster.get(4).toString());
+            delaysLog.println(statistics.groupDelays.get(4));
+            delaysLog.print(statistics.txnPoolMaster.get(5).toString());
+            delaysLog.println(statistics.groupDelays.get(5));
+            delaysLog.print(statistics.txnPoolMaster.get(6).toString());
+            delaysLog.println(statistics.groupDelays.get(6));
+            */
+            if (!tpsLog.equals(null)) tpsLog.close();
+            if (!delaysLog.equals(null)) delaysLog.close();
+        }catch (Exception e){e.printStackTrace();}
 
         Long duration = System.currentTimeMillis() - startTime;
         System.out.println("#############################################################");

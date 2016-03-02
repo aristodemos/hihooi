@@ -1,23 +1,33 @@
 package hih;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 
 /**
  * Created by mariosp on 6/2/16.
  */
-public class hWorkerThread implements Callable<String> {
+public class hWorkerThread extends BenchThread implements Callable<String> {
 
     private static hihTransactions transactions;
     //private  testTrans transactions;
     private static hMarketThread market;
-
+    static BlockingQueue<String> queue;
     private hihUtil util;
     private int consistency_mode;
     private String workload_mix;
 
     hWorkerThread (hMarketThread market, hihTransactions txns, BenStatistics stats, int const_mode, String mix){
         this.transactions = txns;
+        //this.transactions = new testTrans(stats);
+        this.market = market;
+        this.consistency_mode = const_mode;
+        this.util = new hihUtil(stats);
+        this.workload_mix = mix;
+    }
+    hWorkerThread (BlockingQueue<String> bq, hihTransactions txns, BenStatistics stats, int const_mode, String mix){
+        this.transactions = txns;
+        this.queue=bq;
         //this.transactions = new testTrans(stats);
         this.market = market;
         this.consistency_mode = const_mode;
@@ -74,7 +84,8 @@ public class hWorkerThread implements Callable<String> {
             case "MarketFeed":
                 //transactions.marketFeedFrame(st);
                 try {
-                    market.queue.put("MarketFeed|");
+                   //market.queue.put("MarketFeed|");
+                    queue.put("MarketFeed|");
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
@@ -89,7 +100,8 @@ public class hWorkerThread implements Callable<String> {
                 String trInput[]; // = new String[2];
                 trInput = transactions.tradeOrder(util);
                 if(trInput[0]!="" && trInput[1]!=""){
-                    market.queue.add("TradeResult|"+trInput[0]+"|"+trInput[1]);
+                    //market.queue.add("TradeResult|"+trInput[0]+"|"+trInput[1]);
+                    queue.add("TradeResult|"+trInput[0]+"|"+trInput[1]);
                 }
                 break;
             default:

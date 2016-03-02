@@ -20,7 +20,7 @@ public class Transactions{
 
     public void setNextSeq(long next){
         nextSeq=next+1;
-        System.out.println("SET SEQUENCE NUMBER to "+nextSeq);
+        //System.out.println("SET SEQUENCE NUMBER to "+nextSeq);
     }
 
     public void brokerVolumeFrame(Statement st){
@@ -58,6 +58,7 @@ public class Transactions{
         long endTime = System.currentTimeMillis();
         hStats.increment(0);
         hStats.insertTime(0, endTime - startTime);
+        hStats.groupDelays.get(0).add(endTime - startTime);
     }
 
     public void customerPositionFrame(Statement st) {
@@ -119,6 +120,7 @@ public class Transactions{
         }
         long endTime = System.currentTimeMillis();
         hStats.insertTime(1, endTime - startTime);
+        hStats.groupDelays.get(1).add(endTime - startTime);
         hStats.increment(1);
     }
 
@@ -257,6 +259,7 @@ public class Transactions{
         }
         long endTime = System.currentTimeMillis();
         hStats.insertTime(2, endTime-startTime);
+        hStats.groupDelays.get(2).add(endTime - startTime);
         hStats.increment(2);
     }
 
@@ -298,6 +301,7 @@ public class Transactions{
         }
         long endTime = System.currentTimeMillis();
         hStats.insertTime(5, endTime-startTime);
+        hStats.groupDelays.get(5).add(endTime - startTime);
         hStats.increment(5);
     }
 
@@ -486,6 +490,7 @@ public class Transactions{
         }
         long endTimer = System.currentTimeMillis();
         hStats.insertTime(6, endTimer-startTime);
+        hStats.groupDelays.get(6).add(endTimer - startTime);
         hStats.increment(6);
     }
 
@@ -813,6 +818,7 @@ public class Transactions{
         hStats.increment(3);
         long endTime = System.currentTimeMillis();
         hStats.insertTime(3, endTime - startTime);
+        hStats.groupDelays.get(3).add(endTime - startTime);
         return toResult;
     }
 
@@ -1194,11 +1200,11 @@ public class Transactions{
                     st.executeUpdate(trFrame2_4a);
                     hStats.incWriteOp();
 
-                    String trFrame2_7a = String.format(
+                    String trFrame2_7a = String.format(Locale.ENGLISH,
                             "INSERT INTO holding(h_t_id, h_ca_id, h_s_symb, h_dts, h_price, " +
                                     "                    h_qty) " +
                                     "VALUES (%s, %s, '%s', '%s', %f, %d)",
-                            trade_id, acct_id, symbol, trade_dts, trade_price, needed_qty);
+                            trade_id, acct_id, symbol, trade_dts, ((float) trade_price), needed_qty);
                     st.executeUpdate(trFrame2_7a);
                     hStats.incWriteOp();
                 }
@@ -1230,8 +1236,9 @@ public class Transactions{
 
             String trFrame3_2 = String.format(
                     "UPDATE trade " +
-                            "SET t_tax = %f " +
-                            "WHERE t_id = %s", tax_amount, trade_id);
+                            "SET t_tax = '%s' " +
+                            "WHERE t_id = %s", String.valueOf(tax_amount), trade_id);
+            //st.executeQuery(String.format("select * from trade where t_id = %s",trade_id));
             st.executeUpdate(trFrame3_2);
             hStats.incWriteOp();
 
@@ -1285,7 +1292,7 @@ public class Transactions{
             //END OF FRAME 4
             //GO FOR FRAME 5
             String st_completed_id = "CMPT";
-            String trFrame5_1 = String.format(
+            String trFrame5_1 = String.format(Locale.ENGLISH,
                     "UPDATE trade " +
                             "SET t_comm = %f, " +
                             "    t_dts = '%s', " +
@@ -1301,7 +1308,7 @@ public class Transactions{
             st.executeUpdate(trFrame5_2);
             hStats.incWriteOp();
 
-            String trFrame5_3 = String.format(
+            String trFrame5_3 = String.format(Locale.ENGLISH,
                     "UPDATE broker " +
                             "SET b_comm_total = b_comm_total + %f, " +
                             "    b_num_trades = b_num_trades + 1 " +
@@ -1324,14 +1331,14 @@ public class Transactions{
                 se_amount = se_amount - tax_amount;
             }
 
-            String trFrame6_1 = String.format(
+            String trFrame6_1 = String.format(Locale.ENGLISH,
                     "INSERT INTO settlement(se_t_id, se_cash_type, se_cash_due_date,  " +
                             "                       se_amt) " +
                             "VALUES (%s, '%s', '%s', %f)", trade_id, cash_type, due_date, se_amount);
             st.executeUpdate(trFrame6_1);
             hStats.incWriteOp();
 
-            String trFrame6_2 = String.format(
+            String trFrame6_2 = String.format(Locale.ENGLISH,
                     "UPDATE customer_account " +
                             "SET ca_bal = ca_bal + (%f) " +
                             "WHERE ca_id = %s", se_amount, acct_id);
@@ -1351,7 +1358,7 @@ public class Transactions{
                 default: type_name = "Stop-Loss";
             }
             s_name = s_name.replace("'","");
-            String trFrame6_3 = String.format(
+            String trFrame6_3 = String.format(Locale.ENGLISH,
                     "INSERT INTO cash_transaction(ct_dts, ct_t_id, ct_amt, ct_name) " +
                             "VALUES ('%s', %s, %f, e'%s %s shared of %s')", trade_dts, trade_id, se_amount, type_name,
                     trade_qty, s_name);
@@ -1380,12 +1387,13 @@ public class Transactions{
                 st.getConnection().setAutoCommit(true);
                 rs.close(); rs = null;
             }catch (SQLException exc){
-                exc.printStackTrace();
+                //exc.printStackTrace();
             }
             return;
         }
         long endTime = System.currentTimeMillis();
         hStats.insertTime(4, endTime-startTime);
+        hStats.groupDelays.get(4).add(endTime - startTime);
         hStats.increment(4);
     }
 

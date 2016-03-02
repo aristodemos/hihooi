@@ -6,27 +6,42 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 
 /**
  * Created by mariosp on 23/1/16.
  */
-public class WorkerThread implements Callable<String>{
+public class WorkerThread extends BenchThread  implements Callable<String>{
 
     private String url, user, pass;
-    private static Transactions transactions_original;
-    private static testTransj transactions;
-    private static MarketThread market;
+    private static Transactions transactions;
+    //private static testTransj transactions_limited;
+    //private static MarketThread market;
+    private static BlockingQueue<String> queue;
     private static String workload_mix;
+
     WorkerThread(String url, String user, String pass, Transactions transactions, MarketThread market, String mix){
         this.url = url;
         this.pass = pass;
         this.user = user;
-        this.transactions_original = transactions;
-        this.market = market;
+        this.transactions = transactions;
+        //this.market = market;
+        //this.queue=market.queue;
         this.workload_mix = mix;
     }
 
+    WorkerThread(String url, String user, String pass, Transactions transactions, BlockingQueue<String> bq, String mix){
+        this.url = url;
+        this.pass = pass;
+        this.user = user;
+        this.transactions = transactions;
+        this.queue=bq;
+        this.workload_mix = mix;
+    }
+
+    /*
     WorkerThread(String url, String user, String pass, testTransj transactions, MarketThread market, String mix){
         this.url = url;
         this.pass = pass;
@@ -34,7 +49,7 @@ public class WorkerThread implements Callable<String>{
         this.transactions = transactions;
         this.market = market;
         this.workload_mix = mix;
-    }
+    }*/
 
     private volatile boolean running = true;
 
@@ -84,7 +99,8 @@ public class WorkerThread implements Callable<String>{
             case "MarketFeed":
                 //transactions.marketFeedFrame(st);
                 try {
-                    market.queue.put("MarketFeed|");
+                    queue.put("MarketFeed|");
+
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
@@ -97,10 +113,10 @@ public class WorkerThread implements Callable<String>{
                 break;
             case "TradeOrder":
                 String trInput[] = new String[2];
-               // trInput = transactions.tradeOrder(st);
+                trInput = transactions.tradeOrder(st);
                 if(trInput[0]!="" && trInput[1]!=""){
                     try {
-                        market.queue.put("TradeResult|"+trInput[0]+"|"+trInput[1]);
+                        queue.put("TradeResult|"+trInput[0]+"|"+trInput[1]);
                     }catch(InterruptedException e){
                         e.printStackTrace();
                     }

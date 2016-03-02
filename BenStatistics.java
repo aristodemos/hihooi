@@ -1,57 +1,48 @@
 package hih;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+
 
 /**
  * Created by mariosp on 31/1/16.
  */
 public class BenStatistics {
 
-    //The pool of transactions - we choose one at random
-    public List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
-            "TradeOrder", "TradeStatus", "SecurityDetail");
-
-    public long[] txnMix = new long[txnPoolMaster.size()+1];
-
-    /*
+    //constructor
     BenStatistics(){
-        for (int i=0; i<txnMix.length; i++){
-            txnMix[i] = new AtomicLong(0);
+        for (int i=0; i<groupSize; i++){
+            groupDelays.add(new ArrayList<Long>());
         }
     }
-    */
+    //The pool of transactions - we choose one at random
+    public List<String> txnPoolMaster = Arrays.asList("BrokerVolume", "CustomerPosition", "MarketFeed",
+            "TradeOrder","TradeResult", "TradeStatus", "SecurityDetail");
+    int groupSize = txnPoolMaster.size();
+    public long[] txnMix = new long[groupSize];
 
-
-    public long[] txnDuration 	= new long[txnPoolMaster.size()+1];
+    public long[] txnDuration 	= new long[groupSize];
+    public List<List<Long>>  groupDelays   = new ArrayList<List<Long>>(groupSize);
     private long totalOps = 0;
     private long writeOps = 0;
     //private final Object lock = new Object();
 
-    public void increment(int i){
-        //txnMix[i].incrementAndGet();
+    public void increment(int i) {
         txnMix[i]++;
     }
-
     public void incOperation(){
         totalOps++;
     }
     public void incWriteOp(){
         writeOps++;
         totalOps++;
+        //groupDelays.get(0).add(109L);
     }
-
     public void insertTime(int i, long timeInterval){
-        //synchronized (lock){
         txnDuration[i]=txnDuration[i]+timeInterval;
-        //}
     }
-
     public long totalTxns(){
-        //long sum =0;
-        //sum = sum + txnMix[0].get();
-        //return txnMix[0].get()+txnMix[1].get()+txnMix[2].get()+txnMix[3].get()+txnMix[4].get()+txnMix[5].get()+txnMix[6].get();
         return txnMix[0]+txnMix[1]+txnMix[2]+txnMix[3]+txnMix[4]+txnMix[5]+txnMix[6];
     }
     public long totalOps(){

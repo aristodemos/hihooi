@@ -1,5 +1,8 @@
 package hih;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -19,14 +22,17 @@ public class hBenchDriver {
 
     static BenStatistics statistics = new BenStatistics();
     static hihTransactions transactions = new hihTransactions(statistics);
-
+    static BlockingQueue<String> bq = new LinkedBlockingQueue<String>();
+    public static PrintWriter tpsLog = null;
+    public static PrintWriter delaysLog = null;
 
     public static void main (String args[]){
         //initialize system metrics
         hihSerializedData.initParams();
         Long startTime = System.currentTimeMillis();
 
-
+        File tps = new File ("tpsLog.txt");
+        File delays = new File ("delays.txt");
 
         if (args.length > 4)
         {
@@ -49,29 +55,47 @@ public class hBenchDriver {
             WORKLOAD_MIX = args[3];
             System.out.println("Consistency mode : " + CONSISTENCY_MODE);
 
-            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Date date = new Date();
-            System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
         }
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        System.out.println(dateFormat.format(date)); //2014/08/06 15:59:48
+        String timeStamp = dateFormat.format(date);
+        try{
+            delaysLog   = new PrintWriter(delays);
+            tpsLog      = new PrintWriter(tps);
+        }catch (FileNotFoundException err){
+            err.printStackTrace();
+            System.out.println("FileNOTfound " + err.getMessage());
+        }
+        ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+        exec.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                tpsLog.print(statistics.totalTxns() + "\r\n");
+            }
+        }, 0, 5, TimeUnit.SECONDS);
 
-        hMarketThread marketThread = new hMarketThread(CONSISTENCY_MODE, statistics);
+
+        //hMarketThread marketThread1 = new hMarketThread(CONSISTENCY_MODE, statistics, bq);
+        //hMarketThread marketThread2 = new hMarketThread(CONSISTENCY_MODE, statistics, bq);
         //hMarketThread marketThread = null;
 
         try{
             //Start Market Thread
-            marketThread.start();
-            System.out.println("Market Thread started");
+            //marketThread1.start();marketThread2.start();
 
             // Create Worker threads
-
-            ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
-            Collection<hWorkerThread> workerThreadsList = new ArrayList<>();
-
+            Collection<Callable<String>> workerThreadsList = new ArrayList<>();
             for (int i = 0; i < NUM_OF_THREADS; i++) {
-                workerThreadsList.add(new hWorkerThread(marketThread, transactions, statistics, CONSISTENCY_MODE,
+            //workerThreadsList.add(new hWorkerThread(marketThread,transactions,statistics,CONSISTENCY_MODE,WORKLOAD_MIX));
+                workerThreadsList.add(new hWorkerThread(bq, transactions, statistics, CONSISTENCY_MODE,
                         WORKLOAD_MIX));
             }
+            for (int i = 0; i < 2; i++) {
+                workerThreadsList.add(new hMarketThreadC(CONSISTENCY_MODE, statistics, bq));
+            }
 
+            ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
 
             for (Future<String> f: listFut){
@@ -81,23 +105,36 @@ public class hBenchDriver {
                      }
             }
             for (Iterator iterator = workerThreadsList.iterator(); iterator.hasNext();){
-                hWorkerThread wt = (hWorkerThread) iterator.next();
-                //String name = wt.toString();
+                BenchThread wt = (BenchThread) iterator.next();
+                String name = wt.toString();
                 wt.terminate();
-                //System.out.println("Terminating worker thread ... " + name);
+                System.out.println("Terminating thread ... " + name);
             }
             pool.shutdownNow();
             while (!pool.isTerminated()) {
                 //this can throw InterruptedException, you'll need to decide how to deal with that.
                 pool.awaitTermination(1,TimeUnit.MILLISECONDS);
             }
-            marketThread.terminate();
-            marketThread.join();
+            exec.shutdownNow();
+            while (!exec.isShutdown()){
+                exec.awaitTermination(10L, TimeUnit.MILLISECONDS);
+            }
         }
         catch(Exception e){
             e.printStackTrace();
-            marketThread.terminate();
+            //marketThread1.terminate();marketThread2.terminate();
         }
+        //Close the transaction Log File
+        System.out.println("Closing Print Writers...");
+
+        try {
+            for (int k=0;k<statistics.groupSize;k++){
+                delaysLog.print(statistics.txnPoolMaster.get(k).toString());
+                delaysLog.println(statistics.groupDelays.get(k));
+            }
+            if (!tpsLog.equals(null)) tpsLog.close();
+            if (!delaysLog.equals(null)) delaysLog.close();
+        }catch (Exception e){e.printStackTrace();}
 
         Long duration = System.currentTimeMillis() - startTime;
         System.out.println("#############################################################");
