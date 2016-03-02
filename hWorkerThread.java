@@ -12,7 +12,7 @@ public class hWorkerThread extends BenchThread implements Callable<String> {
     private static hihTransactions transactions;
     //private  testTrans transactions;
     private static hMarketThread market;
-    static BlockingQueue<String> queue;
+    private static BlockingQueue<String> queue;
     private hihUtil util;
     private int consistency_mode;
     private String workload_mix;
@@ -85,6 +85,7 @@ public class hWorkerThread extends BenchThread implements Callable<String> {
                 //transactions.marketFeedFrame(st);
                 try {
                    //market.queue.put("MarketFeed|");
+                    //System.out.println("Putting Market Feed in Queue");
                     queue.put("MarketFeed|");
                 }catch(InterruptedException e){
                     e.printStackTrace();
@@ -101,6 +102,7 @@ public class hWorkerThread extends BenchThread implements Callable<String> {
                 trInput = transactions.tradeOrder(util);
                 if(trInput[0]!="" && trInput[1]!=""){
                     //market.queue.add("TradeResult|"+trInput[0]+"|"+trInput[1]);
+                    //System.out.println("Putting Trade Result in Queue");
                     queue.add("TradeResult|"+trInput[0]+"|"+trInput[1]);
                 }
                 break;

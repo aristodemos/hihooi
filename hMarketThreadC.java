@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 /**
  * Created by mariosp on 2/3/16.
  */
-public class hMarketThreadC extends BenchDriver implements Callable<String> {
+public class hMarketThreadC extends BenchThread implements Callable<String> {
 
     BlockingQueue<String> queue;
     hihTransactions transactions;
@@ -16,9 +16,9 @@ public class hMarketThreadC extends BenchDriver implements Callable<String> {
         this.transactions = new hihTransactions(stats);
         this.queue = bq;
         this.util = new hihUtil(stats);
-        System.out.println("Market Thread: " + util.CONNECT());
+        System.out.println("Market Thread C: " + util.CONNECT());
         util.setConsistency(consistency_mode);
-        util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
+
     }
 
     private volatile boolean running = true;
@@ -26,15 +26,18 @@ public class hMarketThreadC extends BenchDriver implements Callable<String> {
     public void terminate() {
         running = false;
         util.DISCONNECT();
-        System.out.println("Market Thead Stopped");
+        System.out.println("Market Thread C Stopped");
     }
 
     public String call(){
         String msg;
+        util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
         while(running){
             while ((msg = queue.poll()) != null){
+                //System.out.println("_"+Thread.currentThread().getName() +  "received msg: " + msg);
                 DoMarketTxn(msg);
             }
+            //System.out.println("Q : : : : :" + queue);
         }
         return "Market Thread Finished!";
     }

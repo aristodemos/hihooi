@@ -18,14 +18,15 @@ import java.io.PrintWriter;
  */
 public class BenchDriver {
 
-    private static int  NUM_OF_THREADS  = 8;
-    private static long TIME_TO_RUN     = 20L;
+    private static int  NUM_OF_THREADS  = 4;
+    private static long TIME_TO_RUN     = 2L;
     private static String WORKLOAD_MIX  = "d";
     static Connection s_conn = null;
     static  boolean   share_connection = false;
-    //static String url = "jdbc:postgresql://dicl09.cut.ac.cy/tpce";
-    static String url = "jdbc:postgresql://localhost/tpce";
-    static String user = "mariosp";
+    static String url = "jdbc:postgresql://dicl09.cut.ac.cy/tpce";
+    //static String url = "jdbc:postgresql://localhost/tpce";
+    //static String user = "mariosp";
+    static String user = "postgres";
     static String pass = "";
 
     static BenStatistics statistics = new BenStatistics();

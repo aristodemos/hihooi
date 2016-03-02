@@ -186,17 +186,12 @@ public class hihUtil {
         switch(selector) {
             case "z":
                 for (int i=0; i<50;i++){
-                    pool.add("BrokerVolume");
+                    pool.add("TradeOrder");
                 }
-                for (int i=50; i<90;i++){
-                    pool.add("CustomerPosition");
-                }
-                for (int i=90; i<91;i++){
+                for (int i=50; i<61;i++){
                     pool.add("MarketFeed");
                 }
-                for (int i=91;i<100;i++){
-                    pool.add("SecurityDetail");
-                }
+
                 return randomSample(pool, pool.size());
             case "a":
                 for (int i=0; i<5;i++){

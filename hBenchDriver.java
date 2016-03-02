@@ -15,7 +15,7 @@ import java.util.concurrent.*;
  */
 public class hBenchDriver {
 
-    private static int      NUM_OF_THREADS      = 1;
+    private static int      NUM_OF_THREADS      = 2;
     private static long     TIME_TO_RUN         = 1L;
     private static int      CONSISTENCY_MODE    = 1;
     private static String   WORKLOAD_MIX        = "a";
@@ -53,7 +53,7 @@ public class hBenchDriver {
             System.out.println("Consistency Mode: " + CONSISTENCY_MODE);
 
             WORKLOAD_MIX = args[3];
-            System.out.println("Consistency mode : " + CONSISTENCY_MODE);
+            System.out.println("Workload Mix : " + WORKLOAD_MIX);
 
         }
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -91,11 +91,11 @@ public class hBenchDriver {
                 workerThreadsList.add(new hWorkerThread(bq, transactions, statistics, CONSISTENCY_MODE,
                         WORKLOAD_MIX));
             }
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 4; i++) {
                 workerThreadsList.add(new hMarketThreadC(CONSISTENCY_MODE, statistics, bq));
             }
 
-            ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS);
+            ExecutorService pool = Executors.newFixedThreadPool(NUM_OF_THREADS+4);
             List<Future<String>> listFut = pool.invokeAll(workerThreadsList, TIME_TO_RUN, TimeUnit.MINUTES);
 
             for (Future<String> f: listFut){
@@ -122,6 +122,7 @@ public class hBenchDriver {
         }
         catch(Exception e){
             e.printStackTrace();
+            exec.shutdownNow();
             //marketThread1.terminate();marketThread2.terminate();
         }
         //Close the transaction Log File
