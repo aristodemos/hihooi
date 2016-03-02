@@ -1,19 +1,18 @@
 package hih;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Callable;
 
 /**
- * Created by mariosp on 6/2/16.
+ * Created by mariosp on 2/3/16.
  */
-public class hMarketThread extends Thread{
-    //List<String> objs = new ArrayList<String>();//init it
-    //public BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+public class hMarketThreadC extends BenchDriver implements Callable<String> {
+
     BlockingQueue<String> queue;
     hihTransactions transactions;
-    private hihUtil util;// = new hihUtil();
+    private hihUtil util;
 
-    hMarketThread(int consistency_mode, BenStatistics stats, BlockingQueue<String> bq){
+    hMarketThreadC(int consistency_mode, BenStatistics stats, BlockingQueue<String> bq){
         this.transactions = new hihTransactions(stats);
         this.queue = bq;
         this.util = new hihUtil(stats);
@@ -21,14 +20,6 @@ public class hMarketThread extends Thread{
         util.setConsistency(consistency_mode);
         util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
     }
-
-    /*public static String displayCharValues(String s) {
-            StringBuilder sb = new StringBuilder();
-            for (char c : s.toCharArray()) {
-                sb.append((int) c).append(",");
-            }
-            return sb.toString();
-        }*/
 
     private volatile boolean running = true;
 
@@ -38,16 +29,14 @@ public class hMarketThread extends Thread{
         System.out.println("Market Thead Stopped");
     }
 
-    public void run(){
+    public String call(){
         String msg;
         while(running){
-            if (queue.size() < 1){Thread.currentThread().setPriority(Thread.NORM_PRIORITY);}
             while ((msg = queue.poll()) != null){
-                //System.out.println("_"+Thread.currentThread().getName() +  "received msg: " + msg);
-                Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                 DoMarketTxn(msg);
             }
         }
+        return "Market Thread Finished!";
     }
 
     void DoMarketTxn(String txnFrame){
