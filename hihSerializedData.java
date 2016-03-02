@@ -19,6 +19,8 @@ public class hihSerializedData {
     public static List all_acct_ids 					= new Vector(5000);
     public static Map<String, List<Double>> pricesDM 	= new HashMap<String, List<Double>>();
 
+    private static long nextSeq = 200000000999999L;
+
     public static void initParams() {
         /*
         all_brokers = dbObject.QUERY("select b_name from broker");
@@ -76,5 +78,14 @@ public class hihSerializedData {
             System.out.println("Cannot perform input");
         }
         return javaObject;
+    }
+
+    public static String getNextSeqNumber(){
+        return Long.toString(nextSeq++);
+    }
+
+    public static void setNextSeq(long next){
+        nextSeq=next+1;
+        System.out.println("SET SEQUENCE NUMBER to "+nextSeq);
     }
 }

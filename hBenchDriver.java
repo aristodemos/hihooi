@@ -29,6 +29,11 @@ public class hBenchDriver {
     public static void main (String args[]){
         //initialize system metrics
         hihSerializedData.initParams();
+
+        hihUtil initU = new hihUtil(statistics);
+        initU.CONNECT();
+        hihSerializedData.setNextSeq(Long.parseLong(initU.EXEC_QUERY("select max(t_id) from trade")));
+
         Long startTime = System.currentTimeMillis();
 
         File tps = new File ("tpsLog.txt");

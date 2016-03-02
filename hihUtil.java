@@ -15,7 +15,7 @@ public class hihUtil {
 
     BenStatistics stats;// = new BenStatistics();
     public static PrintWriter logWriter = null;
-    private static long nextSeq = 200000000999999L;
+
     private static boolean  DEBUG   = false; //print transactions to file and other msgs on system.out
     public HiHListenerClient2 hih;
 
@@ -159,14 +159,6 @@ public class hihUtil {
         }
     }
 
-    public String getNextSeqNumber(){
-        return Long.toString(nextSeq++);
-    }
-
-    public void setNextSeq(long next){
-        nextSeq=next+1;
-        System.out.println("SET SEQUENCE NUMBER to "+nextSeq);
-    }
 
     //random sampling - a bounded version of Knuth's algorithm
     //taken from https://eyalsch.wordpress.com/2010/04/01/random-sample/

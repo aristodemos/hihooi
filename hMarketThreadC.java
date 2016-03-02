@@ -31,7 +31,6 @@ public class hMarketThreadC extends BenchThread implements Callable<String> {
 
     public String call(){
         String msg;
-        util.setNextSeq(Long.parseLong(util.EXEC_QUERY("select max(t_id) from trade")));
         while(running){
             while ((msg = queue.poll()) != null){
                 //System.out.println("_"+Thread.currentThread().getName() +  "received msg: " + msg);

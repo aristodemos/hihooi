@@ -532,7 +532,7 @@ public class hihTransactions{
 
             util.START_TX();
             //String trade_id = util.EXEC_QUERY("SELECT NEXTVAL('SEQ_TRADE_ID')");
-            String trade_id = util.getNextSeqNumber();
+            String trade_id = hihSerializedData.getNextSeqNumber();
 
             String  sqlTOF4_1 = String.format(
                     "INSERT INTO trade(t_id, t_dts, t_st_id, t_tt_id, t_is_cash, " +
